@@ -15,7 +15,9 @@ uses
   OtlTaskControl,
   pngimage,
 
-  CustomLEDStateProvider;
+  LEDFunctionMap,
+  LEDStateConsumer,
+  LEDStateProvider;
 
 
 type
@@ -59,10 +61,7 @@ type
 //    procedure tmrG940InitTimer(Sender: TObject);
   private
     FEventMonitor: TOmniEventMonitor;
-    FProviderConsumerChannel: IOmniTwoWayChannel;
     FStateConsumerTask: IOmniTaskControl;
-    FStateProviderWorker: IOmniWorker;
-    FStateProviderTask: IOmniTaskControl;
 
 //    FInitCounter: Integer;
 //    FInitRedState: Byte;
@@ -70,20 +69,17 @@ type
   protected
     procedure SetDeviceState(const AMessage: string; AFound: Boolean);
 
-    procedure InitializeStateProvider(AProviderClass: TCustomLEDStateProviderClass);
+    procedure InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
     procedure FinalizeStateProvider;
 
     procedure UpdateMapping;
-    procedure UpdateMappingFSX(AFunctionMap: TLEDFunctionMap);
+    procedure UpdateMappingFSX;
 
     procedure EventMonitorMessage(const task: IOmniTaskControl; const msg: TOmniMessage);
     procedure HandleDeviceStateMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
 
     property EventMonitor: TOmniEventMonitor read FEventMonitor;
-    property ProviderConsumerChannel: IOmniTwoWayChannel read FProviderConsumerChannel;
     property StateConsumerTask: IOmniTaskControl read FStateConsumerTask;
-    property StateProviderWorker: IOmniWorker read FStateProviderWorker;
-    property StateProviderTask: IOmniTaskControl read FStateProviderTask;
   end;
 
 
@@ -96,7 +92,7 @@ uses
   OtlTask,
 
   FSXLEDStateProvider,
-  LEDStateConsumer;
+  G940LEDStateConsumer;
 
 
 {$R *.dfm}
@@ -122,10 +118,9 @@ var
   
 begin
   FEventMonitor := TOmniEventMonitor.Create(Self);
-  FProviderConsumerChannel := CreateTwoWayChannel(1024);
 
-  consumer := TG940LEDStateConsumer.Create(ProviderConsumerChannel.Endpoint1);
-  FStateConsumerTask := FEventMonitor.Monitor(CreateTask(consumer));
+  consumer := TG940LEDStateConsumer.Create;
+  FStateConsumerTask := FEventMonitor.Monitor(CreateTask(consumer)).MsgWait;
 
   // ToDo handle OnTerminate, check exit code for initialization errors
   EventMonitor.OnTaskMessage := EventMonitorMessage;
@@ -201,55 +196,32 @@ end;
 *)
 
 
-procedure TMainForm.InitializeStateProvider(AProviderClass: TCustomLEDStateProviderClass);
-begin
-  if Assigned(StateProviderTask) then
-    FinalizeStateProvider;
-
-  FStateProviderWorker := AProviderClass.Create(ProviderConsumerChannel.Endpoint2);
-  FStateProviderTask := CreateTask(StateProviderWorker);
-
-  StateProviderTask.Run;
-  StateProviderTask.WaitForInit;
-
+procedure TMainForm.InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
+begin  
   UpdateMapping;
+  TLEDStateConsumer.InitializeStateProvider(StateConsumerTask, AProviderClass);
 end;
 
 
 procedure TMainForm.FinalizeStateProvider;
 begin
-  FStateProviderWorker := nil;
-
-  if Assigned(StateProviderTask) then
-    StateProviderTask.Terminate;
-    
-  FStateProviderTask := nil;
+  TLEDStateConsumer.FinalizeStateProvider(StateConsumerTask);
 end;
 
 
 procedure TMainForm.UpdateMapping;
-var
-  provider: TCustomLEDStateProvider;
-  functionMap: TLEDFunctionMap;
-
 begin
-  if not Assigned(StateProviderWorker) then
+  if not Assigned(StateConsumerTask) then
     Exit;
 
-  provider := (StateProviderWorker.Implementor as TCustomLEDStateProvider);
-  functionMap := provider.LockFunctionMap;
-  try
-    UpdateMappingFSX(functionMap);
-  finally
-    provider.UnlockFunctionMap;
-  end;
+  TLEDStateConsumer.ClearFunctions(StateConsumerTask);
+  UpdateMappingFSX;
 end;
 
 
-procedure TMainForm.UpdateMappingFSX(AFunctionMap: TLEDFunctionMap);
+procedure TMainForm.UpdateMappingFSX;
 begin
-  AFunctionMap.Clear;
-  AFunctionMap.SetFunction(4, FUNCTION_FSX_GEAR);
+  TLEDStateConsumer.SetFunction(StateConsumerTask, 3, FUNCTION_FSX_GEAR);
 end;
 
 
@@ -277,24 +249,6 @@ begin
       end;
   end;
 end;
-
-
-(*
-procedure TMainForm.DoStateChange(Sender: TObject; ALEDPosition: Integer; AState: TLEDState);
-begin
-  if not Assigned(ThrottleDevice) then
-    exit;
-    
-  // (MvR) 2-1-2012: dit moet slimmer zodra we lsWarning/lsError willen ondersteunen
-
-  case AState of
-    lsOff:    SetButtonColor(ThrottleDevice, TLogiPanelButton(Pred(ALEDPosition)), LOGI_OFF);
-    lsGreen:  SetButtonColor(ThrottleDevice, TLogiPanelButton(Pred(ALEDPosition)), LOGI_GREEN);
-    lsAmber:  SetButtonColor(ThrottleDevice, TLogiPanelButton(Pred(ALEDPosition)), LOGI_AMBER);
-    lsRed:    SetButtonColor(ThrottleDevice, TLogiPanelButton(Pred(ALEDPosition)), LOGI_RED);
-  end;
-end;
-*)
 
 
 procedure TMainForm.btnFSXConnectClick(Sender: TObject);

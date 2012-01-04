@@ -4,8 +4,9 @@ interface
 uses
   Classes,
   SyncObjs,
-  
-  CustomLEDStateProvider,
+
+  LEDStateConsumer,
+  LEDStateProvider,
   SimConnect;
 
   
@@ -17,25 +18,33 @@ const
 
   
 type
-  TFSXLEDStateProvider = class(TCustomLEDStateProvider)
+  TFSXLEDStateProvider = class(TLEDStateProvider)
   private
     FSimConnectHandle: THandle;
+    FUseFunctionGear: Boolean;
   protected
-    procedure Execute; override;
+    function GetProcessMessagesInterval: Integer; override;
 
-    procedure UpdateMap(AConnection: THandle);
+    procedure SetInitialState;
+    procedure UpdateMap;
     procedure HandleDispatch(AData: PSimConnectRecv);
 
     function GetDataDouble(var AData: Cardinal): Double;
 
     property SimConnectHandle: THandle read FSimConnectHandle;
+  public
+    procedure Initialize; override;
+    procedure Finalize; override;
+    procedure ProcessMessages; override;
   end;
 
 
 implementation
 uses
   ComObj,
-  SysUtils;
+  SysUtils,
+
+  LEDFunctionMap;
 
 
 const
@@ -52,80 +61,73 @@ const
 
 
 { TFSXLEDStateProvider }
-procedure TFSXLEDStateProvider.Execute;
-var
-  connection: THandle;
-  data: PSimConnectRecv;
-  dataSize: Cardinal;
-
+procedure TFSXLEDStateProvider.Initialize;
 begin
   if not InitSimConnect then
+    raise EInitializeError.Create('SimConnect.dll could not be loaded', EXIT_ERROR_INITSIMCONNECT);
+
+  if SimConnect_Open(FSimConnectHandle, APPNAME, 0, 0, 0, 0) <> S_OK then
+    raise EInitializeError.Create('Connection to Flight Simulator could not be established', EXIT_ERROR_CONNECT);
+
+  UpdateMap;
+  SetInitialState;
+end;
+
+
+procedure TFSXLEDStateProvider.Finalize;
+begin
+  inherited;
+
+  if SimConnectHandle <> 0 then
   begin
-    Task.SetExitStatus(EXIT_ERROR_INITSIMCONNECT, 'SimConnect.dll could not be loaded');
-    Task.Terminate;
-    exit;
-  end;
-
-  if SimConnect_Open(connection, APPNAME, 0, 0, 0, 0) = S_OK then
-  try
-    UpdateMap(connection);
-
-    while not Task.Terminated do
-    begin
-      if SimConnect_GetNextDispatch(connection, data, dataSize) = S_OK then
-        HandleDispatch(data);
-
-      ProcessMessages;
-      Sleep(1);
-    end;
-  finally
-    SimConnect_Close(connection);
-  end else
-  begin
-    Task.SetExitStatus(EXIT_ERROR_CONNECT, 'Connection to Flight Simulator could not be established');
-    Task.Terminate;
+    SimConnect_Close(SimConnectHandle);
+    FSimConnectHandle := 0;
   end;
 end;
 
 
-procedure TFSXLEDStateProvider.UpdateMap(AConnection: THandle);
+procedure TFSXLEDStateProvider.ProcessMessages;
 var
-  functionMap: TLEDFunctionMap;
+  data: PSimConnectRecv;
+  dataSize: Cardinal;
 
-  function HasFunction(AFunction: Integer): Boolean;
-  var
-    ledIndex: Integer;
-
-  begin
-    Result := False;
-
-    for ledIndex := 0 to Pred(functionMap.Count) do
-      if functionMap.GetFunction(ledIndex) = AFunction then
-      begin
-        Result := True;
-        break;
-      end;
-  end;
-
-  
 begin
-  SimConnect_ClearDataDefinition(AConnection, DEFINITION_GEAR);
+  inherited;
 
-  functionMap := LockFunctionMap;
-  try
-    if HasFunction(FUNCTION_FSX_GEAR) then
-    begin
-      SimConnect_AddToDataDefinition(AConnection, DEFINITION_GEAR,
-                                     FSX_VARIABLE_GEARTOTALPCTEXTENDED,
-                                     FSX_UNIT_PERCENT);
-      SimConnect_RequestDataOnSimObject(AConnection, REQUEST_GEAR,
-                                        DEFINITION_GEAR,
-                                        SIMCONNECT_OBJECT_ID_USER,
-                                        SIMCONNECT_PERIOD_SIM_FRAME,
-                                        SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
-    end;
-  finally
-    UnlockFunctionMap;
+  while SimConnect_GetNextDispatch(SimConnectHandle, data, dataSize) = S_OK do
+    HandleDispatch(data);
+end;
+
+
+procedure TFSXLEDStateProvider.SetInitialState;
+begin
+//  if FUseFunctionGear then
+//  begin
+//    SimConnect_RequestDataOnSimObject(SimConnectHandle, REQUEST_GEAR,
+//                                      DEFINITION_GEAR,
+//                                      SIMCONNECT_OBJECT_ID_USER,
+//                                      SIMCONNECT_PERIOD_ONCE,
+//                                      SIMCONNECT_DATA_REQUEST_FLAG_DEFAULT);
+//  end;
+end;
+
+
+procedure TFSXLEDStateProvider.UpdateMap;
+begin
+  if FUseFunctionGear then
+    SimConnect_ClearDataDefinition(SimConnectHandle, DEFINITION_GEAR);
+
+  FUseFunctionGear := Consumer.FunctionMap.HasFunction(FUNCTION_FSX_GEAR);
+  if FUseFunctionGear then
+  begin
+    SimConnect_AddToDataDefinition(SimConnectHandle, DEFINITION_GEAR,
+                                   FSX_VARIABLE_GEARTOTALPCTEXTENDED,
+                                   FSX_UNIT_PERCENT);
+    SimConnect_RequestDataOnSimObject(SimConnectHandle, REQUEST_GEAR,
+                                      DEFINITION_GEAR,
+                                      SIMCONNECT_OBJECT_ID_USER,
+                                      SIMCONNECT_PERIOD_SECOND,
+                                      SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
   end;
 end;
 
@@ -144,16 +146,16 @@ begin
           REQUEST_GEAR:
             begin
               case Trunc(GetDataDouble(simObjectData^.dwData) * 100) of
-                0:    SetStateByFunction(FUNCTION_FSX_GEAR, lsRed);
-                100:  SetStateByFunction(FUNCTION_FSX_GEAR, lsGreen);
-              else    SetStateByFunction(FUNCTION_FSX_GEAR, lsAmber);
+                0:    Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsRed);
+                100:  Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsGreen);
+              else    Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsAmber);
               end;
             end;
         end;
       end;
 
     SIMCONNECT_RECV_ID_QUIT:
-      Task.Terminate;
+      Terminate;
   end;
 end;
 
@@ -161,6 +163,12 @@ end;
 function TFSXLEDStateProvider.GetDataDouble(var AData: Cardinal): Double;
 begin
   Result := PDouble(@AData)^;
+end;
+
+
+function TFSXLEDStateProvider.GetProcessMessagesInterval: Integer;
+begin
+  Result := 50;
 end;
 
 end.

@@ -2,202 +2,204 @@ unit LEDStateConsumer;
 
 interface
 uses
-  DirectInput,
   OtlComm,
   OtlTaskControl,
 
-  CustomLEDStateProvider;
+  LEDFunctionMap,
+  LEDStateProvider;
+
+
+const
+  MSG_CLEAR_FUNCTIONS = 1;
+  MSG_SET_FUNCTION = 2;
+  MSG_INITIALIZE_PROVIDER = 3;
+  MSG_FINALIZE_PROVIDER = 4;
+  MSG_PROCESS_MESSAGES = 5;
+
+  MSG_CONSUMER_OFFSET = MSG_PROCESS_MESSAGES;
+
+  TIMER_PROCESSMESSAGES = 1;
 
   
-const
-  MSG_FINDTHROTTLEDEVICE = 1;
-  MSG_NOTIFY_DEVICESTATE = 2;
-
-
 type
-  TG940LEDStateConsumer = class(TOmniWorker)
+  TLEDStateConsumer = class(TOmniWorker, ILEDStateConsumer)
   private
-    FProviderChannel: IOmniCommunicationEndpoint;
-    FDirectInput: IDirectInput8;
-    FThrottleDevice: IDirectInputDevice8;
     FFunctionMap: TLEDFunctionMap;
+    FStateMap: TLEDStateMap;
+    FProvider: TLEDStateProvider;
+    FTimerSet: Boolean;
   protected
-    procedure MsgFindThrottleDevice(var msg: TOmniMessage); message MSG_FINDTHROTTLEDEVICE;
-    procedure MsgUpdateFunctionMap(var msg: TOmniMessage); message MSG_UPDATEFUNCTIONMAP;
-    procedure MsgSetStateByFunction(var msg: TOmniMessage); message MSG_SETSTATEBYFUNCTION;
-  protected
-    function Initialize: Boolean; override;
+    procedure MsgClearFunctions(var msg: TOmniMessage); message MSG_CLEAR_FUNCTIONS;
+    procedure MsgSetFunction(var msg: TOmniMessage); message MSG_SET_FUNCTION;
+    procedure MsgInitializeProvider(var msg: TOmniMessage); message MSG_INITIALIZE_PROVIDER;
+    procedure MsgFinalizeProvider(var msg: TOmniMessage); message MSG_FINALIZE_PROVIDER;
+    procedure MsgProcessMessages(var msg: TOmniMessage); message MSG_PROCESS_MESSAGES;
 
-    procedure FindThrottleDevice;
-    procedure FoundThrottleDevice(ADeviceGUID: TGUID);
+    procedure InitializeProvider(AProviderClass: TLEDStateProviderClass);
+    procedure FinalizeProvider;
 
-    procedure SetDeviceState(AState: Integer);
+    procedure LEDStateChanged(ALEDIndex: Integer; AState: TLEDState); virtual;
 
-    property DirectInput: IDirectInput8 read FDirectInput;
-    property ThrottleDevice: IDirectInputDevice8 read FThrottleDevice;
+    { ILEDStateConsumer }
+    function GetFunctionMap: TLEDFunctionMap;
+    procedure SetStateByFunction(AFunction: Integer; AState: TLEDState);
+
+    property FunctionMap: TLEDFunctionMap read GetFunctionMap;
+    property StateMap: TLEDStateMap read FStateMap;
+    property Provider: TLEDStateProvider read FProvider;
   public
-    constructor Create(AProviderChannel: IOmniCommunicationEndpoint);
+    constructor Create;
     destructor Destroy; override;
+
+    class procedure ClearFunctions(AConsumer: IOmniTaskControl);
+    class procedure SetFunction(AConsumer: IOmniTaskControl; ALEDIndex, AFunction: Integer);
+    class procedure InitializeStateProvider(AConsumer: IOmniTaskControl; AProviderClass: TLEDStateProviderClass);
+    class procedure FinalizeStateProvider(AConsumer: IOmniTaskControl);
   end;
 
-
-const
-  EXIT_ERROR_LOGIJOYSTICKDLL = 1;
-  EXIT_ERROR_DIRECTINPUT = 2;
-
-
-  DEVICESTATE_SEARCHING = 0;
-  DEVICESTATE_FOUND = 1;
-  DEVICESTATE_NOTFOUND = 2;
 
 
 implementation
 uses
   SysUtils,
-  Windows,
   
-  LogiJoystickDLL;
+  OtlCommon;
 
 
-function EnumDevicesProc(var lpddi: TDIDeviceInstanceA; pvRef: Pointer): BOOL; stdcall;
-var
-  vendorID: Word;
-  productID: Word;
-
+{ TLEDStateConsumer }
+constructor TLEDStateConsumer.Create;
 begin
-  Result := True;
+  inherited;
 
-  vendorID := LOWORD(lpddi.guidProduct.D1);
-  productID := HIWORD(lpddi.guidProduct.D1);
-
-  if (vendorID = VENDOR_LOGITECH) and
-     (productID = PRODUCT_G940_THROTTLE) then
-  begin
-    TG940LEDStateConsumer(pvRef).FoundThrottleDevice(lpddi.guidInstance);
-    Result := False;
-  end;
-end;
-
-
-
-{ TG940LEDStateConsumer }
-constructor TG940LEDStateConsumer.Create(AProviderChannel: IOmniCommunicationEndpoint);
-begin
-  inherited Create;
-
-  FProviderChannel := AProviderChannel;
   FFunctionMap := TLEDFunctionMap.Create;
+  FStateMap := TLEDStateMap.Create;
 end;
 
 
-destructor TG940LEDStateConsumer.Destroy;
+destructor TLEDStateConsumer.Destroy;
 begin
+  FinalizeProvider;
+  
+  FreeAndNil(FStateMap);
   FreeAndNil(FFunctionMap);
 
   inherited;
 end;
 
 
-function TG940LEDStateConsumer.Initialize: Boolean;
+function TLEDStateConsumer.GetFunctionMap: TLEDFunctionMap;
 begin
-  Result := False;
-
-  if not LogiJoystickDLLInitialized then
-  begin
-    Task.SetExitStatus(EXIT_ERROR_LOGIJOYSTICKDLL, 'Could not load LogiJoystickDLL.dll');
-    exit;
-  end;
-
-//    btnRetry.Visible := False;
-//    SetState(STATE_SEARCHING, False);
-
-  if DirectInput8Create(SysInit.HInstance, DIRECTINPUT_VERSION, IDirectInput8, FDirectInput, nil) <> S_OK then
-  begin
-    Task.SetExitStatus(EXIT_ERROR_DIRECTINPUT, 'Failed to initialize DirectInput');
-    exit;
-  end;
-
-  Result := True;
-
-  Task.RegisterComm(FProviderChannel);
-  FindThrottleDevice;
+  Result := FFunctionMap;
 end;
 
 
-procedure TG940LEDStateConsumer.FindThrottleDevice;
-begin
-  SetDeviceState(DEVICESTATE_SEARCHING);
-  DirectInput.EnumDevices(DI8DEVCLASS_GAMECTRL,
-                          EnumDevicesProc,
-                          Pointer(Self),
-                          DIEDFL_ATTACHEDONLY);
-
-  if not Assigned(ThrottleDevice) then
-    SetDeviceState(DEVICESTATE_NOTFOUND);
-end;
-
-
-procedure TG940LEDStateConsumer.FoundThrottleDevice(ADeviceGUID: TGUID);
-begin
-  if DirectInput.CreateDevice(ADeviceGUID, FThrottleDevice, nil) = S_OK then
-    SetDeviceState(DEVICESTATE_FOUND);
-end;
-
-
-procedure TG940LEDStateConsumer.SetDeviceState(AState: Integer);
-begin
-  Task.Comm.Send(MSG_NOTIFY_DEVICESTATE, AState);
-end;
-
-
-procedure TG940LEDStateConsumer.MsgFindThrottleDevice(var msg: TOmniMessage);
-begin
-  FindThrottleDevice;
-end;
-
-
-procedure TG940LEDStateConsumer.MsgUpdateFunctionMap(var msg: TOmniMessage);
+procedure TLEDStateConsumer.SetStateByFunction(AFunction: Integer; AState: TLEDState);
 var
-  provider: TCustomLEDStateProvider;
-  functionMap: TLEDFunctionMap;
+  ledIndex: Integer;
 
 begin
-  provider := (msg.MsgData.AsObject as TCustomLEDStateProvider);
-  functionMap := provider.LockFunctionMap;
-  try
-    FFunctionMap.Assign(functionMap);
-  finally
-    provider.UnlockFunctionMap;
+  if FunctionMap.FindFirst(AFunction, ledIndex) then
+  repeat
+    if StateMap.SetState(ledIndex, AState) then
+      LEDStateChanged(ledIndex, AState);
+  until not FunctionMap.FindNext(AFunction, ledIndex);
+end;
+
+
+
+procedure TLEDStateConsumer.MsgClearFunctions(var msg: TOmniMessage);
+begin
+  FunctionMap.Clear;
+end;
+
+
+procedure TLEDStateConsumer.MsgSetFunction(var msg: TOmniMessage);
+var
+  values: TOmniValueContainer;
+
+begin
+  values := msg.MsgData.AsArray;
+  FunctionMap.SetFunction(values[0], values[1]);
+end;
+
+
+procedure TLEDStateConsumer.MsgInitializeProvider(var msg: TOmniMessage);
+begin
+  InitializeProvider(TLEDStateProviderClass(msg.MsgData.AsPointer));
+end;
+
+
+procedure TLEDStateConsumer.MsgFinalizeProvider(var msg: TOmniMessage);
+begin
+  FinalizeProvider;
+end;
+
+
+procedure TLEDStateConsumer.MsgProcessMessages(var msg: TOmniMessage);
+begin
+  Provider.ProcessMessages;
+end;
+
+
+procedure TLEDStateConsumer.InitializeProvider(AProviderClass: TLEDStateProviderClass);
+begin
+  FinalizeProvider;
+
+  FProvider := AProviderClass.Create(Self);
+  // ToDo exception handlign
+  Provider.Initialize;
+
+  if Provider.ProcessMessagesInterval > -1 then
+  begin
+    Task.SetTimer(TIMER_PROCESSMESSAGES, Provider.ProcessMessagesInterval, MSG_PROCESS_MESSAGES);
+    FTimerSet := True;
   end;
 end;
 
 
-procedure TG940LEDStateConsumer.MsgSetStateByFunction(var msg: TOmniMessage);
+procedure TLEDStateConsumer.FinalizeProvider;
 begin
-  //
+  if Assigned(Provider) then
+  begin
+    if FTimerSet then
+    begin
+      Task.ClearTimer(TIMER_PROCESSMESSAGES);
+      FTimerSet := False;
+    end;
+
+    Provider.Terminate;
+    Provider.Finalize;
+    FreeAndNil(FProvider);
+  end;
 end;
 
 
-//procedure TCustomLEDStateProvider.SetStateByFunction(AFunction: Integer; AState: TLEDState);
-//var
-//  functionMap: TLEDFunctionMap;
-//  ledIndex: Integer;
-//
-//begin
-//  functionMap := LockFunctionMap;
-//  try
-//    for ledIndex := 0 to Pred(functionMap.Count) do
-//      if functionMap.GetFunction(ledIndex) = AFunction then
-//      begin
-//        if AState <> FState[ledIndex] then
-//        begin
-//          FState[ledIndex] := AState;
-//          ConsumerChannel.Send(MSG_STATECHANGED, [ledIndex, Ord(AState)]);
-//        end;
-//      end;
-//  finally
-//    UnlockFunctionMap;
-//  end;
-//end;
+procedure TLEDStateConsumer.LEDStateChanged(ALEDIndex: Integer; AState: TLEDState);
+begin
+end;
+
+
+class procedure TLEDStateConsumer.ClearFunctions(AConsumer: IOmniTaskControl);
+begin
+  AConsumer.Comm.Send(MSG_CLEAR_FUNCTIONS);
+end;
+
+
+class procedure TLEDStateConsumer.SetFunction(AConsumer: IOmniTaskControl; ALEDIndex, AFunction: Integer);
+begin
+  AConsumer.Comm.Send(MSG_SET_FUNCTION, [ALEDIndex, AFunction]);
+end;
+
+
+class procedure TLEDStateConsumer.InitializeStateProvider(AConsumer: IOmniTaskControl; AProviderClass: TLEDStateProviderClass);
+begin
+  AConsumer.Comm.Send(MSG_INITIALIZE_PROVIDER, Pointer(AProviderClass));
+end;
+
+
+class procedure TLEDStateConsumer.FinalizeStateProvider(AConsumer: IOmniTaskControl);
+begin
+  AConsumer.Comm.Send(MSG_FINALIZE_PROVIDER);
+end;
 
 end.
