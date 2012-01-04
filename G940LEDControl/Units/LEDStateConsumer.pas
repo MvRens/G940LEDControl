@@ -16,12 +16,21 @@ const
   MSG_FINALIZE_PROVIDER = 4;
   MSG_PROCESS_MESSAGES = 5;
 
-  MSG_CONSUMER_OFFSET = MSG_PROCESS_MESSAGES;
+  MSG_RUN_IN_MAINTHREAD = 6;
+
+  MSG_CONSUMER_OFFSET = MSG_RUN_IN_MAINTHREAD;
 
   TIMER_PROCESSMESSAGES = 1;
 
   
 type
+  { This interface name made me giggle. Because it's true. }
+  IRunInMainThread = interface
+    ['{68B8F2F7-ED40-4078-9D99-503D7AFA068B}']
+    procedure Execute;
+  end;
+  
+
   TLEDStateConsumer = class(TOmniWorker, ILEDStateConsumer)
   private
     FFunctionMap: TLEDFunctionMap;
@@ -38,6 +47,7 @@ type
     procedure InitializeProvider(AProviderClass: TLEDStateProviderClass);
     procedure FinalizeProvider;
 
+    procedure RunInMainThread(AExecutor: IRunInMainThread);
     procedure LEDStateChanged(ALEDIndex: Integer; AState: TLEDState); virtual;
 
     { ILEDStateConsumer }
@@ -62,6 +72,7 @@ type
 implementation
 uses
   SysUtils,
+  Windows,
   
   OtlCommon;
 
@@ -146,7 +157,7 @@ begin
   FinalizeProvider;
 
   FProvider := AProviderClass.Create(Self);
-  // ToDo exception handlign
+  // ToDo exception handling
   Provider.Initialize;
 
   if Provider.ProcessMessagesInterval > -1 then
@@ -171,6 +182,12 @@ begin
     Provider.Finalize;
     FreeAndNil(FProvider);
   end;
+end;
+
+
+procedure TLEDStateConsumer.RunInMainThread(AExecutor: IRunInMainThread);
+begin
+  Task.Comm.Send(MSG_RUN_IN_MAINTHREAD, AExecutor); 
 end;
 
 

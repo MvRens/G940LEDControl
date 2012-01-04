@@ -137,9 +137,9 @@ object MainForm: TMainForm
           ItemHeight = 13
           ItemIndex = 0
           TabOrder = 1
-          Text = '<Not assigned>'
+          Text = 'Parking brake'
           Items.Strings = (
-            '<Not assigned>')
+            'Parking brake')
         end
         object cmbFSXP3: TComboBox
           Left = 69
@@ -152,9 +152,9 @@ object MainForm: TMainForm
           ItemHeight = 13
           ItemIndex = 0
           TabOrder = 2
-          Text = '<Not assigned>'
+          Text = 'Landing lights'
           Items.Strings = (
-            '<Not assigned>')
+            'Landing lights')
         end
         object cmbFSXP4: TComboBox
           Left = 69
@@ -212,9 +212,9 @@ object MainForm: TMainForm
           ItemHeight = 13
           ItemIndex = 0
           TabOrder = 6
-          Text = '<Not assigned>'
+          Text = 'Instrument lights'
           Items.Strings = (
-            '<Not assigned>')
+            'Instrument lights')
         end
         object cmbFSXP8: TComboBox
           Left = 69

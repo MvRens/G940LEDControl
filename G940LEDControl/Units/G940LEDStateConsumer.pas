@@ -14,8 +14,8 @@ uses
 
 const
   MSG_FINDTHROTTLEDEVICE = MSG_CONSUMER_OFFSET + 1;
+  MSG_NOTIFY_DEVICESTATE = MSG_CONSUMER_OFFSET + 2;
 
-  
 type
   TG940LEDStateConsumer = class(TLEDStateConsumer)
   private
@@ -38,8 +38,6 @@ type
 
 
 const
-  MSG_NOTIFY_DEVICESTATE = 1;
-
   DEVICESTATE_SEARCHING = 0;
   DEVICESTATE_FOUND = 1;
   DEVICESTATE_NOTFOUND = 2;
@@ -54,6 +52,19 @@ uses
   Windows,
   
   LogiJoystickDLL;
+
+
+type
+  TRunInMainThreadSetButtonColor = class(TInterfacedObject, IRunInMainThread)
+  private
+    FDevice: IDirectInputDevice8;
+    FButton: TLogiPanelButton;
+    FColor: TLogiColor;
+  protected
+    procedure Execute;
+  public
+    constructor Create(device: IDirectInputDevice8; button: TLogiPanelButton; color: TLogiColor);
+  end;
 
 
 function EnumDevicesProc(var lpddi: TDIDeviceInstanceA; pvRef: Pointer): BOOL; stdcall;
@@ -109,6 +120,7 @@ end;
 procedure TG940LEDStateConsumer.LEDStateChanged(ALEDIndex: Integer; AState: TLEDState);
 var
   color: TLogiColor;
+//  msg: TMsg;
 
 begin
   // ToDo SetLEDs gebruiken (vereist override van SetStateByFunction om te groeperen)
@@ -127,8 +139,8 @@ begin
       lsError:    color := LOGI_RED;
     end;
 
-    SetButtonColor(ThrottleDevice, TLogiPanelButton(ALEDIndex), color);
-    ProcessMessages;
+    { Logitech SDK will not change the color outside of the main thread }
+    RunInMainThread(TRunInMainThreadSetButtonColor.Create(ThrottleDevice, TLogiPanelButton(ALEDIndex), color));
   end;
 end;
 
@@ -186,5 +198,22 @@ end;
 //    UnlockFunctionMap;
 //  end;
 //end;
+
+
+{ TRunInMainThreadSetButtonColor }
+constructor TRunInMainThreadSetButtonColor.Create(device: IDirectInputDevice8; button: TLogiPanelButton; color: TLogiColor);
+begin
+  inherited Create;
+
+  FDevice := device;
+  FButton := button;
+  FColor := color;
+end;
+
+
+procedure TRunInMainThreadSetButtonColor.Execute;
+begin
+  SetButtonColor(FDevice, FButton, FColor);
+end;
 
 end.

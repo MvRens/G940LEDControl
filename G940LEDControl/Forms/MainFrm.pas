@@ -77,6 +77,7 @@ type
 
     procedure EventMonitorMessage(const task: IOmniTaskControl; const msg: TOmniMessage);
     procedure HandleDeviceStateMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
+    procedure HandleRunInMainThreadMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
 
     property EventMonitor: TOmniEventMonitor read FEventMonitor;
     property StateConsumerTask: IOmniTaskControl read FStateConsumerTask;
@@ -133,6 +134,7 @@ begin
   FinalizeStateProvider;
 
   StateConsumerTask.Terminate;
+  StateConsumerTask.WaitFor(INFINITE);
   FStateConsumerTask := nil;
 end;
 
@@ -221,14 +223,18 @@ end;
 
 procedure TMainForm.UpdateMappingFSX;
 begin
+  TLEDStateConsumer.SetFunction(StateConsumerTask, 1, FUNCTION_FSX_PARKINGBRAKE);
+  TLEDStateConsumer.SetFunction(StateConsumerTask, 2, FUNCTION_FSX_LANDINGLIGHTS);
   TLEDStateConsumer.SetFunction(StateConsumerTask, 3, FUNCTION_FSX_GEAR);
+  TLEDStateConsumer.SetFunction(StateConsumerTask, 6, FUNCTION_FSX_INSTRUMENTLIGHTS);
 end;
 
 
 procedure TMainForm.EventMonitorMessage(const task: IOmniTaskControl; const msg: TOmniMessage);
 begin
   case msg.MsgID of
-    MSG_NOTIFY_DEVICESTATE:    HandleDeviceStateMessage(task, msg);  
+    MSG_NOTIFY_DEVICESTATE:   HandleDeviceStateMessage(task, msg);
+    MSG_RUN_IN_MAINTHREAD:    HandleRunInMainThreadMessage(task, msg);
   end;
 end;
 
@@ -248,6 +254,12 @@ begin
         btnRetry.Visible := True;
       end;
   end;
+end;
+
+
+procedure TMainForm.HandleRunInMainThreadMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
+begin
+  (AMessage.MsgData.AsInterface as IRunInMainThread).Execute;
 end;
 
 
