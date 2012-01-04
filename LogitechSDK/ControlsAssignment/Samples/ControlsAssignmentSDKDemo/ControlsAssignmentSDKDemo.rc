@@ -1,0 +1,239 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\ControlsAssignmentSDKDemo.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\ControlsAssignmentSDKDemo.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 235, 55
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About ControlsAssignmentSDKDemo"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "ControlsAssignmentSDKDemo Version 1.0",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2007",IDC_STATIC,40,25,119,8
+    DEFPUSHBUTTON   "OK",IDOK,178,7,50,16,WS_GROUP
+END
+
+IDD_CONTROLSASSIGNMENTSDKDEMO_DIALOG DIALOGEX 0, 0, 454, 318
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "ControlsAssignmentSDKDemo"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Exit",IDOK,390,294,56,18
+    PUSHBUTTON      "Cancel",IDCANCEL,6,294,50,16,NOT WS_VISIBLE
+    PUSHBUTTON      "Clear All",IDC_CLEARALL,324,294,56,18
+    PUSHBUTTON      "Save",IDC_SAVE,264,294,56,18
+    PUSHBUTTON      "Stop Checking",IDC_STOPCHECKING,204,294,56,19
+    GROUPBOX        "Combined Values",IDC_STATIC,360,36,84,246,BS_CENTER
+    EDITTEXT        IDC_COMB1,378,78,54,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_COMB2,378,126,54,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_COMB3,378,174,54,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Usage: Click on the edit boxes under ""Alternate"" and assign a control by moving or pressing an axis, button, or POV on a game",IDC_STATIC,9,7,438,20
+    GROUPBOX        "Normalized Values",IDC_STATIC,264,36,90,246,BS_CENTER
+    EDITTEXT        IDC_NORM1,282,66,54,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_NORM2,282,90,54,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_NORM3,282,114,54,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_NORM4,282,138,54,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_NORM5,282,162,54,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_NORM6,282,186,54,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_NORM7,282,210,54,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_NORM8,282,234,54,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_NORM9,282,258,54,14,ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Game Controller Menu",IDC_STATIC,6,36,252,246
+    LTEXT           "Strafe Left",IDC_STATIC,12,66,36,8
+    LTEXT           "Strafe Right",IDC_STATIC,12,90,40,8
+    LTEXT           "Move Forward",IDC_STATIC,12,114,47,8
+    LTEXT           "Move Backward",IDC_STATIC,12,138,51,8
+    LTEXT           "Turn Left",IDC_STATIC,12,162,30,8
+    LTEXT           "Turn Right",IDC_STATIC,12,186,34,8
+    LTEXT           "Fire",IDC_STATIC,12,210,13,8
+    LTEXT           "Change View",IDC_STATIC,12,234,42,8
+    LTEXT           "Zoom Map",IDC_STATIC,12,258,34,8
+    LTEXT           "Alternate",IDC_STATIC,72,48,31,8
+    LTEXT           "Reverse",IDC_STATIC,216,48,28,8
+    EDITTEXT        IDC_ALT1,72,66,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ALT2,72,90,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ALT3,72,114,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ALT4,72,138,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ALT5,72,162,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ALT6,72,186,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ALT7,72,210,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ALT8,72,234,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ALT9,72,258,132,14,ES_AUTOHSCROLL
+    CONTROL         "",IDC_REV1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,222,78,16,10
+    CONTROL         "",IDC_REV2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,222,126,16,10
+    CONTROL         "",IDC_REV3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,222,174,16,10
+    LTEXT           "controller.  Click on the checkboxes to reverse the combined values. You may hot plug/unplug any XInput and DirectInput controllers.",IDC_STATIC,7,16,428,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,2,0
+ PRODUCTVERSION 1,0,2,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "Logitech Inc."
+            VALUE "FileDescription", "Controls Assignment SDK demo."
+            VALUE "FileVersion", "1.00.002"
+            VALUE "InternalName", "ControlsAssignmentSDKDemo.exe"
+            VALUE "LegalCopyright", "Logitech Inc.  All rights reserved."
+            VALUE "OriginalFilename", "ControlsAssignmentSDKDemo.exe"
+            VALUE "ProductName", "Controls Assignment SDK"
+            VALUE "ProductVersion", "1.00.002"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_CONTROLSASSIGNMENTSDKDEMO_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 447
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 311
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About ControlsAssignmentSDKDemo..."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\ControlsAssignmentSDKDemo.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

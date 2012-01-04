@@ -1,0 +1,44 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{1c1aac3d-c847-440c-afb1-8dce1fbd64dd}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Projects Include="G940LEDControl\G940LEDControl.dproj" />
+    <Projects Include="Test\G940Test.dproj" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Default.Personality</Borland.Personality>
+    <Borland.ProjectType />
+    <BorlandProject>
+<BorlandProject xmlns=""><Default.Personality></Default.Personality></BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Target Name="G940LEDControl">
+    <MSBuild Projects="G940LEDControl\G940LEDControl.dproj" Targets="" />
+  </Target>
+  <Target Name="G940LEDControl:Clean">
+    <MSBuild Projects="G940LEDControl\G940LEDControl.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="G940LEDControl:Make">
+    <MSBuild Projects="G940LEDControl\G940LEDControl.dproj" Targets="Make" />
+  </Target>
+  <Target Name="G940Test">
+    <MSBuild Projects="Test\G940Test.dproj" Targets="" />
+  </Target>
+  <Target Name="G940Test:Clean">
+    <MSBuild Projects="Test\G940Test.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="G940Test:Make">
+    <MSBuild Projects="Test\G940Test.dproj" Targets="Make" />
+  </Target>
+  <Target Name="Build">
+    <CallTarget Targets="G940LEDControl;G940Test" />
+  </Target>
+  <Target Name="Clean">
+    <CallTarget Targets="G940LEDControl:Clean;G940Test:Clean" />
+  </Target>
+  <Target Name="Make">
+    <CallTarget Targets="G940LEDControl:Make;G940Test:Make" />
+  </Target>
+  <Import Condition="Exists('$(MSBuildBinPath)\Borland.Group.Targets')" Project="$(MSBuildBinPath)\Borland.Group.Targets" />
+</Project>

@@ -1,0 +1,53 @@
+MODIFICATION HISTORY
+
+
+Controller Input SDK
+
+  1.00.001 - June 2009
+    Creation based on older EZ Controller Input Wrapper.
+    Added support for G940.
+    Added vector defines to make it easier to use your own containers.
+
+
+Old EZ Controller Input Wrapper
+
+  1.01.007 - November 2008
+    Fixed bug that may cause default spring to be on when multiple wheels are plugged in.
+  1.01.006 - August 2008
+    Made slight improvements to avoid variable name collisions with EZ Wheel Wrapper.
+    Fixed bug where upon plug in of other USB device, wheel default spring might turn on.
+  1.01.005 - August 2008
+    Added support for G27.
+    Added necessary libraries in pragma comment.
+  1.01.004 - July 2008
+    Added extra processing to deal with the case where a controller
+    gets connected to a USB hub for the first time.
+  1.01.003
+    Removed usage of CString so there is no MFC involved.
+    Made a fix so ordering of combined XInput Microsoft and
+    non-Microsoft devices is correct.
+  1.01.002
+    Made fix so that Logitech devices' type gets correctly seen as
+    gamepad, joystick or wheel in Vista.
+  1.01.001
+    Added GetGameHWnd method.
+    Added License Agreement in Readme.txt.
+    We now invert DirectInput gamepad left and right Thumbstick Y
+    axes so they report identical to XInput game pads (else they
+    report opposite values).
+  1.00.005
+    Added option to ignore XInput controller when creating main
+    object.
+  1.00.004
+    Added button pressed, triggered, released methods.
+    Added GetNumberFFAxesDInput method, necessary for doing force
+    feedback.
+    Fixed POV initialization.
+
+
+
+
+
+
+
+

@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<link rel="stylesheet" href="./api.css" type="text/css">
+<title>./api</title>
+<!-- Source: ./.\Source/ -->
+<!-- Generated with ROBODoc Version 4.0.18 (Mar  3 2006) -->
+<!-- ROBODoc (c) 1994-2004 by Frans Slothouber and Jacco van Weert. -->
+</head>
+<body bgcolor="#FFFFFF">
+<a name="./.\Source/">Generated from ./.\Source/</a> with <a href="http://sourceforge.net/projects/robodoc/">ROBODoc</a> v4.0.18 on Thu Jun 25 11:47:47 2009
+<br />
+<h3 align="center">TABLE OF CONTENTS</h3>
+<ul>
+<li><a href="#robo0">Logitech.Joystick.SDK/LogitechJoystickSDK[1.00.001]</a></li>
+<li><a href="#robo1">Logitech.Joystick.SDK/SetButtonColor(LPDIRECTINPUTDEVICE8.device,LogiPanelButton.button,LogiColor.color)</a></li>
+<li><a href="#robo2">Logitech.Joystick.SDK/SetAllButtonsColor(LPDIRECTINPUTDEVICE8.device,LogiColor.color)</a></li>
+<li><a href="#robo3">Logitech.Joystick.SDK/IsButtonColor(LPDIRECTINPUTDEVICE8.device,LogiPanelButton.button,LogiColor.color)</a></li>
+<li><a href="#robo4">Logitech.Joystick.SDK/SetLEDs(LPDIRECTINPUTDEVICE8.device,BYTE.redLEDs,BYTE.greenLEDs)</a></li>
+<li><a href="#robo5">Logitech.Joystick.SDK/GetLEDs(LPDIRECTINPUTDEVICE8.device,BYTE&amp;.redLEDs,BYTE&amp;.greenLEDs)</a></li>
+</ul>
+<hr />
+
+<h2><a name="robo0"><a name="Logitech2eJoystick2eSDK2fLogitechJoystickSDK5b12e002e0015d">
+Logitech.Joystick.SDK/LogitechJoystickSDK[1.00.001]</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>   Logitech Joystick SDK
+</pre><p><strong>COPYRIGHT</strong></p>
+<pre>   The Logitech Joystick SDK, including all accompanying
+   documentation, is protected by intellectual property laws. All
+   rights not expressly granted by Logitech are reserved.
+</pre><p><strong>PURPOSE</strong></p>
+<pre>   The Logitech Joystick SDK's purpose is to control the LEDs on the
+   buttons of the Logitech G940 joystick's throttle.
+   The SDK provides a simple interface for:
+       - setting button colors.
+       - checking what the current state of color of the buttons is.
+</pre><p><strong>EXAMPLE</strong></p>
+<pre>   Build and run the demo program to see some of the code usage, or
+   run JoystickSDKDemo.exe to quickly see what it can do.
+</pre><p><strong>AUTHOR</strong></p>
+<pre>   Christophe Juncker (cj@wingmanteam.com)
+</pre>
+<hr />
+
+<h2><a name="robo1"><a name="Logitech2eJoystick2eSDK2fSetButtonColor28LPDIRECTINPUTDEVICE82edevice2cLogiPanelButton2ebutton2cLogiColor2ecolor29">
+Logitech.Joystick.SDK/SetButtonColor(LPDIRECTINPUTDEVICE8.device,LogiPanelButton.button,LogiColor.color)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  DWORD SetButtonColor(LPDIRECTINPUTDEVICE8 device, LogiPanelButton
+  button, LogiColor color) - Sets the color of the specified button.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  device - DirectInput handle to the device.
+  button - Button to be set. Possible buttons are: LOGI_P1, LOGI_P2,
+    LOGI_P3, LOGI_P4, LOGI_P5, LOGI_P6, LOGI_P7, LOGI_P8.
+  color - Color to be set. Possible colors are: LOGI_OFF, LOGI_GREEN,
+    LOGI_AMBER, LOGI_RED.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  ERROR_SUCCESS if successful.
+  Error code otherwise.
+</pre>
+<hr />
+
+<h2><a name="robo2"><a name="Logitech2eJoystick2eSDK2fSetAllButtonsColor28LPDIRECTINPUTDEVICE82edevice2cLogiColor2ecolor29">
+Logitech.Joystick.SDK/SetAllButtonsColor(LPDIRECTINPUTDEVICE8.device,LogiColor.color)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  DWORD SetAllButtonsColor(LPDIRECTINPUTDEVICE8 device, LogiColor
+  color) - Sets the color of all the buttons.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  device - DirectInput handle to the device.
+  color - Color to be set. Possible colors are: LOGI_OFF, LOGI_GREEN,
+    LOGI_AMBER, LOGI_RED.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  ERROR_SUCCESS if successful.
+  Error code otherwise.
+</pre>
+<hr />
+
+<h2><a name="robo3"><a name="Logitech2eJoystick2eSDK2fIsButtonColor28LPDIRECTINPUTDEVICE82edevice2cLogiPanelButton2ebutton2cLogiColor2ecolor29">
+Logitech.Joystick.SDK/IsButtonColor(LPDIRECTINPUTDEVICE8.device,LogiPanelButton.button,LogiColor.color)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsButtonColor(LPDIRECTINPUTDEVICE8 device, LogiPanelButton
+  button, LogiColor color) - Checks if the button has the specified
+  color.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  device - DirectInput handle to the device.
+  button - Button to check. Possible buttons are: LOGI_P1, LOGI_P2,
+    LOGI_P3, LOGI_P4, LOGI_P5, LOGI_P6, LOGI_P7, LOGI_P8.
+  color - Color to check. Possible colors are: LOGI_OFF, LOGI_GREEN,
+    LOGI_AMBER, LOGI_RED.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if button currently has specified color.
+  FALSE otherwise.
+</pre>
+<hr />
+
+<h2><a name="robo4"><a name="Logitech2eJoystick2eSDK2fSetLEDs28LPDIRECTINPUTDEVICE82edevice2cBYTE2eredLEDs2cBYTE2egreenLEDs29">
+Logitech.Joystick.SDK/SetLEDs(LPDIRECTINPUTDEVICE8.device,BYTE.redLEDs,BYTE.greenLEDs)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  DWORD SetLEDs(LPDIRECTINPUTDEVICE8 device, BYTE redLEDs, BYTE
+  greenLEDs) - Sets the LEDs in the buttons.
+</pre><p><strong>DESCRIPTION</strong></p>
+<pre>  Each button has a red and a green LED. This enables 3 colors in
+  addition to off. The third color in addition to red and green is
+  amber, which is the result of both red and green LEDs being turned
+  on at the same time.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  device - DirectInput handle to the device.
+  redLEDs - Byte corresponding to which of the 8 red LEDs need to be
+    turned on or off.
+  greenLEDs - Byte corresponding to which of the 8 green LEDs need to
+    be turned on or off.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  ERROR_SUCCESS if successful.
+  Error code otherwise.
+</pre>
+<hr />
+
+<h2><a name="robo5"><a name="Logitech2eJoystick2eSDK2fGetLEDs28LPDIRECTINPUTDEVICE82edevice2cBYTE262eredLEDs2cBYTE262egreenLEDs29">
+Logitech.Joystick.SDK/GetLEDs(LPDIRECTINPUTDEVICE8.device,BYTE&amp;.redLEDs,BYTE&amp;.greenLEDs)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  DWORD GetLEDs(LPDIRECTINPUTDEVICE8 device, BYTE&amp; redLEDs, BYTE&amp;
+  greenLEDs) - Gets the current state of the LEDs in the buttons.
+</pre><p><strong>DESCRIPTION</strong></p>
+<pre>  Each button has a red and a green LED. This enables 3 colors in
+  addition to off. The third color in addition to red and green is
+  amber, which is the result of both red and green LEDs being turned
+  on at the same time.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  device - DirectInput handle to the device.
+  redLEDs - Byte corresponding to which of the 8 red LEDs are
+    currently turned on or off.
+  greenLEDs - Byte corresponding to which of the 8 green LEDs are
+    currently turned on or off.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  ERROR_SUCCESS if successful.
+  Error code otherwise.
+</pre>
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<link rel="stylesheet" href="./api.css" type="text/css">
+<title>./api</title>
+<!-- Source: ./.\Source/ -->
+<!-- Generated with ROBODoc Version 4.0.18 (Mar  3 2006) -->
+<!-- ROBODoc (c) 1994-2004 by Frans Slothouber and Jacco van Weert. -->
+</head>
+<body bgcolor="#FFFFFF">
+<a name="./.\Source/">Generated from ./.\Source/</a> with <a href="http://sourceforge.net/projects/robodoc/">ROBODoc</a> v4.0.18 on Tue Jul 14 15:33:37 2009
+<br />
+<h3 align="center">TABLE OF CONTENTS</h3>
+<ul>
+<li><a href="#robo0">Controls.Assignment.SDK/ControlsAssignmentSDK[1.00.002]</a></li>
+<li><a href="#robo1">Controls.Assignment.SDK/ControlsAssignment(ControllerInput*.controllerInput,LONG.axesDInputRangeMin,LONG.axesDInputRangeMax)</a></li>
+<li><a href="#robo2">Controls.Assignment.SDK/AddGameAction(INT.gameActionID)</a></li>
+<li><a href="#robo3">Controls.Assignment.SDK/StartCheckingForInput(INT.gameActionID)</a></li>
+<li><a href="#robo4">Controls.Assignment.SDK/StopCheckingForInput(INT.gameActionID)</a></li>
+<li><a href="#robo5">Controls.Assignment.SDK/IsCheckingForInput(INT.gameActionID)</a></li>
+<li><a href="#robo6">Controls.Assignment.SDK/IsGameActionAssigned(INT.gameActionID)</a></li>
+<li><a href="#robo7">Controls.Assignment.SDK/GetValue(INT.gameActionID)</a></li>
+<li><a href="#robo8">Controls.Assignment.SDK/GetCombinedValue(INT.gameAction1ID,INT.gameAction2ID,BOOL.reverseFlag)</a></li>
+<li><a href="#robo9">Controls.Assignment.SDK/GetControlName(INT.gameActionID)</a></li>
+<li><a href="#robo10">Controls.Assignment.SDK/Update()</a></li>
+<li><a href="#robo11">Controls.Assignment.SDK/Reset(INT.gameActionID)</a></li>
+<li><a href="#robo12">Controls.Assignment.SDK/AssignActionToControl(INT.gameActionID,ControlAssignment&amp;.controlAssignment)</a></li>
+<li><a href="#robo13">Controls.Assignment.SDK/GetAssignedActionInfo(ControlAssignment&amp;.controlAssignment,INT.gameActionID)</a></li>
+</ul>
+<hr />
+
+<h2><a name="robo0"><a name="Controls2eAssignment2eSDK2fControlsAssignmentSDK5b12e002e0025d">
+Controls.Assignment.SDK/ControlsAssignmentSDK[1.00.002]</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>   Controls Assignment SDK
+</pre><p><strong>COPYRIGHT</strong></p>
+<pre>   The Logitech Controls Assignment SDK, including all
+   accompanying documentation, is protected by intellectual property
+   laws. All rights not expressly granted by Logitech are reserved.
+</pre><p><strong>PURPOSE</strong></p>
+<pre>   The Controls Assignment SDK enables developers to easily and
+   quickly create a bulletproof solution for assigning any controls
+   of any game controller to any functionality in their PC game.  The
+   wrapper also enables to directly calculate combined values for
+   pairs of game actions so the developer can directly feed the
+   values into his game.
+   The wrapper is an addition to Microsoft's DirectInput and XInput
+   and supports both.
+
+   See the following files to get started:
+       - readme.txt: tells you how to get started.
+       - Doc/SampleInGameImplementation.cpp: shows line by line how to
+       use the Controls Assignment SDK's interface to implement
+       control assignment in your game.
+       - Samples/ControlsAssignmentSDKDemo: VS2005 sample project that demonstrates
+       control assignment.
+         Just compile, run and plug in up to 4 DirectX or XInput
+         compatible game controllers (steering wheel, joystick,
+         gamepad, etc.).
+</pre><p><strong>NOTES</strong></p>
+<pre>   The Controls Assignment SDK uses the Logitech Controller Input
+   Wrapper (included in the package), which provides a simple
+   interface to:
+       - support both DirectInput and XInput hot plug/unplug
+       - integrate DInput and Xinput support seamlessly
+       - get controller positional information as well as general
+       info such as friendly name, VID, PID, connection status based
+       on various parameters such as controller type,manufacturer,
+       and model name, and whether it supports force feedback/rumble.
+       - get hooks to add force feedback or rumble (DirectInput
+       device interface and XInput ID).
+   For more details see Microsoft's DirectInput and XInput
+   documentation.
+</pre><p><strong>AUTHOR</strong></p>
+<pre>   Christophe Juncker (cj@wingmanteam.com)
+</pre>
+<hr />
+
+<h2><a name="robo1"><a name="Controls2eAssignment2eSDK2fControlsAssignment28ControllerInput2a2econtrollerInput2cLONG2eaxesDInputRangeMin2cLONG2eaxesDInputRangeMax29">
+Controls.Assignment.SDK/ControlsAssignment(ControllerInput*.controllerInput,LONG.axesDInputRangeMin,LONG.axesDInputRangeMax)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  ControlsAssignment(ControllerInput* controllerInput, LONG
+  axesDInputRangeMin, LONG axesDInputRangeMax) -- Does necessary
+  initialization.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  controllerInput: handle to instance of Controller Input SDK.
+
+  axesDInputRangeMin: minimum value to be used by DirectInput for
+  axes. Should be -32768 to be consistent with XInput.
+
+  axesDInputRangeMax: maximum value to be used by DirectInput for
+  axes. Should b 32767 to be consistent with XInput.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo2"><a name="Controls2eAssignment2eSDK2fAddGameAction28INT2egameActionID29">
+Controls.Assignment.SDK/AddGameAction(INT.gameActionID)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT AddGameAction(INT gameActionID) -- Add a game action (such
+  as for example Turn Left, or Shoot).
+</pre><p><strong>INPUTS</strong></p>
+<pre>  gameActionID: identification number of the game action.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  S_OK if the wrapper successfully entered the control checking
+  state.
+  E_FAIL otherwise.
+</pre><p><strong>NOTES</strong></p>
+<pre>  Every game action needs to be added during initialization.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo3"><a name="Controls2eAssignment2eSDK2fStartCheckingForInput28INT2egameActionID29">
+Controls.Assignment.SDK/StartCheckingForInput(INT.gameActionID)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT StartCheckingForInput(INT gameActionID) -- This needs to be
+  called to indicate that the game action is now in the state where
+  it is checking for a control to be moved.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  gameActionID: identification number of the game action.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  S_OK if the wrapper successfully entered the control checking
+  state.
+  E_FAIL otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo4"><a name="Controls2eAssignment2eSDK2fStopCheckingForInput28INT2egameActionID29">
+Controls.Assignment.SDK/StopCheckingForInput(INT.gameActionID)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT StopCheckingForInput(INT gameActionID) -- Stop checking for
+  input. If it is necessary to stop checking for input without having
+  assigned a control, call this function.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  gameActionID: identification number of the game action.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  S_OK if the wrapper successfully entered the control checking
+  state.
+  E_FAIL otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo5"><a name="Controls2eAssignment2eSDK2fIsCheckingForInput28INT2egameActionID29">
+Controls.Assignment.SDK/IsCheckingForInput(INT.gameActionID)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsCheckingForInput(INT gameActionID) -- Indicates whether the
+  wrapper is currently in the state where it is checking for a
+  control to be moved.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  gameActionID: identification number of the game action.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if the wrapper is currently checking for controller movement.
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo6"><a name="Controls2eAssignment2eSDK2fIsGameActionAssigned28INT2egameActionID29">
+Controls.Assignment.SDK/IsGameActionAssigned(INT.gameActionID)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsGameActionAssigned(INT gameActionID) -- Indicates whether
+  the game action has a control assigned to it.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  gameActionID: identification number of the game action.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if the corresponding game action has a control assigned.
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo7"><a name="Controls2eAssignment2eSDK2fGetValue28INT2egameActionID29">
+Controls.Assignment.SDK/GetValue(INT.gameActionID)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  FLOAT GetValue(INT gameActionID) -- Returns current value of the
+  game action (0.0 or 1.0 for buttons and POVs, 0.0 to 1.0 or -1.0 to
+  0.0 for axes).
+</pre><p><strong>INPUTS</strong></p>
+<pre>  gameActionID: identification number of the game action.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  Current value of the game action if a control is assigned to it.
+  0.0 otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo8"><a name="Controls2eAssignment2eSDK2fGetCombinedValue28INT2egameAction1ID2cINT2egameAction2ID2cBOOL2ereverseFlag29">
+Controls.Assignment.SDK/GetCombinedValue(INT.gameAction1ID,INT.gameAction2ID,BOOL.reverseFlag)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  FLOAT GetCombinedValue(INT gameAction1ID, INT gameAction2ID, BOOL
+  reverseFlag) -- Returns a value that is the combination of 2 game
+  actions. For example if giving it Turn Left and Turn Right, the
+  return value will be the combination of those two actions. If the
+  reverseFlag is set, the return value will be inverted.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  gameAction1ID: identification number of the first game action.
+
+  gameAction2ID: identification number of the second game action.
+
+  reverseFlag: indicates whether output should be inverted.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  Combined value of 2 game actions.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo9"><a name="Controls2eAssignment2eSDK2fGetControlName28INT2egameActionID29">
+Controls.Assignment.SDK/GetControlName(INT.gameActionID)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  LPCTSTR GetControlName(INT gameActionID) -- Get name of the control
+  assigned to the current game action.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  gameActionID: identification number of the game action.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  Name of the control assigned to the current game action.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo10"><a name="Controls2eAssignment2eSDK2fUpdate2829">
+Controls.Assignment.SDK/Update()</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT <strong>Update()</strong> -- Updates all axes, buttons and POVs inside the
+  wrapper.  Calculates their normalized values depending on the
+  minimum and maximum output of DirectInput or default values for
+  XInput. If an action is currently in the special state where it
+  checks for controller movement, this function assigns a control to
+  the game action and leaves the special state. Use
+  IsGameActionAssigned() to check if the wrapper still is in the
+  special state or not. If another game action had the same control
+  assigned, it gets reset.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  S_OK if the wrapper successfully entered the control checking
+  state.
+  E_FAIL otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo6">IsGameActionAssigned(INT.gameActionID)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo11"><a name="Controls2eAssignment2eSDK2fReset28INT2egameActionID29">
+Controls.Assignment.SDK/Reset(INT.gameActionID)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT Reset(INT gameActionID) -- Resets a game action.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  gameActionID: identification number of the game action.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  S_OK if the wrapper successfully entered the control checking
+  state.
+  E_FAIL otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo12"><a name="Controls2eAssignment2eSDK2fAssignActionToControl28INT2egameActionID2cControlAssignment262econtrolAssignment29">
+Controls.Assignment.SDK/AssignActionToControl(INT.gameActionID,ControlAssignment&amp;.controlAssignment)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT AssignActionToControl(INT gameActionID, ControlAssignment&amp;
+  controlAssignment) -- Do initial assignment between game actions
+  and controls.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  gameActionID: identification number of the game action.
+
+  controlAssignment: assigned control info such as controller number,
+  type, control type, axis, button and POV.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  S_OK if the wrapper successfully entered the control checking
+  state.
+  E_FAIL otherwise.
+</pre><p><strong>NOTES</strong></p>
+<pre>  A game will typically read a config file to find out which control
+  is assigned to which game action, and then call this function.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo13"><a name="Controls2eAssignment2eSDK2fGetAssignedActionInfo28ControlAssignment262econtrolAssignment2cINT2egameActionID29">
+Controls.Assignment.SDK/GetAssignedActionInfo(ControlAssignment&amp;.controlAssignment,INT.gameActionID)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT GetAssignedActionInfo(ControlAssignment&amp; controlAssignment,
+  INT gameActionID) -- Get game action and corresponding control
+  info.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  gameActionID: identification number of the game action.
+
+  controlAssignment: assigned control info such as controller number,
+  type, control type, axis, button and POV.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  S_OK if the wrapper successfully entered the control checking
+  state.
+  E_FAIL otherwise.
+</pre><p><strong>NOTES</strong></p>
+<pre>  A game can use the resulting info to write to a config file in
+  order to save user controller settings.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+</body>
+</html>

@@ -1,0 +1,989 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<link rel="stylesheet" href="./api.css" type="text/css">
+<title>./api</title>
+<!-- Source: ./.\Source/ -->
+<!-- Generated with ROBODoc Version 4.0.18 (Mar  3 2006) -->
+<!-- ROBODoc (c) 1994-2004 by Frans Slothouber and Jacco van Weert. -->
+</head>
+<body bgcolor="#FFFFFF">
+<a name="./.\Source/">Generated from ./.\Source/</a> with <a href="http://sourceforge.net/projects/robodoc/">ROBODoc</a> v4.0.18 on Tue Jul 14 15:31:31 2009
+<br />
+<h3 align="center">TABLE OF CONTENTS</h3>
+<ul>
+<li><a href="#robo0">Steering.Wheel.SDK/SteeringWheelSDK[1.00.002]</a></li>
+<li><a href="#robo1">Steering.Wheel.SDK/Wheel(ControllerInput*.controllerInput)</a></li>
+<li><a href="#robo2">Steering.Wheel.SDK/Update()</a></li>
+<li><a href="#robo3">Steering.Wheel.SDK/IsConnected(INT.index)</a></li>
+<li><a href="#robo4">Steering.Wheel.SDK/IsConnected(INT.index,DeviceType.deviceType)</a></li>
+<li><a href="#robo5">Steering.Wheel.SDK/IsConnected(INT.index,ManufacturerName.manufacturerName)</a></li>
+<li><a href="#robo6">Steering.Wheel.SDK/IsConnected(INT.index,ModelName.modelName)</a></li>
+<li><a href="#robo7">Steering.Wheel.SDK/GetState(INT.index)</a></li>
+<li><a href="#robo8">Steering.Wheel.SDK/GetFriendlyProductName(INT.index)</a></li>
+<li><a href="#robo9">Steering.Wheel.SDK/ButtonTriggered(INT.index,INT.buttonNbr)</a></li>
+<li><a href="#robo10">Steering.Wheel.SDK/ButtonReleased(INT.index,INT.buttonNbr)</a></li>
+<li><a href="#robo11">Steering.Wheel.SDK/ButtonIsPressed(INT.index,INT.buttonNbr)</a></li>
+<li><a href="#robo12">Steering.Wheel.SDK/SetPreferredControllerProperties(ControllerPropertiesData.properties)</a></li>
+<li><a href="#robo13">Steering.Wheel.SDK/GetCurrentControllerProperties(INT.index,ControllerPropertiesData&amp;.properties)</a></li>
+<li><a href="#robo14">Steering.Wheel.SDK/GetShifterMode(INT.index)</a></li>
+<li><a href="#robo15">Steering.Wheel.SDK/PlayLeds(INT.index,FLOAT.currentRPM,FLOAT.rpmFirstLedTurnsOn,FLOAT.rpmRedLine)</a></li>
+<li><a href="#robo16">Steering.Wheel.SDK/HasForceFeedback(INT.index)</a></li>
+<li><a href="#robo17">Steering.Wheel.SDK/IsPlaying(INT.index,ForceType.forceType)</a></li>
+<li><a href="#robo18">Steering.Wheel.SDK/GenerateNonLinearValues(INT.index,INT.nonLinCoeff)</a></li>
+<li><a href="#robo19">Steering.Wheel.SDK/GetNonLinearValue(INT.index,INT.inputValue)</a></li>
+<li><a href="#robo20">Steering.Wheel.SDK/PlaySpringForce(INT.index,INT.offsetPercentage,INT.saturationPercentage,INT.coefficientPercentage)</a></li>
+<li><a href="#robo21">Steering.Wheel.SDK/StopSpringForce(INT.index)</a></li>
+<li><a href="#robo22">Steering.Wheel.SDK/PlayConstantForce(INT.index,INT.magnitudePercentage)</a></li>
+<li><a href="#robo23">Steering.Wheel.SDK/StopConstantForce(INT.index)</a></li>
+<li><a href="#robo24">Steering.Wheel.SDK/PlayDamperForce(INT.index,INT.coefficientPercentage)</a></li>
+<li><a href="#robo25">Steering.Wheel.SDK/StopDamperForce(INT.index)</a></li>
+<li><a href="#robo26">Steering.Wheel.SDK/PlaySideCollisionForce(INT.index,INT.magnitudePercentage)</a></li>
+<li><a href="#robo27">Steering.Wheel.SDK/PlayFrontalCollisionForce(INT.index,INT.magnitudePercentage)</a></li>
+<li><a href="#robo28">Steering.Wheel.SDK/PlayDirtRoadEffect(INT.index,INT.magnitudePercentage)</a></li>
+<li><a href="#robo29">Steering.Wheel.SDK/StopDirtRoadEffect(INT.index)</a></li>
+<li><a href="#robo30">Steering.Wheel.SDK/PlayBumpyRoadEffect(INT.index,INT.magnitudePercentage)</a></li>
+<li><a href="#robo31">Steering.Wheel.SDK/StopBumpyRoadEffect(INT.index)</a></li>
+<li><a href="#robo32">Steering.Wheel.SDK/PlaySlipperyRoadEffect(INT.index,INT.magnitudePercentage)</a></li>
+<li><a href="#robo33">Steering.Wheel.SDK/StopSlipperyRoadEffect(INT.index)</a></li>
+<li><a href="#robo34">Steering.Wheel.SDK/PlaySurfaceEffect(INT.index,PeriodicType.type,INT.magnitudePercentage,INT.period)</a></li>
+<li><a href="#robo35">Steering.Wheel.SDK/StopSurfaceEffect(INT.index)</a></li>
+<li><a href="#robo36">Steering.Wheel.SDK/PlayCarAirborne(INT.index)</a></li>
+<li><a href="#robo37">Steering.Wheel.SDK/StopCarAirborne(INT.index)</a></li>
+<li><a href="#robo38">Steering.Wheel.SDK/PlaySoftstopForce(INT.index,INT.usableRangePercentage)</a></li>
+<li><a href="#robo39">Steering.Wheel.SDK/StopSoftstopForce(INT.index)</a></li>
+</ul>
+<hr />
+
+<h2><a name="robo0"><a name="Steering2eWheel2eSDK2fSteeringWheelSDK5b12e002e0025d">
+Steering.Wheel.SDK/SteeringWheelSDK[1.00.002]</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>   Steering Wheel SDK
+</pre><p><strong>COPYRIGHT</strong></p>
+<pre>   The Logitech Steering Wheel SDK, including all accompanying
+   documentation, is protected by intellectual property laws. All
+   rights not expressly granted by Logitech are reserved.
+</pre><p><strong>PURPOSE</strong></p>
+<pre>   The Steering Wheel SDK is an addition to Microsoft's DirectInput
+   in DirectX. It is aimed at driving games and enables to
+   dramatically shorten development time and improve implementation
+   quality for various types of game controllers (USB/gameport
+   wheels/joysticks/game pads, FF enabled or not). The Steering Wheel
+   SDK has been developed and tested for wheels and joysticks using
+   the Logitech, Microsoft and Immersion drivers. It also works with
+   Logitech rumble pads (it has not been tested with non-Logitech
+   rumble pads). By using the Steering Wheel SDK you have the
+   guarantee that all wheels and joysticks will function
+   flawlessly. No more situations where force feedback in a game
+   behaves very differently from one wheel/joystick to another, which
+   in turn results in user frustration and product returns. The
+   Steering Wheel SDK comes with a very intuitive and easy to use
+   interface which enables to read the wheel/joystick's axes and
+   buttons, and also to create all the force feedback effects that
+   are necessary for a good and complete implementation. See the
+   following files to get started:
+       - readme.txt: tells you how to get started.
+       - SampleInGameImplementation.cpp: shows line by line how to
+         use the Steering Wheel SDK's interface to do a complete
+         implementation for PC game controllers in your driving
+         game. The idea is to develop support for the steering
+         wheel. But if a user plugs in a joystick or game pad he can
+         play as well and get force feedback or rumble. If a joystick
+         is plugged in, all forces generated by the Steering Wheel
+         SDK will be played on the X axis and there will be a
+         constant spring on the Y axis.
+       - SteeringWheelSDK.cpp: demonstrates force feedback
+         effects. Just compile, run and plug in a FF wheel, joystick
+         or rumble pad. See usage at top of SteeringWheelSDK.cpp.
+   For more details see DirectInput documentation which is part of
+   Microsoft's DirectX.
+</pre><p><strong>AUTHOR</strong></p>
+<pre>   Christophe Juncker (cj@wingmanteam.com)
+</pre>
+<hr />
+
+<h2><a name="robo1"><a name="Steering2eWheel2eSDK2fWheel28ControllerInput2a2econtrollerInput29">
+Steering.Wheel.SDK/Wheel(ControllerInput*.controllerInput)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  Wheel(ControllerInput* controllerInput) -- Does necessary
+  initialization.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  controllerInput - handle to instance of Controller Input SDK.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see an
+  example.
+</pre>
+<hr />
+
+<h2><a name="robo2"><a name="Steering2eWheel2eSDK2fUpdate2829">
+Steering.Wheel.SDK/Update()</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  VOID Wheel::<strong>Update()</strong> -- keeps forces and controller connections up
+  to date.
+</pre><p><strong>NOTES</strong></p>
+<pre>  Must be called every frame.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo3"><a name="Steering2eWheel2eSDK2fIsConnected28INT2eindex29">
+Steering.Wheel.SDK/IsConnected(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsConnected(INT index) -- Check if a game controller is
+  connected at the specified index.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller that we want to check.  Index
+  0 corresponds to the first game controller connected. Index 1 to
+  the second game controller.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if a PC wheel/joystick/game pad is connected, FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo4">IsConnected(INT.index,DeviceType.deviceType)</a>
+  <a href="#robo5">IsConnected(INT.index,ManufacturerName.manufacturerName)</a>
+  <a href="#robo6">IsConnected(INT.index,ModelName.modelName)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo4"><a name="Steering2eWheel2eSDK2fIsConnected28INT2eindex2cDeviceType2edeviceType29">
+Steering.Wheel.SDK/IsConnected(INT.index,DeviceType.deviceType)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsConnected(INT index, DeviceType deviceType) -- Check if a
+  game controller is connected at the specified index.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller that we want to check.  Index
+  0 corresponds to the first game controller connected. Index 1 to
+  the second game controller.
+
+  deviceType - type of the device to check for.  Possible types are:
+    - LG_DEVICE_TYPE_WHEEL
+    - LG_DEVICE_TYPE_JOYSTICK
+    - LG_DEVICE_TYPE_GAMEPAD
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if a PC controller of specified type is connected, FALSE
+  otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo3">IsConnected(INT.index)</a>
+  <a href="#robo5">IsConnected(INT.index,ManufacturerName.manufacturerName)</a>
+  <a href="#robo6">IsConnected(INT.index,ModelName.modelName)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo5"><a name="Steering2eWheel2eSDK2fIsConnected28INT2eindex2cManufacturerName2emanufacturerName29">
+Steering.Wheel.SDK/IsConnected(INT.index,ManufacturerName.manufacturerName)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsConnected(INT index, ManufacturerName manufacturerName) --
+  Check if a game controller is connected at the specified index.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller that we want to check.  Index
+  0 corresponds to the first game controller connected. Index 1 to
+  the second game controller.
+
+  manufacturerName - name of the manufacturer the device has been
+  made by.  Possible names are:
+    - LG_MANUFACTURER_LOGITECH
+    - LG_MANUFACTURER_MICROSOFT
+    - LG_MANUFACTURER_OTHER
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if a PC controller of specified manufacturer is connected,
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo3">IsConnected(INT.index)</a>
+  <a href="#robo4">IsConnected(INT.index,DeviceType.deviceType)</a>
+  <a href="#robo6">IsConnected(INT.index,ModelName.modelName)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo6"><a name="Steering2eWheel2eSDK2fIsConnected28INT2eindex2cModelName2emodelName29">
+Steering.Wheel.SDK/IsConnected(INT.index,ModelName.modelName)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsConnected(INT index, ModelName modelName) -- Check if a game
+  controller is connected at the specified index.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller that we want to check.  Index
+  0 corresponds to the first game controller connected. Index 1 to
+  the second game controller.
+
+  modelName - name of the model of the device.  Possible models are:
+    - LG_MODEL_G27
+    - LG_MODEL_G25
+    - LG_MODEL_MOMO_RACING
+    - LG_MODEL_MOMO_FORCE
+    - LG_MODEL_DRIVING_FORCE_PRO
+    - LG_MODEL_DRIVING_FORCE
+    - LG_MODEL_NASCAR_RACING_WHEEL
+    - LG_MODEL_FORMULA_FORCE
+    - LG_MODEL_FORMULA_FORCE_GP
+    - LG_MODEL_FORCE_3D_PRO
+    - LG_MODEL_EXTREME_3D_PRO
+    - LG_MODEL_FREEDOM_24
+    - LG_MODEL_ATTACK_3
+    - LG_MODEL_FORCE_3D
+    - LG_MODEL_STRIKE_FORCE_3D
+    - LG_MODEL_RUMBLEPAD
+    - LG_MODEL_RUMBLEPAD_2
+    - LG_MODEL_CORDLESS_RUMBLEPAD_2
+    - LG_MODEL_CORDLESS_GAMEPAD
+    - LG_MODEL_DUAL_ACTION_GAMEPAD
+    - LG_MODEL_PRECISION_GAMEPAD_2
+    - LG_MODEL_CHILLSTREAM
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if specific PC controller is connected, FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo3">IsConnected(INT.index)</a>
+  <a href="#robo4">IsConnected(INT.index,DeviceType.deviceType)</a>
+  <a href="#robo5">IsConnected(INT.index,ManufacturerName.manufacturerName)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo7"><a name="Steering2eWheel2eSDK2fGetState28INT2eindex29">
+Steering.Wheel.SDK/GetState(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  DIJOYSTATE2* GetState(INT index) -- Get the state of the
+  controller.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first game controller connected. Index 1 to the second game
+  controller.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  DIJOYSTATE2 structure containing the device's positional
+  information for axes, POVs and buttons.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo8"><a name="Steering2eWheel2eSDK2fGetFriendlyProductName28INT2eindex29">
+Steering.Wheel.SDK/GetFriendlyProductName(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  LPCTSTR GetFriendlyProductName(INT index) -- Get the device's
+  friendly product name.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first game controller connected. Index 1 to the second game
+  controller.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  Device friendly product name.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo9"><a name="Steering2eWheel2eSDK2fButtonTriggered28INT2eindex2cINT2ebuttonNbr29">
+Steering.Wheel.SDK/ButtonTriggered(INT.index,INT.buttonNbr)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL ButtonTriggered(INT index, INT buttonNbr) -- Check if a
+  certain button was triggered.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller that we want to check.  Index
+  0 corresponds to the first game controller connected. Index 1 to
+  the second game controller.
+
+  buttonNbr - the number of the button that we want to
+  check. Possible numbers are: 0 to 127.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if the button was triggered, FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo11">ButtonIsPressed(INT.index,INT.buttonNbr)</a>
+  <a href="#robo10">ButtonReleased(INT.index,INT.buttonNbr)</a>
+</pre>
+<hr />
+
+<h2><a name="robo10"><a name="Steering2eWheel2eSDK2fButtonReleased28INT2eindex2cINT2ebuttonNbr29">
+Steering.Wheel.SDK/ButtonReleased(INT.index,INT.buttonNbr)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL ButtonReleased(INT index, INT buttonNbr) -- Check if a certain
+  button was released.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller that we want to check.  Index
+  0 corresponds to the first game controller connected. Index 1 to
+  the second game controller.
+
+  buttonNbr - the number of the button that we want to
+  check. Possible numbers are: 0 to 127.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if the button was released, FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo11">ButtonIsPressed(INT.index,INT.buttonNbr)</a>
+  <a href="#robo9">ButtonTriggered(INT.index,INT.buttonNbr)</a>
+</pre>
+<hr />
+
+<h2><a name="robo11"><a name="Steering2eWheel2eSDK2fButtonIsPressed28INT2eindex2cINT2ebuttonNbr29">
+Steering.Wheel.SDK/ButtonIsPressed(INT.index,INT.buttonNbr)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL ButtonIsPressed(INT index, INT buttonNbr) -- Check if a
+  certain button is being pressed.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller that we want to check.  Index
+  0 corresponds to the first game controller connected. Index 1 to
+  the second game controller.
+
+  buttonNbr - the number of the button that we want to
+  check. Possible numbers are: 0 to 127.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if the button is being pressed, FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo10">ButtonReleased(INT.index,INT.buttonNbr)</a>
+  <a href="#robo9">ButtonTriggered(INT.index,INT.buttonNbr)</a>
+</pre>
+<hr />
+
+<h2><a name="robo12"><a name="Steering2eWheel2eSDK2fSetPreferredControllerProperties28ControllerPropertiesData2eproperties29">
+Steering.Wheel.SDK/SetPreferredControllerProperties(ControllerPropertiesData.properties)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT SetPreferredControllerProperties(ControllerPropertiesData
+  properties) -- set preferred wheel properties.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  properties - structure containing all the fields to be set.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  E_INVALIDARG if argument is wrong (individual settings out of
+  bounds).
+  E_FAIL if Logitech Gaming Software is older than 5.03.
+  S_OK otherwise.
+</pre><p><strong>NOTES</strong></p>
+<pre>  This function merely sets the game's preference. The Steering Wheel
+  SDK will attempt to set the wheel's settings when necessary.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo13">GetCurrentControllerProperties(INT.index,ControllerPropertiesData&amp;.properties)</a>
+  <a href="#robo14">GetShifterMode(INT.index)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo13"><a name="Steering2eWheel2eSDK2fGetCurrentControllerProperties28INT2eindex2cControllerPropertiesData262eproperties29">
+Steering.Wheel.SDK/GetCurrentControllerProperties(INT.index,ControllerPropertiesData&amp;.properties)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL GetCurrentControllerProperties(INT index,
+  ControllerPropertiesData&amp; properties) -- get current properties.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.
+  properties - structure to receive current properties.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if current value was received from Logitech driver.
+  FALSE if function failed or current value is default value.
+</pre><p><strong>NOTES</strong></p>
+<pre>  Function will fail and return default properties if user has older
+  than 5.03 Logitech Gaming Software installed.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo12">SetPreferredControllerProperties(ControllerPropertiesData.properties)</a>
+  <a href="#robo14">GetShifterMode(INT.index)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo14"><a name="Steering2eWheel2eSDK2fGetShifterMode28INT2eindex29">
+Steering.Wheel.SDK/GetShifterMode(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  INT GetShifterMode(INT index) -- get current shifter mode (gated or
+  sequential).
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  1 if shifter is gated
+  0 if shifter is sequential
+  -1 if unknown
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo12">SetPreferredControllerProperties(ControllerPropertiesData.properties)</a>
+  <a href="#robo13">GetCurrentControllerProperties(INT.index,ControllerPropertiesData&amp;.properties)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see an
+  example.
+</pre>
+<hr />
+
+<h2><a name="robo15"><a name="Steering2eWheel2eSDK2fPlayLeds28INT2eindex2cFLOAT2ecurrentRPM2cFLOAT2erpmFirstLedTurnsOn2cFLOAT2erpmRedLine29">
+Steering.Wheel.SDK/PlayLeds(INT.index,FLOAT.currentRPM,FLOAT.rpmFirstLedTurnsOn,FLOAT.rpmRedLine)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlayLeds(INT index, FLOAT currentRPM, FLOAT
+  rpmFirstLedTurnsOn, FLOAT rpmRedLine) -- play LEDs on G27.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.
+  currentRPM - current RPM.
+  rpmFirstLedTurnsOn - RPM when first LEDs are to turn on.
+  rpmRedLine - just below this RPM, all LEDs will be on. Just above,
+  all LEDs will start flashing.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo16"><a name="Steering2eWheel2eSDK2fHasForceFeedback28INT2eindex29">
+Steering.Wheel.SDK/HasForceFeedback(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL HasForceFeedback(INT index) -- Check if a game controller has
+  force feedback.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller that we want to check.  Index
+  0 corresponds to the first game controller connected. Index 1 to
+  the second game controller.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if the specified device can do force feedback, FALSE
+  otherwise.
+</pre>
+<hr />
+
+<h2><a name="robo17"><a name="Steering2eWheel2eSDK2fIsPlaying28INT2eindex2cForceType2eforceType29">
+Steering.Wheel.SDK/IsPlaying(INT.index,ForceType.forceType)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsPlaying(INT index, ForceType forceType) -- check if a
+  certain force effect is currently playing.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller that we want to check.  Index
+  0 corresponds to the first game controller connected. Index 1 to
+  the second game controller.
+
+  forceType - the type of the force that we want to check to see if
+  it is playing.  Possible types are:
+    - LG_FORCE_SPRING
+    - LG_FORCE_CONSTANT
+    - LG_FORCE_DAMPER
+    - LG_FORCE_SIDE_COLLISION
+    - LG_FORCE_FRONTAL_COLLISION
+    - LG_FORCE_DIRT_ROAD
+    - LG_FORCE_BUMPY_ROAD
+    - LG_FORCE_SLIPPERY_ROAD
+    - LG_FORCE_SURFACE_EFFECT
+    - LG_FORCE_CAR_AIRBORNE
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if the force is playing, FALSE otherwise.
+</pre>
+<hr />
+
+<h2><a name="robo18"><a name="Steering2eWheel2eSDK2fGenerateNonLinearValues28INT2eindex2cINT2enonLinCoeff29">
+Steering.Wheel.SDK/GenerateNonLinearValues(INT.index,INT.nonLinCoeff)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT GenerateNonLinearValues(int index, int nonLinCoeff) --
+  Generate non-linear values for the game controller's axis.
+</pre><p><strong>FUNCTION</strong></p>
+<pre>  Gaming wheels/joysticks/game pads have very different behavior from
+  real steering wheels. The reason for single-turn wheels is that
+  they only do up to three quarters of a turn lock to lock, compared
+  to about 3 turns for a real car.
+  This directly affects the steering ratio (15:1 to 20:1 for a real
+  car, but only 4:1 for a gaming wheel!). Joysticks and game pads
+  have a much shorter range of movement than a real steering wheel as
+  well.
+  Because of this very short steering ratio or short range, the
+  gaming wheel/joystick/game pad will feel highly sensitive which may
+  make game play very difficult.
+  Especially it may be difficult to drive in a straight line at speed
+  (tendency to swerve back and forth).
+  One way to get around this problem is to use a sensitivity
+  curve. This is a curve that defines the sensitivity of the game
+  controller depending on speed. This type of curve is usually used
+  for game pads to make up for their low physical range. The result
+  of applying such a curve is that at high speed the car's wheels
+  will physically turn less than if the car is moving very slowly.
+  For example the car's wheels may turn 60 degrees lock to lock at
+  low speed but only 10 degrees lock to lock at higher speeds.  If
+  you calculate the resulting steering ratio for 10 degrees lock to
+  lock you find that if you use a steering wheel that turns 180
+  degrees lock to lock the ratio is equal to 180/10 = 18, which
+  corresponds to a real car's steering ratio.
+  If the sensitivity curve has been implemented for the
+  wheel/joystick, adding a non-linear curve probably is not
+  necessary. But you may find that even after applying a sensitivity
+  curve, the car still feels a little twitchy on a straight line when
+  driving fast. This may be because in your game you need more than
+  10 degrees lock to lock even at high speeds. Or maybe the car is
+  moving at very high speeds where even a normal steering ratio is
+  not good enough to eliminate high sensitivity.
+  The best way at this point is to add a non-linear curve on top of
+  the sensitivity curve.
+  The effect of the non-linear curve with positive nonLinCoeff is
+  that around center position the wheel/joystick will be less
+  sensitive.  Yet at locked position left or right the car's wheels
+  will turn the same amount of degrees as without the non-linear
+  response curve.  Therefore the car will become more controllable on
+  a straight line and game-play will be improved.
+  There can sometimes be cases where the wheel does not feel
+  sensitive enough. In that case it is possible to add a non-linear
+  curve with the inverse effect (makes the steering more sensitive
+  around center position) by using negative values for
+  nonLinCoeff. This method lets you define a non-linearity
+  coefficient which will determine how strongly non-linear the curve
+  will be. When running the method it will generate a mapping table
+  in the form of an array. For each of the 1024 entries in this array
+  there will be a corresponding non-linear value which can be used as
+  the wheel/joystick's axis position instead of the original
+  value. See Sample_In-game_Implementation.cs for an example.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index to which the concerned game controller is connected.
+  Index 0 corresponds to the first game controller connected. Index 1
+  to the second game controller.
+
+  nonLinCoeff - value representing how much non-linearity should be
+  applied. Range is -100 to 100. 0 = linear curve, 100 = maximum
+  non-linear curve with less sensitivity around center, -100 =
+  maximum non-linearity with more sensitivity around center position.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  S_OK if successful, E_FAIL otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo19">GetNonLinearValue(INT.index,INT.inputValue)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo19"><a name="Steering2eWheel2eSDK2fGetNonLinearValue28INT2eindex2cINT2einputValue29">
+Steering.Wheel.SDK/GetNonLinearValue(INT.index,INT.inputValue)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  INT GetNonLinearValue(INT index, INT inputValue) -- Get a
+  non-linear value from a table previously generated. This can be
+  used for the response of a steering wheel.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first game controller connected. Index 1 to the second game
+  controller.
+
+  inputValue - value between -32768 and 32767 corresponding to
+  original value of an axis.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  Value between -32768 and 32767 corresponding to the level of
+  non-linearity previously set with GenerateNonLinearValues(...).
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo18">GenerateNonLinearValues(INT.index,INT.nonLinCoeff)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see an
+  example.
+</pre>
+<hr />
+
+<h2><a name="robo20"><a name="Steering2eWheel2eSDK2fPlaySpringForce28INT2eindex2cINT2eoffsetPercentage2cINT2esaturationPercentage2cINT2ecoefficientPercentage29">
+Steering.Wheel.SDK/PlaySpringForce(INT.index,INT.offsetPercentage,INT.saturationPercentage,INT.coefficientPercentage)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlaySpringForce(INT index, INT offsetPercentage, INT
+  saturationPercentage, INT coefficientPercentage) -- Play the spring
+  force.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+
+  offsetPercentage - Specifies the center of the spring force effect.
+  Valid range is -100 to 100. Specifying 0 centers the spring. Any
+  values outside this range are silently clamped.
+
+  saturationPercentage - Specify the level of saturation of the
+  spring force effect. The saturation stays constant after a certain
+  deflection from the center of the spring. It is comparable to a
+  magnitude.  Valid ranges are 0 to 100. Any value higher than 100 is
+  silently clamped.
+
+  coefficientPercentage - Specify the slope of the effect strength
+  increase relative to the amount of deflection from the center of
+  the condition.  Higher values mean that the saturation level is
+  reached sooner.  Valid ranges are -100 to 100. Any value outside
+  the valid range is silently clamped.
+</pre><p><strong>NOTES</strong></p>
+<pre>  The dynamic spring force gets played on the X axis. If a joystick
+  is connected, all forces generated by the Steering Wheel SDK will be
+  played on the X axis. And in addition there will be a constant
+  spring on the Y axis.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo21">StopSpringForce(INT.index)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo21"><a name="Steering2eWheel2eSDK2fStopSpringForce28INT2eindex29">
+Steering.Wheel.SDK/StopSpringForce(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT StopSpringForce(INT index) -- Stop the spring force.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo20">PlaySpringForce(INT.index,INT.offsetPercentage,INT.saturationPercentage,INT.coefficientPercentage)</a>
+</pre>
+<hr />
+
+<h2><a name="robo22"><a name="Steering2eWheel2eSDK2fPlayConstantForce28INT2eindex2cINT2emagnitudePercentage29">
+Steering.Wheel.SDK/PlayConstantForce(INT.index,INT.magnitudePercentage)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlayConstantForce(INT index, INT magnitudePercentage) --
+  Play the constant force.
+</pre><p><strong>FUNCTION</strong></p>
+<pre>  A constant force works best when continuously updated with a value
+  tied to the physics engine.
+  Tie the steering wheel/joystick to the car's physics engine via a
+  vector force. This will create a centering spring effect, a sliding
+  effect, a feeling for the car's inertia, and depending on the
+  physics engine it should also give side collisions (wheel/joystick
+  jerks in the opposite way of the wall the car just touched).
+  The vector force could for example be calculated from the lateral
+  force measured at the front tires. This vector force should be 0
+  when at a stop or driving straight. When driving through a turn or
+  when driving on a banked surface the vector force should have a
+  magnitude that grows in a proportional way.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+
+  magnitudePercentage - Specifies the magnitude of the constant force
+  effect. A negative value reverses the direction of the force.
+  Valid ranges for magnitudePercentage are -100 to 100. Any values
+  outside the valid range are silently clamped.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo23">StopConstantForce(INT.index)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo23"><a name="Steering2eWheel2eSDK2fStopConstantForce28INT2eindex29">
+Steering.Wheel.SDK/StopConstantForce(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT StopConstantForce(INT index) -- stop the constant force.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo22">PlayConstantForce(INT.index,INT.magnitudePercentage)</a>
+</pre>
+<hr />
+
+<h2><a name="robo24"><a name="Steering2eWheel2eSDK2fPlayDamperForce28INT2eindex2cINT2ecoefficientPercentage29">
+Steering.Wheel.SDK/PlayDamperForce(INT.index,INT.coefficientPercentage)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlayDamperForce(INT index, INT coefficientPercentage) --
+  Play the damper force.
+</pre><p><strong>FUNCTION</strong></p>
+<pre>  Simulate surfaces that are hard to turn on (mud, car at a stop) or
+  slippery surfaces (snow, ice).
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+
+  coefficientPercentage - specify the slope of the effect strength
+  increase relative to the amount of deflection from the center of
+  the condition.  Higher values mean that the saturation level is
+  reached sooner.  Valid ranges are -100 to 100. Any value outside
+  the valid range is silently clamped. -100 simulates a very slippery
+  effect, +100 makes the wheel/joystick very hard to move, simulating
+  the car at a stop or in mud.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo25">StopDamperForce(INT.index)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo25"><a name="Steering2eWheel2eSDK2fStopDamperForce28INT2eindex29">
+Steering.Wheel.SDK/StopDamperForce(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT StopDamperForce(INT index) -- stop the damper force.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo24">PlayDamperForce(INT.index,INT.coefficientPercentage)</a>
+</pre>
+<hr />
+
+<h2><a name="robo26"><a name="Steering2eWheel2eSDK2fPlaySideCollisionForce28INT2eindex2cINT2emagnitudePercentage29">
+Steering.Wheel.SDK/PlaySideCollisionForce(INT.index,INT.magnitudePercentage)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlaySideCollisionForce(INT index, INT magnitudePercentage)
+  -- play a side collision force.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+
+  magnitudePercentage - Specifies the magnitude of the side collision
+  force effect. A negative value reverses the direction of the force.
+  Valid ranges for magnitudePercentage are -100 to 100. Any values
+  outside the valid range are silently clamped.
+</pre><p><strong>NOTES</strong></p>
+<pre>  If you are already using a constant force tied to a vector force
+  from the physics engine, then you may not need to add side
+  collisions since depending on your physics engine the side
+  collisions may automatically be taken care of by the constant
+  force.
+</pre>
+<hr />
+
+<h2><a name="robo27"><a name="Steering2eWheel2eSDK2fPlayFrontalCollisionForce28INT2eindex2cINT2emagnitudePercentage29">
+Steering.Wheel.SDK/PlayFrontalCollisionForce(INT.index,INT.magnitudePercentage)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlayFrontalCollisionForce(INT index, INT
+  magnitudePercentage) -- Play a frontal collision force.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+
+  magnitudePercentage - specifies the magnitude of the frontal
+  collision force effect.  Valid ranges for magnitudePercentage are 0
+  to 100. Values higher than 100 are silently clamped.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo28"><a name="Steering2eWheel2eSDK2fPlayDirtRoadEffect28INT2eindex2cINT2emagnitudePercentage29">
+Steering.Wheel.SDK/PlayDirtRoadEffect(INT.index,INT.magnitudePercentage)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlayDirtRoadEffect(INT index, INT magnitudePercentage) --
+  Play a surface effect that feels like driving on a dirt road.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+
+  magnitudePercentage - Specifies the magnitude of the dirt road
+  effect.  Valid ranges for magnitudePercentage are 0 to 100. Values
+  higher than 100 are silently clamped.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo29">StopDirtRoadEffect(INT.index)</a>
+  PlaySurfaceEffect(INT.index,PeriodicType.type,INT.magnitude,INT.period)
+</pre>
+<hr />
+
+<h2><a name="robo29"><a name="Steering2eWheel2eSDK2fStopDirtRoadEffect28INT2eindex29">
+Steering.Wheel.SDK/StopDirtRoadEffect(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT StopDirtRoadEffect(INT index) -- stop the dirt road effect.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo28">PlayDirtRoadEffect(INT.index,INT.magnitudePercentage)</a>
+</pre>
+<hr />
+
+<h2><a name="robo30"><a name="Steering2eWheel2eSDK2fPlayBumpyRoadEffect28INT2eindex2cINT2emagnitudePercentage29">
+Steering.Wheel.SDK/PlayBumpyRoadEffect(INT.index,INT.magnitudePercentage)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlayBumpyRoadEffect(INT index, INT magnitudePercentage) --
+  Play a surface effect that feels like driving on a bumpy road (like
+  on cobblestones for example).
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+
+  magnitudePercentage - Specifies the magnitude of the bumpy road
+  effect.  Valid ranges for magnitudePercentage are 0 to 100. Values
+  higher than 100 are silently clamped.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo31">StopBumpyRoadEffect(INT.index)</a>
+  <a href="#robo34">PlaySurfaceEffect(INT.index,PeriodicType.type,INT.magnitudePercentage,INT.period)</a>
+</pre>
+<hr />
+
+<h2><a name="robo31"><a name="Steering2eWheel2eSDK2fStopBumpyRoadEffect28INT2eindex29">
+Steering.Wheel.SDK/StopBumpyRoadEffect(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT StopBumpyRoadEffect(INT index) -- stop the bumpy road
+  effect.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo30">PlayBumpyRoadEffect(INT.index,INT.magnitudePercentage)</a>
+</pre>
+<hr />
+
+<h2><a name="robo32"><a name="Steering2eWheel2eSDK2fPlaySlipperyRoadEffect28INT2eindex2cINT2emagnitudePercentage29">
+Steering.Wheel.SDK/PlaySlipperyRoadEffect(INT.index,INT.magnitudePercentage)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlaySlipperyRoadEffect(INT index, INT magnitudePercentage)
+  -- Play a slippery road effect (snow, ice).
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+
+  magnitudePercentage - Specifies the magnitude of the slippery road
+  effect.  Valid ranges for magnitudePercentage are 0 to 100. 100
+  corresponds to the most slippery effect.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo33">StopSlipperyRoadEffect(INT.index)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo33"><a name="Steering2eWheel2eSDK2fStopSlipperyRoadEffect28INT2eindex29">
+Steering.Wheel.SDK/StopSlipperyRoadEffect(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT StopSlipperyRoadEffect(INT index) -- stop the slippery road
+  effect.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo32">PlaySlipperyRoadEffect(INT.index,INT.magnitudePercentage)</a>
+</pre>
+<hr />
+
+<h2><a name="robo34"><a name="Steering2eWheel2eSDK2fPlaySurfaceEffect28INT2eindex2cPeriodicType2etype2cINT2emagnitudePercentage2cINT2eperiod29">
+Steering.Wheel.SDK/PlaySurfaceEffect(INT.index,PeriodicType.type,INT.magnitudePercentage,INT.period)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlaySurfaceEffect(INT index, PeriodicType type, INT
+  magnitudePercentage, INT period) -- play any type of rumble to
+  simulate surface effects.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+
+  type - Specifies the type of force effect. Can be one of the
+  following values:
+    - PeriodicType.LG_TYPE_SINE
+    - PeriodicType.LG_TYPE_SQUARE
+
+  magnitudePercentage - Specifies the magnitude of the surface
+  effect.  Valid ranges for magnitudePercentage are 0 to 100. Values
+  higher than 100 are silently clamped.
+
+  period - Specifies the period of the periodic force effect. The
+  value is the duration for one full cycle of the periodic function
+  measured in milliseconds. A good range of values for the period is
+  20 ms (sand) to 120 ms (wooden bridge or cobblestones). For a
+  surface effect the period should not be any bigger than 150 ms.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo35">StopSurfaceEffect(INT.index)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo35"><a name="Steering2eWheel2eSDK2fStopSurfaceEffect28INT2eindex29">
+Steering.Wheel.SDK/StopSurfaceEffect(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT StopSurfaceEffect(INT index) -- stop the surface effect.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo34">PlaySurfaceEffect(INT.index,PeriodicType.type,INT.magnitudePercentage,INT.period)</a>
+</pre>
+<hr />
+
+<h2><a name="robo36"><a name="Steering2eWheel2eSDK2fPlayCarAirborne28INT2eindex29">
+Steering.Wheel.SDK/PlayCarAirborne(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlayCarAirborne(INT index) -- play an effect that simulates
+  a car that is airborne or where the front wheels do not touch the
+  ground.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo37">StopCarAirborne(INT.index)</a>
+  SampleInGameImplementation.cpp or SteeringWheelSDKDemo.cpp to see
+  an example.
+</pre>
+<hr />
+
+<h2><a name="robo37"><a name="Steering2eWheel2eSDK2fStopCarAirborne28INT2eindex29">
+Steering.Wheel.SDK/StopCarAirborne(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT StopCarAirborne(INT index) -- stop the car airborne effect
+  and resume any forces that were playing before the car was
+  airborne.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.  Index 0 corresponds to the
+  first wheel/joystick connected. Index 1 to the second
+  wheel/joystick.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo36">PlayCarAirborne(INT.index)</a>
+</pre>
+<hr />
+
+<h2><a name="robo38"><a name="Steering2eWheel2eSDK2fPlaySoftstopForce28INT2eindex2cINT2eusableRangePercentage29">
+Steering.Wheel.SDK/PlaySoftstopForce(INT.index,INT.usableRangePercentage)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT PlaySoftstopForce(INT index, INT usableRangePercentage) --
+  Play a spring force that acts like a soft stop in order to limit a
+  wheel's range.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.
+
+  usableRangePercentage - Specifies the deadband in percentage of the
+  softstop force effect.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo39">StopSoftstopForce(INT.index)</a>
+</pre>
+<hr />
+
+<h2><a name="robo39"><a name="Steering2eWheel2eSDK2fStopSoftstopForce28INT2eindex29">
+Steering.Wheel.SDK/StopSoftstopForce(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT StopSoftstopForce(INT index) -- stop the "softstop" spring
+  force.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the game controller.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo38">PlaySoftstopForce(INT.index,INT.usableRangePercentage)</a>
+</pre>
+</body>
+</html>

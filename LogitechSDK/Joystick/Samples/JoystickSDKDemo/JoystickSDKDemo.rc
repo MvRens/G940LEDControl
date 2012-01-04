@@ -1,0 +1,194 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\JoystickSDKDemo.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\JoystickSDKDemo.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_JOYSTICKSDKDEMO_DIALOG DIALOGEX 0, 0, 233, 195
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Joystick SDK Demo"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Exit",IDCANCEL,176,172,50,16
+    CONTROL         "",IDC_RADIO_BUTTON_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,29,31,16,10
+    CONTROL         "",IDC_RADIO_BUTTON_2,"Button",BS_AUTORADIOBUTTON,51,31,16,10
+    CONTROL         "",IDC_RADIO_BUTTON_3,"Button",BS_AUTORADIOBUTTON,73,31,16,10
+    CONTROL         "",IDC_RADIO_BUTTON_4,"Button",BS_AUTORADIOBUTTON,95,31,16,10
+    CONTROL         "",IDC_RADIO_BUTTON_5,"Button",BS_AUTORADIOBUTTON,29,49,16,10
+    CONTROL         "",IDC_RADIO_BUTTON_6,"Button",BS_AUTORADIOBUTTON,51,49,16,10
+    CONTROL         "",IDC_RADIO_BUTTON_7,"Button",BS_AUTORADIOBUTTON,73,49,16,10
+    CONTROL         "",IDC_RADIO_BUTTON_8,"Button",BS_AUTORADIOBUTTON,95,49,16,10
+    GROUPBOX        "Panel Button",IDC_STATIC,15,15,100,71
+    GROUPBOX        "Button Color",IDC_STATIC,119,15,97,71
+    CONTROL         "Off",IDC_RADIO_OFF,"Button",BS_AUTORADIOBUTTON | WS_GROUP,133,31,27,10
+    CONTROL         "Green",IDC_RADIO_GREEN,"Button",BS_AUTORADIOBUTTON,178,31,35,10
+    CONTROL         "Amber",IDC_RADIO_AMBER,"Button",BS_AUTORADIOBUTTON,133,49,37,10
+    CONTROL         "Red",IDC_RADIO_RED,"Button",BS_AUTORADIOBUTTON,178,49,29,10
+    GROUPBOX        "",IDC_STATIC,7,7,217,104
+    PUSHBUTTON      "Set Button Color",IDC_BUTTON_SET_COLOR,34,89,62,14
+    PUSHBUTTON      "Set All Buttons Color",IDC_BUTTON_SET_ALL_COLOR,129,65,77,14
+    PUSHBUTTON      "Is Button Color",IDC_BUTTON_IS_COLOR,119,89,62,14
+    CONTROL         "",IDC_CHECK_IS_BUTTON_COLOR,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,185,91,16,10
+    PUSHBUTTON      "Set LEDs",IDC_BUTTON_SET_LEDS,15,125,50,14
+    PUSHBUTTON      "Get LEDs",IDC_BUTTON_GET_LEDS,15,145,50,14
+    LTEXT           "Green: 0x",IDC_STATIC,73,127,33,8
+    LTEXT           "Red: 0x",IDC_STATIC,136,127,26,8
+    EDITTEXT        IDC_EDIT_SET_GREEN,106,125,18,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_SET_RED,162,125,18,14,ES_AUTOHSCROLL
+    GROUPBOX        "",IDC_STATIC,7,113,218,54
+    LTEXT           "Green: 0x",IDC_STATIC,73,147,33,8
+    LTEXT           "Red: 0x",IDC_STATIC,136,147,26,8
+    EDITTEXT        IDC_EDIT_GET_GREEN,106,145,18,14,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT_GET_RED,162,145,18,14,ES_AUTOHSCROLL | WS_DISABLED
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,1,0
+ PRODUCTVERSION 1,0,1,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "Logitech Inc."
+            VALUE "FileVersion", "1.00.001"
+            VALUE "InternalName", "JoystickSDKDemo.exe"
+            VALUE "LegalCopyright", "Logitech Inc.  All rights reserved."
+            VALUE "OriginalFilename", "JoystickSDKDemo.exe"
+            VALUE "ProductName", "Logitech Joystick SDK Demo"
+            VALUE "ProductVersion", "1.00.001"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_JOYSTICKSDKDEMO_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 226
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 188
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\JoystickSDKDemo.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

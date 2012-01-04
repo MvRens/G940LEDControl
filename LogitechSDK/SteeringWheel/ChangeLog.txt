@@ -1,0 +1,93 @@
+MODIFICATION HISTORY
+
+Steering Wheel SDK
+
+  1.00.002 - July 2009
+    Replaced private Logitech emails with public wingmanteam emails.
+
+  1.00.001 - June 2009
+    Creation based on older EZ Wheel Wrapper.
+
+
+Old EZ Wheel Wrapper
+
+  7.04.002 - February 2009
+      - Now turning G27 LEDs off instead of on when destroying main
+        object.
+  7.04.001 - November 2008
+      - Upgraded with latest EZ Controller Input Wrapper that fixes
+        bug causing centering spring to sometimes stay on when
+        multiple wheels are plugged in on startup.
+  7.03.001 - October 2008
+      - Changed how getting and setting properties is done to make
+        it asynchronous. Simplified API. Removed support for
+        previous way of doing things (sorry no backwards
+        compatibility on this one). Logitech Gaming Software 5.03 or
+        newer needs to be installed for this to work.
+      - Upgraded with new EZ Controller Input Wrapper that fixes bug
+        causing centering spring to sometimes trigger on plug/unplug
+        of other USB devices.
+  7.02.002 - August 2008
+      - Added support for seeing whether shifter is gated or
+        sequential. For this feature and the LED feature to work,
+        Logitech Gaming Software 5.03 must be installed.
+  7.02.001 - July 2008
+      - Added support for controlling LEDs on G27
+  7.01.002 - June 2008
+      - Removed usage of MFC
+      - Removed invisible window
+      - Made a number of minor improvements to enhance compatibility
+        with games and with EZ Wheel Wrappers on other platforms.
+      - Updated with latest EZ Controller Input Wrapper to make it
+        more solid for when unplugging and plugging in multiple
+        devices.
+  7.01.001 - May 2008
+      - Added functions to get and set wheel properties such as
+        steering range, combined/separate pedals, forces strengths,
+        etc. For these functions to succeed, Logitech Gaming
+        Software version 5.02 or newer needs to be
+        installed. Otherwise the functions will simply fail.
+  7.00.001 - December 2007
+      - Replaced built-in DInput code with EZ Controller Input
+        Wrapper.
+  6.00.001 - January 2007
+      - Re-wrote the wrapper for cleaner and more extensible code.
+      - Added built-in hot plug/unplug to make it behave like
+        console version.
+      - Added extra IsConnected() methods to find out about
+        manufacturer and type of device, as well as specific model.
+      - Added GetFriendlyProductName() method.
+      - Changed parameters to be percentages instead of
+        system-specific numbers.
+  5.00.003 - September 2006
+      - Added HasForceFeedback method.
+  5.00.002 - July 2006
+      - Made variables MFC-like.
+      - Added soft stop force to be used for limiting the wheel's
+        range.
+  4.60.001 - July 2005
+      - Added globally definable variables.
+  4.40.001 - December 2004
+      - Fixed support for the older Formula Force wheel.
+  4.30.001 - July 2003
+      - Made filenames more unique to avoid name clashes.
+      - Made definition names more unique to avoid clashes.
+      - Updated SampleInGameImplementation.cpp.
+      - Enhanced treatment of quick back to back front or side
+        collisions.
+      - Updated documentation in doc folder.
+  4.25.002 - June 2003
+      - Fixed forces recovery after window loss of focus.
+
+
+
+
+
+
+
+
+
+
+
+
+

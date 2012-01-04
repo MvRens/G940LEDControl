@@ -1,0 +1,256 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\ControllerInputSDKDemo.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\ControllerInputSDKDemo.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DEMO_DIALOG DIALOGEX 0, 0, 378, 401
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "ControllerInputSDKDemo"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,323,48,50,16
+    PUSHBUTTON      "Cancel",IDCANCEL,323,66,50,16
+    GROUPBOX        "Ctrl 0",IDC_STATIC,7,45,152,173
+    CONTROL         "Connected",IDC_CHECK_0_CONNECTED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,58,51,10
+    EDITTEXT        IDC_EDIT_0_TYPE,63,69,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Type",IDC_STATIC,15,72,17,8
+    LTEXT           "Manufacturer",IDC_STATIC,15,88,44,8
+    LTEXT           "Friendly name",IDC_STATIC,15,104,46,8
+    CONTROL         "XInput",IDC_CHECK_0_XINPUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,67,58,37,10
+    CONTROL         "FF",IDC_CHECK_0_FF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,107,58,24,10
+    LTEXT           "VID",IDC_STATIC_0_VID,15,120,12,8
+    LTEXT           "PID",IDC_STATIC_0_PID,15,136,12,8
+    LTEXT           "Device pointer",IDC_STATIC,15,152,47,8
+    EDITTEXT        IDC_EDIT_0_MANUFACTURER,63,85,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_0_VID,63,117,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_0_FRIENDLY_NAME,63,101,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_0_PID,63,133,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_0_DEVICE_POINTER,63,149,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_0_X_AXIS,63,165,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "X Axis",IDC_STATIC,15,168,20,8
+    EDITTEXT        IDC_EDIT_0_DEVICE_CONN,63,181,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Device conn",IDC_STATIC,15,184,40,8
+    GROUPBOX        "Ctrl 1",IDC_STATIC,163,45,152,173
+    CONTROL         "Connected",IDC_CHECK_1_CONNECTED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,171,58,51,10
+    EDITTEXT        IDC_EDIT_1_TYPE,219,69,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Type",IDC_STATIC,171,72,17,8
+    LTEXT           "Manufacturer",IDC_STATIC,171,88,44,8
+    LTEXT           "Friendly name",IDC_STATIC,171,104,46,8
+    CONTROL         "XInput",IDC_CHECK_1_XINPUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,223,58,37,10
+    CONTROL         "FF",IDC_CHECK_1_FF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,58,24,10
+    LTEXT           "VID",IDC_STATIC_0_VID2,171,120,12,8
+    LTEXT           "PID",IDC_STATIC_0_PID2,171,136,12,8
+    LTEXT           "Device pointer",IDC_STATIC,171,152,47,8
+    EDITTEXT        IDC_EDIT_1_MANUFACTURER,219,85,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_1_VID,219,117,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_1_FRIENDLY_NAME,219,101,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_1_PID,219,133,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_1_DEVICE_POINTER,219,149,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_1_X_AXIS,219,165,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "X Axis",IDC_STATIC,171,168,20,8
+    EDITTEXT        IDC_EDIT_1_DEVICE_CONN,219,181,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Device conn",IDC_STATIC,171,184,40,8
+    GROUPBOX        "Ctrl 2",IDC_STATIC,7,221,152,174
+    CONTROL         "Connected",IDC_CHECK_2_CONNECTED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,233,51,10
+    EDITTEXT        IDC_EDIT_2_TYPE,63,246,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Type",IDC_STATIC,15,247,17,8
+    LTEXT           "Manufacturer",IDC_STATIC,15,263,44,8
+    LTEXT           "Friendly name",IDC_STATIC,15,279,46,8
+    CONTROL         "XInput",IDC_CHECK_2_XINPUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,67,233,37,10
+    CONTROL         "FF",IDC_CHECK_2_FF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,107,233,24,10
+    LTEXT           "VID",IDC_STATIC_0_VID3,15,295,12,8
+    LTEXT           "PID",IDC_STATIC_0_PID3,15,311,12,8
+    LTEXT           "Device pointer",IDC_STATIC,15,327,47,8
+    EDITTEXT        IDC_EDIT_2_MANUFACTURER,63,262,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_2_VID,63,294,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_2_FRIENDLY_NAME,63,278,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_2_PID,63,310,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_2_DEVICE_POINTER,63,326,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_2_X_AXIS,63,342,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "X Axis",IDC_STATIC,15,343,20,8
+    EDITTEXT        IDC_EDIT_2_DEVICE_CONN,63,358,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Device conn",IDC_STATIC,15,359,40,8
+    GROUPBOX        "Ctrl 3",IDC_STATIC,163,221,152,174
+    CONTROL         "Connected",IDC_CHECK_3_CONNECTED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,171,233,51,10
+    EDITTEXT        IDC_EDIT_3_TYPE,219,246,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Type",IDC_STATIC,171,247,17,8
+    LTEXT           "Manufacturer",IDC_STATIC,171,263,44,8
+    LTEXT           "Friendly name",IDC_STATIC,171,279,46,8
+    CONTROL         "XInput",IDC_CHECK_3_XINPUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,223,233,37,10
+    CONTROL         "FF",IDC_CHECK_3_FF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,233,24,10
+    LTEXT           "VID",IDC_STATIC_0_VID4,171,295,12,8
+    LTEXT           "PID",IDC_STATIC_0_PID4,171,311,12,8
+    LTEXT           "Device pointer",IDC_STATIC,171,327,47,8
+    EDITTEXT        IDC_EDIT_3_MANUFACTURER,219,262,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_3_VID,219,294,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_3_FRIENDLY_NAME,219,278,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_3_PID,219,310,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_3_DEVICE_POINTER,219,326,87,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_3_X_AXIS,219,342,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "X Axis",IDC_STATIC,171,343,20,8
+    EDITTEXT        IDC_EDIT_3_DEVICE_CONN,219,358,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Device conn",IDC_STATIC,171,359,40,8
+    GROUPBOX        "Usage",IDC_STATIC,7,7,364,34
+    LTEXT           "Hot plug/unplug any game controllers (DirectInput or XInput) at any time to see their properties and X axis values.",IDC_STATIC,17,19,347,18
+    LTEXT           "XInput ID",IDC_STATIC,15,200,32,8
+    EDITTEXT        IDC_EDIT_0_XINPUT_ID,63,197,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "XInput ID",IDC_STATIC,171,200,32,8
+    EDITTEXT        IDC_EDIT_1_XINPUT_ID,219,197,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "XInput ID",IDC_STATIC,15,377,32,8
+    EDITTEXT        IDC_EDIT_2_XINPUT_ID,63,374,87,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "XInput ID",IDC_STATIC,171,377,32,8
+    EDITTEXT        IDC_EDIT_3_XINPUT_ID,219,374,87,14,ES_AUTOHSCROLL | ES_READONLY
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,1,0
+ PRODUCTVERSION 1,0,1,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "Logitech Inc."
+            VALUE "FileDescription", "Logitech Controller Input SDK Demo"
+            VALUE "FileVersion", "1.00.001"
+            VALUE "InternalName", "ControllerInputSDKDemo.exe"
+            VALUE "LegalCopyright", "Logitech Inc.  All rights reserved."
+            VALUE "OriginalFilename", "ControllerInputSDKDemo.exe"
+            VALUE "ProductName", "Logitech Controller input SDK Demo"
+            VALUE "ProductVersion", "1.00.001"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DEMO_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 313
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 193
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\ControllerInputSDKDemo.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

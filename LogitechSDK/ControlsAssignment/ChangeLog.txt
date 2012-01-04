@@ -1,0 +1,31 @@
+MODIFICATION HISTORY
+
+Controls Assignment SDK
+
+  1.00.002 - July 2009
+    Replaced private Logitech emails with public wingmanteam emails.
+
+  1.00.001 - June 2009
+    Creation based on older EZ Assign Controls Wrapper.    
+
+
+Old EZ Assign Controls Wrapper
+
+  5.03.002 - November 2008
+    Upgraded with latest EZ Controller Input Wrapper that fixes
+    bug causing centering spring to sometimes stay on when
+    multiple wheels are plugged in on startup.
+  5.03.001 - August 2008
+    Upgraded with new EZ Controller Input Wrapper that fixes bug
+    causing centering spring to sometimes trigger on plug/unplug
+    of other USB devices.
+  5.02.001 - November 2007
+    Added support for hot plug/unplug DirectInput and XInput
+    devices by integrating EZ Controller Input Wrapper.
+  05/25/07
+    Added support for XInput. Added functions for initial control
+    assignment and for getting control info to be saved to config
+    file.
+  09/23/05
+    Entirely re-wrote the wrapper. Interface simplified.
+    Wrapper now supports any number of controllers.

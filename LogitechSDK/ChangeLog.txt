@@ -1,0 +1,9 @@
+MODIFICATION HISTORY
+
+Logitech SDK For PC
+
+  1.00.002 - July 2009
+    Replaced private Logitech emails with public wingmanteam emails.
+
+  1.00.001 - June 2009
+    Creation.

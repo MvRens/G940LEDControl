@@ -1,0 +1,575 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<link rel="stylesheet" href="./api.css" type="text/css">
+<title>./api</title>
+<!-- Source: ./.\Source/ -->
+<!-- Generated with ROBODoc Version 4.0.18 (Mar  3 2006) -->
+<!-- ROBODoc (c) 1994-2004 by Frans Slothouber and Jacco van Weert. -->
+</head>
+<body bgcolor="#FFFFFF">
+<a name="./.\Source/">Generated from ./.\Source/</a> with <a href="http://sourceforge.net/projects/robodoc/">ROBODoc</a> v4.0.18 on Mon Jun 29 10:55:29 2009
+<br />
+<h3 align="center">TABLE OF CONTENTS</h3>
+<ul>
+<li><a href="#robo0">Controller.Input.SDK/ControllerInputSDK[1.00.001]</a></li>
+<li><a href="#robo1">Controller.Input.SDK/ControllerInput(HWND.hwnd,BOOL.ignoreXInputControllers)</a></li>
+<li><a href="#robo2">Controller.Input.SDK/Update()</a></li>
+<li><a href="#robo3">Controller.Input.SDK/GetStateDInput(INT.index)</a></li>
+<li><a href="#robo4">Controller.Input.SDK/GetStateXInput(INT.index)</a></li>
+<li><a href="#robo5">Controller.Input.SDK/GetFriendlyProductName(INT.index)</a></li>
+<li><a href="#robo6">Controller.Input.SDK/IsConnected(INT.index)</a></li>
+<li><a href="#robo7">Controller.Input.SDK/IsConnected(INT.index,DeviceType.deviceType)</a></li>
+<li><a href="#robo8">Controller.Input.SDK/IsConnected(INT.index,ManufacturerName.manufacturerName)</a></li>
+<li><a href="#robo9">Controller.Input.SDK/IsConnected(INT.index,ModelName.modelName)</a></li>
+<li><a href="#robo10">Controller.Input.SDK/IsXInputDevice(INT.index)</a></li>
+<li><a href="#robo11">Controller.Input.SDK/HasForceFeedback(INT.index)</a></li>
+<li><a href="#robo12">Controller.Input.SDK/GetVendorID(INT.index)</a></li>
+<li><a href="#robo13">Controller.Input.SDK/GetProductID(INT.index)</a></li>
+<li><a href="#robo14">Controller.Input.SDK/GetDeviceHandle(INT.index)</a></li>
+<li><a href="#robo15">Controller.Input.SDK/GetDeviceXinputID(INT.index)</a></li>
+<li><a href="#robo16">Controller.Input.SDK/GenerateNonLinearValues(INT.index,INT.nonLinCoeff)</a></li>
+<li><a href="#robo17">Controller.Input.SDK/GetNonLinearValue(INT.index,INT.inputValue)</a></li>
+<li><a href="#robo18">Controller.Input.SDK/ButtonIsPressed(INT.index,INT.buttonOrMask)</a></li>
+<li><a href="#robo19">Controller.Input.SDK/ButtonTriggered(INT.index,INT.buttonOrMask)</a></li>
+<li><a href="#robo20">Controller.Input.SDK/ButtonReleased(INT.index,INT.buttonOrMask)</a></li>
+<li><a href="#robo21">Controller.Input.SDK/GetNumberFFAxesDInput(INT.index)</a></li>
+</ul>
+<hr />
+
+<h2><a name="robo0"><a name="Controller2eInput2eSDK2fControllerInputSDK5b12e002e0015d">
+Controller.Input.SDK/ControllerInputSDK[1.00.001]</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>   Logitech Controller Input SDK
+</pre><p><strong>COPYRIGHT</strong></p>
+<pre>   The Logitech Controller Input SDK, including all accompanying
+   documentation, is protected by intellectual property laws. All
+   rights not expressly granted by Logitech are reserved.
+</pre><p><strong>PURPOSE</strong></p>
+<pre>   The Logitech Controller Input SDK's purpose is to create a
+   paradigm shift. Today users must have their controller(s) plugged
+   in when launching a PC game, and if they forget, they have to know
+   to exit the game, plug in the controller, and start again.
+   The Controller Input SDK enables users to hot plug/unplug
+   any controllers at any time, mimicking the user-friendly behavior
+   of consoles.
+   The SDK provides a simple interface for:
+       - support of both DirectInput and XInput hot plug/unplug.
+       - seamless integration of a total of 4 DInput and XInput
+         controllers.
+       - getting controller positional information as well as general
+         info such as friendly name, VID, PID, connection status
+         based on various parameters such as controller type,
+         manufacturer, and model name, and whether it supports force
+         feedback/rumble.
+       - getting hooks to add force feedback or rumble (DirectInput
+         device interface and XInput ID).
+</pre><p><strong>EXAMPLE</strong></p>
+<pre>   Build and run the sample program to see some of the code usage, or
+   run ControllerInputSDKDemo.exe to quickly see what it can do.
+</pre><p><strong>AUTHOR</strong></p>
+<pre>   Christophe Juncker (cj@wingmanteam.com)
+</pre>
+<hr />
+
+<h2><a name="robo1"><a name="Controller2eInput2eSDK2fControllerInput28HWND2ehwnd2cBOOL2eignoreXInputControllers29">
+Controller.Input.SDK/ControllerInput(HWND.hwnd,BOOL.ignoreXInputControllers)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  ControllerInput(HWND hwnd, BOOL ignoreXInputControllers) -- does
+  necessary initialization.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  hwnd - game window handle used to initialize DirectInput.
+
+ ignoreXInputControllers - if set to TRUE, XInput controllers will be
+ ignored alltogether.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo2"><a name="Controller2eInput2eSDK2fUpdate2829">
+Controller.Input.SDK/Update()</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  VOID <strong>Update()</strong> -- update controller status (connected or
+  disconnected) and read each controller's positional information.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo3"><a name="Controller2eInput2eSDK2fGetStateDInput28INT2eindex29">
+Controller.Input.SDK/GetStateDInput(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  DIJOYSTATE2* GetStateDInput(INT index) -- get a DirectInput
+  controller's positional information.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  DIJOYSTATE2 pointer to the most recent information obtained through
+  <a href="#robo2">Update()</a> if successful.
+  NULL otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo2">Update()</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo4"><a name="Controller2eInput2eSDK2fGetStateXInput28INT2eindex29">
+Controller.Input.SDK/GetStateXInput(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  XINPUT_STATE* GetStateXInput(INT index) -- get a XInput
+  controller's positional information.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  XINPUT_STATE pointer to the most recent information obtained
+  through <a href="#robo2">Update()</a> if successful.
+  NULL otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo2">Update()</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo5"><a name="Controller2eInput2eSDK2fGetFriendlyProductName28INT2eindex29">
+Controller.Input.SDK/GetFriendlyProductName(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  LPCTSTR GetFriendlyProductName(INT index) -- get the friendly
+  name of a controller (as found in the USB Device Descriptor).
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  String containing friendly name if successful.
+  Empy string otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo6"><a name="Controller2eInput2eSDK2fIsConnected28INT2eindex29">
+Controller.Input.SDK/IsConnected(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsConnected(INT index) -- check if specified game controller
+  is currently connected.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if connected.
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo7">IsConnected(INT.index,DeviceType.deviceType)</a>
+  <a href="#robo8">IsConnected(INT.index,ManufacturerName.manufacturerName)</a>
+  <a href="#robo9">IsConnected(INT.index,ModelName.modelName)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo7"><a name="Controller2eInput2eSDK2fIsConnected28INT2eindex2cDeviceType2edeviceType29">
+Controller.Input.SDK/IsConnected(INT.index,DeviceType.deviceType)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsConnected(INT index, DeviceType deviceType) -- check if
+  specified game controller is currently connected.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+
+  deviceType - type of the device. Possible types are:
+    - LG_DEVICE_TYPE_WHEEL
+    - LG_DEVICE_TYPE_JOYSTICK
+    - DEVICE_TYPE_GAMEPAD
+    - LG_DEVICE_TYPE_OTHER
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if device is connected.
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo6">IsConnected(INT.index)</a>
+  <a href="#robo8">IsConnected(INT.index,ManufacturerName.manufacturerName)</a>
+  <a href="#robo9">IsConnected(INT.index,ModelName.modelName)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo8"><a name="Controller2eInput2eSDK2fIsConnected28INT2eindex2cManufacturerName2emanufacturerName29">
+Controller.Input.SDK/IsConnected(INT.index,ManufacturerName.manufacturerName)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsConnected(INT index, ManufacturerName manufacturerName) --
+  check if specified game controller is currently connected.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+
+  manufacturerName - name of the manufacturer of the device. Possible
+  names are:
+    - LG_MANUFACTURER_LOGITECH
+    - LG_MANUFACTURER_MICROSOFT
+    - LG_MANUFACTURER_OTHER
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if device is connected.
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo6">IsConnected(INT.index)</a>
+  <a href="#robo7">IsConnected(INT.index,DeviceType.deviceType)</a>
+  <a href="#robo9">IsConnected(INT.index,ModelName.modelName)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo9"><a name="Controller2eInput2eSDK2fIsConnected28INT2eindex2cModelName2emodelName29">
+Controller.Input.SDK/IsConnected(INT.index,ModelName.modelName)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsConnected(INT index, ModelName modelName) -- check if
+  specified game controller is currently connected.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+
+  modelName - model name of the device. Possible names are:
+    - LG_MODEL_G27
+    - LG_MODEL_DRIVING_FORCE_GT
+    - LG_MODEL_G25
+    - LG_MODEL_MOMO_RACING
+    - LG_MODEL_MOMO_FORCE
+    - LG_MODEL_DRIVING_FORCE_PRO
+    - LG_MODEL_DRIVING_FORCE
+    - LG_MODEL_NASCAR_RACING_WHEEL
+    - LG_MODEL_FORMULA_FORCE
+    - LG_MODEL_FORMULA_FORCE_GP
+    - LG_MODEL_FORCE_3D_PRO
+    - LG_MODEL_EXTREME_3D_PRO
+    - LG_MODEL_FREEDOM_24
+    - LG_MODEL_ATTACK_3
+    - LG_MODEL_FORCE_3D
+    - LG_MODEL_STRIKE_FORCE_3D
+    - LG_MODEL_G940_JOYSTICK
+    - LG_MODEL_G940_THROTTLE
+    - LG_MODEL_G940_PEDALS
+    - LG_MODEL_RUMBLEPAD
+    - LG_MODEL_RUMBLEPAD_2
+    - LG_MODEL_CORDLESS_RUMBLEPAD_2
+    - LG_MODEL_CORDLESS_GAMEPAD
+    - LG_MODEL_DUAL_ACTION_GAMEPAD
+    - LG_MODEL_PRECISION_GAMEPAD_2
+    - LG_MODEL_CHILLSTREAM
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if device is connected.
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo6">IsConnected(INT.index)</a>
+  <a href="#robo7">IsConnected(INT.index,DeviceType.deviceType)</a>
+  <a href="#robo8">IsConnected(INT.index,ManufacturerName.manufacturerName)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo10"><a name="Controller2eInput2eSDK2fIsXInputDevice28INT2eindex29">
+Controller.Input.SDK/IsXInputDevice(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL IsXInputDevice(INT index) -- check if the controller is a
+  XInput device or a DirectInput device.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if controller is a XInput device.
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo11"><a name="Controller2eInput2eSDK2fHasForceFeedback28INT2eindex29">
+Controller.Input.SDK/HasForceFeedback(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL HasForceFeedback(INT index) -- check if the controller can
+  do force feedback or rumble.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if controller is force feedback/rumble capable.
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo12"><a name="Controller2eInput2eSDK2fGetVendorID28INT2eindex29">
+Controller.Input.SDK/GetVendorID(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  DWORD GetVendorID(INT index) -- Get controller's Vendor ID.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  Vendor ID if successful.
+  0 otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo13">GetProductID(INT.index)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo13"><a name="Controller2eInput2eSDK2fGetProductID28INT2eindex29">
+Controller.Input.SDK/GetProductID(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  DWORD GetProductID(INT index) -- Get controller's Product ID.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  Product ID if successful.
+  0 otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo12">GetVendorID(INT.index)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo14"><a name="Controller2eInput2eSDK2fGetDeviceHandle28INT2eindex29">
+Controller.Input.SDK/GetDeviceHandle(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  LPDIRECTINPUTDEVICE8 GetDeviceHandle(INT index) -- Get handle to
+  controller's corresponding DirectInput device. This handle can be
+  used to do force feedback.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  Device handle if successful.
+  NULL otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo15"><a name="Controller2eInput2eSDK2fGetDeviceXinputID28INT2eindex29">
+Controller.Input.SDK/GetDeviceXinputID(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  INT GetDeviceXinputID(INT index) -- Get ID of XInput
+  controller. This ID can be used as the dwUserIndex parameter to use
+  any of the XInput functions.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  XInput ID if successful ( 0 to 3).
+  LG_XINPUT_ID_NONE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo16"><a name="Controller2eInput2eSDK2fGenerateNonLinearValues28INT2eindex2cINT2enonLinCoeff29">
+Controller.Input.SDK/GenerateNonLinearValues(INT.index,INT.nonLinCoeff)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  HRESULT GenerateNonLinearValues(int index, int nonLinCoeff) --
+  Generate non-linear values for the game controller's axis.
+</pre><p><strong>FUNCTION</strong></p>
+<pre>  Gaming wheels/joysticks/game pads have very different behavior from
+  real steering wheels. The reason for single-turn wheels is that
+  they only do up to three quarters of a turn lock to lock, compared
+  to about 3 turns for a real car.
+  This directly affects the steering ratio (15:1 to 20:1 for a real
+  car, but only 4:1 for a gaming wheel!). Joysticks and game pads
+  have a much shorter range of movement than a real steering wheel as
+  well.
+  Because of this very short steering ratio or short range, the
+  gaming wheel/joystick/game pad will feel highly sensitive which may
+  make game play very difficult.
+  Especially it may be difficult to drive in a straight line at speed
+  (tendency to swerve back and forth).
+  One way to get around this problem is to use a sensitivity
+  curve. This is a curve that defines the sensitivity of the game
+  controller depending on speed. This type of curve is usually used
+  for game pads to make up for their low physical range. The result
+  of applying such a curve is that at high speed the car's wheels
+  will physically turn less than if the car is moving very slowly.
+  For example the car's wheels may turn 60 degrees lock to lock at
+  low speed but only 10 degrees lock to lock at higher speeds.  If
+  you calculate the resulting steering ratio for 10 degrees lock to
+  lock you find that if you use a steering wheel that turns 180
+  degrees lock to lock the ratio is equal to 180/10 = 18, which
+  corresponds to a real car's steering ratio.
+  If the sensitivity curve has been implemented for the
+  wheel/joystick, adding a non-linear curve probably is not
+  necessary. But you may find that even after applying a sensitivity
+  curve, the car still feels a little twitchy on a straight line when
+  driving fast. This may be because in your game you need more than
+  10 degrees lock to lock even at high speeds. Or maybe the car is
+  moving at very high speeds where even a normal steering ratio is
+  not good enough to eliminate high sensitivity.
+  The best way at this point is to add a non-linear curve on top of
+  the sensitivity curve.
+  The effect of the non-linear curve with positive nonLinCoeff is
+  that around center position the wheel/joystick will be less
+  sensitive.  Yet at locked position left or right the car's wheels
+  will turn the same amount of degrees as without the non-linear
+  response curve.  Therefore the car will become more controllable on
+  a straight line and game-play will be improved.
+  There can sometimes be cases where the wheel does not feel
+  sensitive enough. In that case it is possible to add a non-linear
+  curve with the inverse effect (makes the steering more sensitive
+  around center position) by using negative values for
+  nonLinCoeff. This method lets you define a non-linearity
+  coefficient which will determine how strongly non-linear the curve
+  will be. When running the method it will generate a mapping table
+  in the form of an array. For each of the 1024 entries in this array
+  there will be a corresponding non-linear value which can be used as
+  the wheel/joystick's axis position instead of the original
+  value. See Sample_In-game_Implementation.cs for an example.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+
+  nonLinCoeff - value representing how much non-linearity should be
+  applied. Range is -100 to 100. 0 = linear curve, 100 = maximum
+  non-linear curve with less sensitivity around center, -100 =
+  maximum non-linearity with more sensitivity around center position.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo17">GetNonLinearValue(INT.index,INT.inputValue)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo17"><a name="Controller2eInput2eSDK2fGetNonLinearValue28INT2eindex2cINT2einputValue29">
+Controller.Input.SDK/GetNonLinearValue(INT.index,INT.inputValue)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  INT GetNonLinearValue(INT index, INT inputValue) -- Get a
+  non-linear value from a table previously generated. This can be
+  used for the response of a steering wheel.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+
+  inputValue - value between LG_DINPUT_RANGE_MIN and
+  LG_DINPUT_RANGE_MAX corresponding to original value of an axis.
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  Value between LG_DINPUT_RANGE_MIN and LG_DINPUT_RANGE_MAX
+  corresponding to the level of non-linearity previously set with
+  GenerateNonLinearValues(...).
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo16">GenerateNonLinearValues(INT.index,INT.nonLinCoeff)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo18"><a name="Controller2eInput2eSDK2fButtonIsPressed28INT2eindex2cINT2ebuttonOrMask29">
+Controller.Input.SDK/ButtonIsPressed(INT.index,INT.buttonOrMask)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL ButtonIsPressed(CONST INT index, CONST INT buttonOrMask) --
+  check if the button is currently pressed.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+
+  buttonOrMask - button number between 0 and 127 for DInput, one of
+  the following bitmasks for XInput: XINPUT_GAMEPAD_DPAD_UP,
+  XINPUT_GAMEPAD_DPAD_DOWN, XINPUT_GAMEPAD_DPAD_LEFT,
+  XINPUT_GAMEPAD_DPAD_RIGHT, XINPUT_GAMEPAD_START,
+  XINPUT_GAMEPAD_BACK, XINPUT_GAMEPAD_LEFT_THUMB,
+  XINPUT_GAMEPAD_RIGHT_THUMB, XINPUT_GAMEPAD_LEFT_SHOULDER,
+  XINPUT_GAMEPAD_RIGHT_SHOULDER, XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B,
+  XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if buttons is currently pressed.
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo19">ButtonTriggered(INT.index,INT.buttonOrMask)</a>
+  <a href="#robo20">ButtonReleased(INT.index,INT.buttonOrMask)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo19"><a name="Controller2eInput2eSDK2fButtonTriggered28INT2eindex2cINT2ebuttonOrMask29">
+Controller.Input.SDK/ButtonTriggered(INT.index,INT.buttonOrMask)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL ButtonTriggered(CONST INT index, CONST INT buttonOrMask) --
+  check if the button has been triggered.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+
+  buttonOrMask - button number between 0 and 127 for DInput, one of
+  the following bitmasks for XInput: XINPUT_GAMEPAD_DPAD_UP,
+  XINPUT_GAMEPAD_DPAD_DOWN, XINPUT_GAMEPAD_DPAD_LEFT,
+  XINPUT_GAMEPAD_DPAD_RIGHT, XINPUT_GAMEPAD_START,
+  XINPUT_GAMEPAD_BACK, XINPUT_GAMEPAD_LEFT_THUMB,
+  XINPUT_GAMEPAD_RIGHT_THUMB, XINPUT_GAMEPAD_LEFT_SHOULDER,
+  XINPUT_GAMEPAD_RIGHT_SHOULDER, XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B,
+  XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if button was triggered.
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo18">ButtonIsPressed(INT.index,INT.buttonOrMask)</a>
+  <a href="#robo20">ButtonReleased(INT.index,INT.buttonOrMask)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo20"><a name="Controller2eInput2eSDK2fButtonReleased28INT2eindex2cINT2ebuttonOrMask29">
+Controller.Input.SDK/ButtonReleased(INT.index,INT.buttonOrMask)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  BOOL ButtonReleased(CONST INT index, CONST INT buttonOrMask) --
+  check if the button has been released.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+
+  buttonOrMask - button number between 0 and 127 for DInput, one of
+  the following bitmasks for XInput: XINPUT_GAMEPAD_DPAD_UP,
+  XINPUT_GAMEPAD_DPAD_DOWN, XINPUT_GAMEPAD_DPAD_LEFT,
+  XINPUT_GAMEPAD_DPAD_RIGHT, XINPUT_GAMEPAD_START,
+  XINPUT_GAMEPAD_BACK, XINPUT_GAMEPAD_LEFT_THUMB,
+  XINPUT_GAMEPAD_RIGHT_THUMB, XINPUT_GAMEPAD_LEFT_SHOULDER,
+  XINPUT_GAMEPAD_RIGHT_SHOULDER, XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B,
+  XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  TRUE if button was released.
+  FALSE otherwise.
+</pre><p><strong>SEE ALSO</strong></p>
+<pre>  <a href="#robo18">ButtonIsPressed(INT.index,INT.buttonOrMask)</a>
+  <a href="#robo19">ButtonTriggered(INT.index,INT.buttonOrMask)</a>
+  SampleInGameImplementation.cpp to see an example.
+</pre>
+<hr />
+
+<h2><a name="robo21"><a name="Controller2eInput2eSDK2fGetNumberFFAxesDInput28INT2eindex29">
+Controller.Input.SDK/GetNumberFFAxesDInput(INT.index)</a></h2>
+
+<p><strong>NAME</strong></p>
+<pre>  INT GetNumberFFAxesDInput(INT index) -- find out how many force
+  feedback axes the controller has.
+</pre><p><strong>INPUTS</strong></p>
+<pre>  index - index of the controller (between 0 and
+  LG_MAX_CONTROLLERS).
+</pre><p><strong>RETURN VALUE</strong></p>
+<pre>  Number of FF axes.
+</pre>
+</body>
+</html>

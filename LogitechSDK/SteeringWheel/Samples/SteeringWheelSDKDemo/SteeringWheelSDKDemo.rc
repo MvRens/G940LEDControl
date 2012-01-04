@@ -1,0 +1,314 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\SteeringWheelSDKDemo.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\SteeringWheelSDKDemo.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_STEERINGWHEELSDKDEMO_DIALOG DIALOGEX 0, 0, 391, 508
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Steering Wheel SDK Demo Program"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Exit",IDOK,334,485,50,16
+    LTEXT           "X Axis:",IDC_X_AXIS_TEXT,22,141,22,8
+    LTEXT           "Y Axis:",IDC_Y_AXIS_TEXT,22,152,22,8
+    LTEXT           "Z Axis:",IDC_Z_AXIS_TEXT,22,163,22,8
+    LTEXT           "Buttons:",IDC_STATIC,22,252,27,8
+    LTEXT           "X Rotation:",IDC_X_ROT_TEXT,22,178,36,8
+    LTEXT           "POV 0:",IDC_POV0_TEXT,104,169,24,8
+    GROUPBOX        "Device 0",IDC_STATIC,7,89,187,281
+    LTEXT           "0",IDC_X_AXIS,67,141,31,8
+    LTEXT           "0",IDC_Y_AXIS,67,152,33,8
+    LTEXT           "0",IDC_Z_AXIS,67,163,33,8
+    LTEXT           "",IDC_BUTTONS,58,252,120,8
+    LTEXT           "0",IDC_X_ROT,67,178,33,8
+    LTEXT           "0",IDC_POV0,153,167,30,8
+    LTEXT           "Y Rotation:",IDC_Y_ROT_TEXT,22,189,36,8
+    LTEXT           "0",IDC_Y_ROT,67,189,33,8
+    LTEXT           "Z Rotation:",IDC_Z_ROT_TEXT,22,200,36,8
+    LTEXT           "0",IDC_Z_ROT,67,200,33,8
+    LTEXT           "Slider 0:",IDC_SLIDER0_TEXT,104,141,26,8
+    LTEXT           "0",IDC_SLIDER0,153,141,29,8
+    LTEXT           "Slider 1:",IDC_SLIDER1_TEXT,104,152,26,8
+    LTEXT           "0",IDC_SLIDER1,153,152,29,8
+    LTEXT           "POV 1:",IDC_POV1_TEXT,104,179,24,8
+    LTEXT           "0",IDC_POV1,153,178,29,8
+    LTEXT           "POV 2:",IDC_POV2_TEXT,104,190,24,8
+    LTEXT           "0",IDC_POV2,153,189,30,8
+    LTEXT           "POV 3:",IDC_POV3_TEXT,104,200,24,8
+    LTEXT           "0",IDC_POV3,153,200,29,8
+    LTEXT           "",IDC_DEVICE,20,128,120,8
+    LTEXT           "X Axis:",IDC_X_AXIS_TEXT2,214,142,22,8
+    LTEXT           "Y Axis:",IDC_Y_AXIS_TEXT2,214,153,22,8
+    LTEXT           "Z Axis:",IDC_Z_AXIS_TEXT2,214,164,22,8
+    LTEXT           "Buttons:",IDC_STATIC,214,252,27,8
+    LTEXT           "X Rotation:",IDC_X_ROT_TEXT2,214,180,36,8
+    LTEXT           "POV 0:",IDC_POV0_TEXT2,297,169,24,8
+    LTEXT           "0",IDC_X_AXIS2,260,142,29,8
+    LTEXT           "0",IDC_Y_AXIS2,260,153,29,8
+    LTEXT           "0",IDC_Z_AXIS2,260,164,31,8
+    LTEXT           "",IDC_BUTTONS2,250,252,120,8
+    LTEXT           "0",IDC_X_ROT2,260,180,31,8
+    LTEXT           "0",IDC_POV02,332,169,31,8
+    LTEXT           "Y Rotation:",IDC_Y_ROT_TEXT2,214,190,36,8
+    LTEXT           "0",IDC_Y_ROT2,260,190,31,8
+    LTEXT           "Z Rotation:",IDC_Z_ROT_TEXT2,214,201,36,8
+    LTEXT           "0",IDC_Z_ROT2,260,201,32,8
+    LTEXT           "Slider 0:",IDC_SLIDER0_TEXT2,296,142,26,8
+    LTEXT           "0",IDC_SLIDER02,332,143,34,8
+    LTEXT           "Slider 1:",IDC_SLIDER1_TEXT2,296,153,26,8
+    LTEXT           "0",IDC_SLIDER12,332,154,32,8
+    LTEXT           "POV 1:",IDC_POV1_TEXT2,296,179,24,8
+    LTEXT           "0",IDC_POV12,332,179,36,8
+    LTEXT           "POV 2:",IDC_POV2_TEXT2,296,190,24,8
+    LTEXT           "0",IDC_POV22,332,190,34,8
+    LTEXT           "POV 3:",IDC_POV3_TEXT2,296,201,24,8
+    LTEXT           "0",IDC_POV32,332,201,31,8
+    LTEXT           "",IDC_DEVICE2,212,129,120,8
+    GROUPBOX        "Position",IDC_STATIC,14,117,171,150
+    LTEXT           "Speed (0 - 1000):",IDC_SPEED_TEXT,14,104,57,8
+    LTEXT           "0",IDC_SPEED,76,105,29,8
+    LTEXT           "Plug and unplug DirectInput game controllers at any time. Use accelerator pedal or slider to set the speed.",IDC_STATIC,16,17,368,9
+    LTEXT           "Buttons to start/stop following effects:",IDC_STATIC,15,38,127,9
+    LTEXT           "- buttons 0 and 1 for side collisions",IDC_STATIC,27,48,116,9
+    LTEXT           "- button 2 for dirt road effect",IDC_STATIC,27,59,92,9
+    LTEXT           "- button 3 for bumpy road effect",IDC_STATIC,27,70,104,9
+    LTEXT           "- button 4 for slippery road effect",IDC_STATIC,213,47,116,9
+    LTEXT           "- button 5 for car airborne effect",IDC_STATIC,213,58,116,9
+    LTEXT           "- button 6 for frontal collision",IDC_STATIC,213,70,116,9
+    GROUPBOX        "Device 1",IDC_STATIC,200,89,184,281
+    LTEXT           "",IDC_BUTTONS3,251,222,120,8
+    GROUPBOX        "Position",IDC_STATIC,207,118,171,148
+    LTEXT           "Speed (0 - 1000):",IDC_SPEED_TEXT2,207,105,58,8
+    LTEXT           "0",IDC_SPEED2,269,105,29,8
+    GROUPBOX        "Usage",IDC_STATIC,7,7,377,78
+    LTEXT           "off",IDC_DIRT_ROAD_PLAYING,103,284,9,8
+    LTEXT           "off",IDC_BUMPY_ROAD_PLAYING,103,295,9,8
+    LTEXT           "off",IDC_SLIPPERY_ROAD_PLAYING,103,306,9,8
+    LTEXT           "off",IDC_CAR_AIRBORNE_PLAYING,103,317,9,8
+    GROUPBOX        "Forces",IDC_STATIC,14,271,171,59
+    LTEXT           "Dirt road effect:",IDC_STATIC,20,284,51,9
+    LTEXT           "Bumpy road effect:",IDC_STATIC,20,295,63,9
+    LTEXT           "Slippery road effect:",IDC_STATIC,20,306,66,9
+    LTEXT           "Car airborne effect:",IDC_STATIC,20,317,66,9
+    GROUPBOX        "Forces",IDC_STATIC,207,271,171,59
+    LTEXT           "Dirt road effect:",IDC_STATIC,213,284,51,9
+    LTEXT           "Bumpy road effect:",IDC_STATIC,213,295,63,9
+    LTEXT           "Slippery road effect:",IDC_STATIC,213,305,66,9
+    LTEXT           "Car airborne effect:",IDC_STATIC,213,316,66,9
+    LTEXT           "off",IDC_DIRT_ROAD_PLAYING2,295,283,9,8
+    LTEXT           "off",IDC_BUMPY_ROAD_PLAYING2,295,294,9,8
+    LTEXT           "off",IDC_SLIPPERY_ROAD_PLAYING2,295,305,9,8
+    LTEXT           "off",IDC_CAR_AIRBORNE_PLAYING2,295,316,9,8
+    LTEXT           "Brake (0 - 1000):",IDC_BRAKE_TEXT3,107,105,58,8
+    LTEXT           "0",IDC_BRAKE,165,105,24,8
+    LTEXT           "Brake (0 - 1000):",IDC_BRAKE_TEXT2,301,105,58,8
+    LTEXT           "0",IDC_BRAKE2,360,105,22,8
+    LTEXT           "Left Trigger:",IDC_Z_ROT_TEXT3,22,215,40,8
+    LTEXT           "Right Trigger:",IDC_RIGHT_TRIGGER_TEXT,104,215,45,8
+    LTEXT           "Thumb LX:",IDC_Z_ROT_TEXT5,22,225,40,8
+    LTEXT           "Thumb LY:",IDC_THUMB_LY_TEXT,104,225,45,8
+    LTEXT           "Thumb RX:",IDC_THUMB_RX_TEXT,22,235,40,8
+    LTEXT           "Thumb RY:",IDC_THUMB_RY_TEXT,104,235,45,8
+    LTEXT           "0",IDC_LEFT_TRIGGER,67,215,33,8
+    LTEXT           "0",IDC_THUMB_LX,67,225,33,8
+    LTEXT           "0",IDC_THUMB_RX,67,235,33,8
+    LTEXT           "0",IDC_RIGHT_TRIGGER,154,215,30,8
+    LTEXT           "0",IDC_THUMB_LY,154,225,25,8
+    LTEXT           "0",IDC_THUMB_RY,154,236,27,8
+    LTEXT           "Left Trigger:",IDC_Z_ROT_TEXT9,214,216,40,8
+    LTEXT           "Right Trigger:",IDC_Z_ROT_TEXT10,296,216,45,8
+    LTEXT           "Thumb LX:",IDC_Z_ROT_TEXT11,214,226,40,8
+    LTEXT           "Thumb LY:",IDC_Z_ROT_TEXT12,296,226,45,8
+    LTEXT           "Thumb RX:",IDC_Z_ROT_TEXT13,214,236,40,8
+    LTEXT           "Thumb RY:",IDC_Z_ROT_TEXT14,296,236,45,8
+    LTEXT           "0",IDC_LEFT_TRIGGER2,260,216,33,8
+    LTEXT           "0",IDC_THUMB_LX2,260,226,33,8
+    LTEXT           "0",IDC_THUMB_RX2,260,236,33,8
+    LTEXT           "0",IDC_RIGHT_TRIGGER2,346,216,25,8
+    LTEXT           "0",IDC_THUMB_LY2,346,226,25,8
+    LTEXT           "0",IDC_THUMB_RY2,346,237,25,8
+    GROUPBOX        "Wheel Properties",IDC_STATIC,14,334,171,32
+    PUSHBUTTON      "Get Current",IDC_BUTTON_GET_WHEEL_PROPERTIES0,20,346,64,14
+    GROUPBOX        "Wheel Properties",IDC_STATIC,7,373,377,109
+    LTEXT           "Force enabled:",IDC_STATIC,15,386,49,8
+    LTEXT           "Overall gain:",IDC_STATIC,15,401,42,8
+    LTEXT           "Spring gain:",IDC_STATIC,15,416,39,8
+    LTEXT           "Damper gain:",IDC_STATIC,15,431,44,8
+    LTEXT           "Pedals are combined:",IDC_STATIC,197,386,69,8
+    LTEXT           "Degrees of turn:",IDC_STATIC,197,401,54,8
+    LTEXT           "User allows game to adjust settings:",IDC_STATIC,197,433,117,8
+    LTEXT           "Default spring enabled:",IDC_STATIC,15,446,76,8
+    LTEXT           "Default spring gain:",IDC_STATIC,15,461,64,8
+    EDITTEXT        IDC_EDIT_WHEEL_PROPERTIES0,89,346,54,14,ES_AUTOHSCROLL | WS_DISABLED
+    GROUPBOX        "Wheel Properties",IDC_STATIC,207,334,172,32
+    PUSHBUTTON      "Get Current",IDC_BUTTON_GET_WHEEL_PROPERTIES1,213,346,59,14
+    EDITTEXT        IDC_EDIT_WHEEL_PROPERTIES1,278,346,55,14,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT_OVERALL_GAIN,95,398,54,14,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_DEGREES_TURN,320,399,54,14,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_DEFAULT_SPRING_GAIN,95,459,54,14,ES_AUTOHSCROLL | ES_NUMBER | WS_DISABLED
+    CONTROL         "",IDC_CHECK_FORCE_ENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,386,16,10
+    CONTROL         "",IDC_CHECKDEFAULT_SPRING_ENABLED,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,117,447,16,10
+    CONTROL         "",IDC_CHECK_PEDALS_COMBINED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,342,385,16,10
+    EDITTEXT        IDC_EDIT_SPRING_GAIN,95,414,54,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_CHECK_USER_ALLOWS_SETTINGS,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,342,432,16,10
+    EDITTEXT        IDC_EDIT_DAMPER_GAIN,95,430,54,14,ES_AUTOHSCROLL | ES_NUMBER
+    PUSHBUTTON      "Defaults",IDC_BUTTON_DEFAULTS,195,459,50,14
+    LTEXT           "Install Logitech Gaming Software 5.03 or newer for Wheel Properties Get and Set to work.",IDC_STATIC,16,27,368,9
+    LTEXT           "Shifter is gated:",IDC_STATIC_SHIFTER_GATED,197,417,52,8,WS_DISABLED
+    CONTROL         "",IDC_CHECK_SHIFTER_GATED,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,342,416,16,10
+    PUSHBUTTON      "Set Preferred",IDC_BUTTON_SET_PREFERRED,249,459,64,14
+    EDITTEXT        IDC_EDIT_SET_PREFERRED,318,459,54,14,ES_AUTOHSCROLL | WS_DISABLED
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,2,0
+ PRODUCTVERSION 1,0,2,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "Logitech Inc."
+            VALUE "FileDescription", "Demo for Logitech Steering Wheel SDK"
+            VALUE "FileVersion", "1.00.002"
+            VALUE "InternalName", "SteeringWheelSDKDemo"
+            VALUE "LegalCopyright", "(c) Logitech Inc.  All rights reserved."
+            VALUE "OriginalFilename", "SteeringWheelSDKDemo.exe"
+            VALUE "ProductName", "Logitech Steering Wheel SDK"
+            VALUE "ProductVersion", "1.00.002"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_STEERINGWHEELSDKDEMO_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 384
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 501
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\SteeringWheelSDKDemo.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
