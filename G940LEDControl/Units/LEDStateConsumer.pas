@@ -3,6 +3,7 @@ unit LEDStateConsumer;
 interface
 uses
   OtlComm,
+  OtlCommon,
   OtlTaskControl,
 
   LEDFunctionMap,
@@ -17,16 +18,18 @@ const
   MSG_PROCESS_MESSAGES = 5;
   MSG_FINALIZE = 6;
 
-  MSG_RUN_IN_MAINTHREAD = 7;
+  MSG_PROVIDER_KILLED = 7;
+  MSG_RUN_IN_MAINTHREAD = 8;
 
   MSG_CONSUMER_OFFSET = MSG_RUN_IN_MAINTHREAD;
 
   TIMER_PROCESSMESSAGES = 1;
+  TIMER_CONSUMER_OFFSET = TIMER_PROCESSMESSAGES;
 
   
 type
   { This interface name made me giggle. Because it's true. }
-  IRunInMainThread = interface
+  IRunInMainThread = interface(IOmniWaitableValue)
     ['{68B8F2F7-ED40-4078-9D99-503D7AFA068B}']
     procedure Execute;
   end;
@@ -40,6 +43,7 @@ type
     FTimerSet: Boolean;
     FChanged: Boolean;
     FUpdateCount: Integer;
+    FDestroying: Boolean;
   protected
     procedure MsgClearFunctions(var msg: TOmniMessage); message MSG_CLEAR_FUNCTIONS;
     procedure MsgSetFunction(var msg: TOmniMessage); message MSG_SET_FUNCTION;
@@ -53,7 +57,7 @@ type
     procedure InitializeProvider(AProviderClass: TLEDStateProviderClass);
     procedure FinalizeProvider;
 
-    procedure RunInMainThread(AExecutor: IRunInMainThread);
+    procedure RunInMainThread(AExecutor: IRunInMainThread; AWait: Boolean = False);
     procedure InitializeLEDState; virtual;
     procedure ResetLEDState; virtual;
     procedure LEDStateChanged(ALEDIndex: Integer; AState: TLEDState); virtual;
@@ -63,6 +67,7 @@ type
     function GetFunctionMap: TLEDFunctionMap;
     procedure SetStateByFunction(AFunction: Integer; AState: TLEDState);
 
+    property Destroying: Boolean read FDestroying;
     property FunctionMap: TLEDFunctionMap read GetFunctionMap;
     property StateMap: TLEDStateMap read FStateMap;
     property Provider: TLEDStateProvider read FProvider;
@@ -72,22 +77,20 @@ type
 
     procedure BeginUpdate;
     procedure EndUpdate;
-
-    class procedure ClearFunctions(AConsumer: IOmniTaskControl);
-    class procedure SetFunction(AConsumer: IOmniTaskControl; ALEDIndex, AFunction: Integer);
-    class procedure InitializeStateProvider(AConsumer: IOmniTaskControl; AProviderClass: TLEDStateProviderClass);
-    class procedure FinalizeStateProvider(AConsumer: IOmniTaskControl);
-    class procedure Finalize(AConsumer: IOmniTaskControl);
   end;
 
+
+  procedure ClearFunctions(AConsumer: IOmniTaskControl);
+  procedure SetFunction(AConsumer: IOmniTaskControl; ALEDIndex, AFunction: Integer);
+  procedure InitializeStateProvider(AConsumer: IOmniTaskControl; AProviderClass: TLEDStateProviderClass);
+  procedure FinalizeStateProvider(AConsumer: IOmniTaskControl);
+  procedure Finalize(AConsumer: IOmniTaskControl);
 
 
 implementation
 uses
   SysUtils,
-  Windows,
-  
-  OtlCommon;
+  Windows;
 
 
 const
@@ -103,8 +106,6 @@ begin
   FStateMap := TLEDStateMap.Create;
 
   InitializeLEDState;
-
-
 end;
 
 
@@ -189,6 +190,12 @@ begin
   BeginUpdate;
   try
     Provider.ProcessMessages;
+
+    if Provider.Terminated then
+    begin
+      FinalizeProvider;
+      Task.Comm.Send(MSG_PROVIDER_KILLED, '');
+    end;
   finally
     EndUpdate;
   end;
@@ -197,7 +204,9 @@ end;
 
 procedure TLEDStateConsumer.MsgFinalize(var msg: TOmniMessage);
 begin
+  FDestroying := True;
   FinalizeProvider;
+  Task.Terminate;
 end;
 
 
@@ -206,16 +215,23 @@ begin
   FinalizeProvider;
 
   FProvider := AProviderClass.Create(Self);
-  // ToDo exception handling
-  Provider.Initialize;
+  try
+    Provider.Initialize;
 
-  if Provider.ProcessMessagesInterval > -1 then
-  begin
-    Task.SetTimer(TIMER_PROCESSMESSAGES, Provider.ProcessMessagesInterval, MSG_PROCESS_MESSAGES);
-    FTimerSet := True;
+    if Provider.ProcessMessagesInterval > -1 then
+    begin
+      Task.SetTimer(TIMER_PROCESSMESSAGES, Provider.ProcessMessagesInterval, MSG_PROCESS_MESSAGES);
+      FTimerSet := True;
+    end;
+
+    InitializeLEDState;
+  except
+    on E:Exception do
+    begin
+      FProvider := nil;
+      Task.Comm.Send(MSG_PROVIDER_KILLED, E.Message);
+    end;
   end;
-
-  InitializeLEDState;
 end;
 
 
@@ -239,20 +255,11 @@ begin
 end;
 
 
-procedure TLEDStateConsumer.RunInMainThread(AExecutor: IRunInMainThread);
-var
-  value: TOmniWaitableValue;
-
+procedure TLEDStateConsumer.RunInMainThread(AExecutor: IRunInMainThread; AWait: Boolean);
 begin
-  value := TOmniWaitableValue.Create;
-  try
-    value.Value.AsInterface := AExecutor;
-    Task.Comm.Send(MSG_RUN_IN_MAINTHREAD, value);
-
-    value.WaitFor(INFINITE);
-  finally
-    FreeAndNil(value);
-  end;
+  Task.Comm.Send(MSG_RUN_IN_MAINTHREAD, AExecutor);
+  if AWait then
+    AExecutor.WaitFor(INFINITE);
 end;
 
 
@@ -312,31 +319,32 @@ begin
 end;
 
 
-class procedure TLEDStateConsumer.ClearFunctions(AConsumer: IOmniTaskControl);
+{ Helpers }
+procedure ClearFunctions(AConsumer: IOmniTaskControl);
 begin
   AConsumer.Comm.Send(MSG_CLEAR_FUNCTIONS);
 end;
 
 
-class procedure TLEDStateConsumer.SetFunction(AConsumer: IOmniTaskControl; ALEDIndex, AFunction: Integer);
+procedure SetFunction(AConsumer: IOmniTaskControl; ALEDIndex, AFunction: Integer);
 begin
   AConsumer.Comm.Send(MSG_SET_FUNCTION, [ALEDIndex, AFunction]);
 end;
 
 
-class procedure TLEDStateConsumer.InitializeStateProvider(AConsumer: IOmniTaskControl; AProviderClass: TLEDStateProviderClass);
+procedure InitializeStateProvider(AConsumer: IOmniTaskControl; AProviderClass: TLEDStateProviderClass);
 begin
   AConsumer.Comm.Send(MSG_INITIALIZE_PROVIDER, Pointer(AProviderClass));
 end;
 
 
-class procedure TLEDStateConsumer.FinalizeStateProvider(AConsumer: IOmniTaskControl);
+procedure FinalizeStateProvider(AConsumer: IOmniTaskControl);
 begin
   AConsumer.Comm.Send(MSG_FINALIZE_PROVIDER);
 end;
 
 
-class procedure TLEDStateConsumer.Finalize(AConsumer: IOmniTaskControl);
+procedure Finalize(AConsumer: IOmniTaskControl);
 begin
   AConsumer.Comm.Send(MSG_FINALIZE);
 end;

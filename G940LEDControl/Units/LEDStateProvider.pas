@@ -9,15 +9,7 @@ uses
   LEDFunctionMap;
 
 type
-  EInitializeError = class(Exception)
-  private
-    FExitCode: Integer;
-  public
-    constructor Create(const Msg: string; ExitCode: Integer = 0);
-
-    property ExitCode: Integer read FExitCode write FExitCode;
-  end;
-
+  EInitializeError = class(Exception);
 
   ILEDStateConsumer = interface
     ['{6E630C92-7C5C-4D16-8BED-AE27559FA584}']
@@ -53,7 +45,14 @@ type
   end;
 
   TLEDStateProviderClass = class of TLEDStateProvider;
-  
+
+
+const
+  EXIT_SUCCESS = 0;
+  EXIT_ERROR = 1;
+
+  EXIT_CONSUMER_OFFSET = 100;
+  EXIT_PROVIDER_OFFSET = 200;
 
 implementation
 
@@ -97,15 +96,6 @@ end;
 function TLEDStateProvider.GetProcessMessagesInterval: Integer;
 begin
   Result := -1;
-end;
-
-
-{ EInitializeError }
-constructor EInitializeError.Create(const Msg: string; ExitCode: Integer);
-begin
-  inherited Create(Msg);
-  
-  FExitCode := ExitCode;
 end;
 
 end.

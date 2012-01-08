@@ -74,6 +74,8 @@ type
 
     procedure HandleDeviceStateMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
     procedure HandleRunInMainThreadMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
+    procedure HandleProviderKilled(ATask: IOmniTaskControl; AMessage: TOmniMessage);
+    procedure HandleProviderKilledFSX(ATask: IOmniTaskControl; AMessage: TOmniMessage);
 
     property EventMonitor: TOmniEventMonitor read FEventMonitor;
     property StateConsumerTask: IOmniTaskControl read FStateConsumerTask;
@@ -83,6 +85,7 @@ type
 implementation
 uses
   ComObj,
+  Dialogs,
   SysUtils,
   Windows,
 
@@ -131,7 +134,7 @@ procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   if Assigned(StateConsumerTask) then
   begin
-    StateConsumerTask.Terminate;
+    LEDStateConsumer.Finalize(StateConsumerTask);
     CanClose := False;
   end;
 end;
@@ -199,13 +202,13 @@ end;
 procedure TMainForm.InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
 begin  
   UpdateMapping;
-  TLEDStateConsumer.InitializeStateProvider(StateConsumerTask, AProviderClass);
+  LEDStateConsumer.InitializeStateProvider(StateConsumerTask, AProviderClass);
 end;
 
 
 procedure TMainForm.FinalizeStateProvider;
 begin
-  TLEDStateConsumer.FinalizeStateProvider(StateConsumerTask);
+  LEDStateConsumer.FinalizeStateProvider(StateConsumerTask);
 end;
 
 
@@ -214,19 +217,21 @@ begin
   if not Assigned(StateConsumerTask) then
     Exit;
 
-  TLEDStateConsumer.ClearFunctions(StateConsumerTask);
+  LEDStateConsumer.ClearFunctions(StateConsumerTask);
   UpdateMappingFSX;
 end;
 
 
 procedure TMainForm.UpdateMappingFSX;
 begin
-  TLEDStateConsumer.SetFunction(StateConsumerTask, 1, FUNCTION_FSX_PARKINGBRAKE);
-  TLEDStateConsumer.SetFunction(StateConsumerTask, 2, FUNCTION_FSX_LANDINGLIGHTS);
-  TLEDStateConsumer.SetFunction(StateConsumerTask, 3, FUNCTION_FSX_GEAR);
-  TLEDStateConsumer.SetFunction(StateConsumerTask, 6, FUNCTION_FSX_INSTRUMENTLIGHTS);
+  LEDStateConsumer.SetFunction(StateConsumerTask, 1, FUNCTION_FSX_PARKINGBRAKE);
+  LEDStateConsumer.SetFunction(StateConsumerTask, 2, FUNCTION_FSX_LANDINGLIGHTS);
+  LEDStateConsumer.SetFunction(StateConsumerTask, 3, FUNCTION_FSX_GEAR);
 
-  TLEDStateConsumer.SetFunction(StateConsumerTask, 7, FUNCTION_OFF);
+  LEDStateConsumer.SetFunction(StateConsumerTask, 4, FUNCTION_FSX_ENGINE);
+  LEDStateConsumer.SetFunction(StateConsumerTask, 6, FUNCTION_FSX_INSTRUMENTLIGHTS);
+
+//  LEDStateConsumer.SetFunction(StateConsumerTask, 7, FUNCTION_OFF);
 end;
 
 
@@ -235,6 +240,7 @@ begin
   case msg.MsgID of
     MSG_NOTIFY_DEVICESTATE:   HandleDeviceStateMessage(task, msg);
     MSG_RUN_IN_MAINTHREAD:    HandleRunInMainThreadMessage(task, msg);
+    MSG_PROVIDER_KILLED:      HandleProviderKilled(task, msg);
   end;
 end;
 
@@ -269,15 +275,32 @@ end;
 
 procedure TMainForm.HandleRunInMainThreadMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
 var
-  waitableObject: TObject;
-  waitableValue: TOmniWaitableValue;
+  executor: IRunInMainThread;
 
 begin
-  waitableObject := ATask.Param[0].AsObject;
-  waitableValue := (waitableObject as TOmniWaitableValue);
+  executor := (AMessage.MsgData.AsInterface as IRunInMainThread);
+  executor.Execute;
+  executor.Signal;
+end;
 
-//  (waitableValue.Value.AsInterface as IRunInMainThread).Execute;
-//  waitableValue.Signal;
+
+procedure TMainForm.HandleProviderKilled(ATask: IOmniTaskControl; AMessage: TOmniMessage);
+begin
+  HandleProviderKilledFSX(ATask, AMessage);
+end;
+
+
+procedure TMainForm.HandleProviderKilledFSX(ATask: IOmniTaskControl; AMessage: TOmniMessage);
+var
+  msg: string;
+
+begin
+  btnFSXDisconnect.Enabled := False;
+  btnFSXConnect.Enabled := True;
+
+  msg := AMessage.MsgData;
+  if Length(msg) > 0 then
+    ShowMessage(msg);
 end;
 
 

@@ -672,8 +672,8 @@ var
   SimConnect_AddToDataDefinition: function(
     hSimConnect: THandle;
     DefineID: SIMCONNECT_DATA_DEFINITION_ID;
-    DatumName: string;
-    UnitsName: string;
+    DatumName: AnsiString;
+    UnitsName: AnsiString;
     DatumType: SIMCONNECT_DATAType = SIMCONNECT_DATAType_FLOAT64;
     fEpsilon: Single = 0;
     DatumID: DWORD = SIMCONNECT_UNUSED
@@ -685,13 +685,13 @@ var
 
   SimConnect_FlightLoad: function(
     hSimConnect: THandle;
-    const szFileName: PChar
+    const szFileName: PAnsiChar
     ): HRESULT; StdCall;
 
   SimConnect_FlightSave: function(
     hSimConnect: THandle;
-    const szFileName: PChar;
-    const szDescription: PChar;
+    const szFileName: PAnsiChar;
+    const szDescription: PAnsiChar;
     Flags: DWORD
     ): HRESULT; StdCall;
 
@@ -703,7 +703,7 @@ var
 
   SimConnect_Open: function(
     var phSimConnect: THandle;
-    szName: PChar;
+    szName: PAnsiChar;
     hWnd: HWnd;
     UserEventWin32: DWORD;
     hEventHandle: THandle;
@@ -755,14 +755,14 @@ var
   SimConnect_MapClientEventToSimEvent: function(
     hSimConnect: THandle;
     EventID: SIMCONNECT_CLIENT_EVENT_ID;
-    EventName: string = ''
+    EventName: AnsiString = ''
     ): HRESULT; StdCall;
 
   SimConnect_MapInputEventToClientEvent: function(
     hSimConnect: THandle;
     GroupID:
     SIMCONNECT_INPUT_GROUP_ID;
-    const szInputDefinition: PChar;
+    const szInputDefinition: PAnsiChar;
     DownEventID: SIMCONNECT_CLIENT_EVENT_ID;
     DownValue: DWORD = 0;
     UpEventID: SIMCONNECT_CLIENT_EVENT_ID = Ord(SIMCONNECT_UNUSED);
@@ -780,8 +780,8 @@ var
   SimConnect_RetrieveString: function(
     pData: PSimConnectRecv;
     cbData: Cardinal;
-    pStringV: PChar;
-    var pszString: PChar;
+    pStringV: PAnsiChar;
+    var pszString: PAnsiChar;
     var pcbString: Cardinal
     ): HRESULT; StdCall;
 
@@ -820,7 +820,7 @@ var
 
   SimConnect_MenuAddItem: function(
     hSimConnect: THandle;
-    const szMenuItem: PChar;
+    const szMenuItem: PAnsiChar;
     MenuEventID: SIMCONNECT_CLIENT_EVENT_ID;
     dwData: Cardinal
     ): HRESULT; StdCall;
@@ -828,9 +828,9 @@ var
   SimConnect_RequestReservedKey: function(
     hSimConnect: THandle;
     EventID: SIMCONNECT_CLIENT_EVENT_ID;
-    szKeyChoice1: string;
-    szKeyChoice2: string;
-    szKeyChoice3: string
+    szKeyChoice1: AnsiString;
+    szKeyChoice2: AnsiString;
+    szKeyChoice3: AnsiString
     ): HRESULT; StdCall;
 
   SimConnect_TransmitClientEvent: function(
@@ -852,20 +852,20 @@ var
   SimConnect_WeatherRequestObservationAtStation: function(
     hSimConnect: THandle;
     RequestID: SIMCONNECT_DATA_REQUEST_ID;
-    const szICAO: PChar
+    const szICAO: PAnsiChar
     ): HRESULT; StdCall;
 
   SimConnect_AICreateSimulatedObject: function(
     hSimConnect: THandle;
-    const szContainerTitle: PChar;
+    const szContainerTitle: PAnsiChar;
     InitPos: SIMCONNECT_DATA_INITPOSITION;
     RequestID: SIMCONNECT_DATA_REQUEST_ID
     ): HRESULT; StdCall;
 
   SimConnect_AICreateNonATCAircraft: function(
     hSimConnect: THandle;
-    const szContainerTitle: PChar;
-    const szTailNumber: PChar;
+    const szContainerTitle: PAnsiChar;
+    const szTailNumber: PAnsiChar;
     InitPos: SIMCONNECT_DATA_INITPOSITION;
     RequestID: SIMCONNECT_DATA_REQUEST_ID
     ): HRESULT; StdCall;
@@ -873,30 +873,30 @@ var
   SimConnect_AISetAircraftFlightPlan: function(
     hSimConnect: THandle;
     ObjectID: SIMCONNECT_OBJECT_ID;
-    const szFlightPlanPath: PChar;
+    const szFlightPlanPath: PAnsiChar;
     RequestID: SIMCONNECT_DATA_REQUEST_ID
     ): HRESULT; StdCall;
 
   SimConnect_AICreateParkedATCAircraft: function(
     hSimConnect: THandle;
-    const szContainerTitle: PChar;
-    const szTailNumber: PChar;
-    const szAirportID: PChar;
+    const szContainerTitle: PAnsiChar;
+    const szTailNumber: PAnsiChar;
+    const szAirportID: PAnsiChar;
     RequestID: SIMCONNECT_DATA_REQUEST_ID
     ): HRESULT; StdCall;
 
   SimConnect_SubscribeToSystemEvent: function(
     hSimConnect: THandle;
     EventID: SIMCONNECT_CLIENT_EVENT_ID;
-    const SystemEventName: PChar
+    const SystemEventName: PAnsiChar
     ): HRESULT; StdCall;
 
   SimConnect_AICreateEnrouteATCAircraft: function(
     hSimConnect: THandle;
-    const szContainerTitle: PChar;
-    const szTailNumber: PChar;
+    const szContainerTitle: PAnsiChar;
+    const szTailNumber: PAnsiChar;
     iFlightNumber: Integer;
-    const szFlightPlanPath: PChar;
+    const szFlightPlanPath: PAnsiChar;
     dFlightPlanPosition: Double;
     bTouchAndGo: Bool;
     RequestID: SIMCONNECT_DATA_REQUEST_ID
@@ -905,15 +905,15 @@ var
   SimConnect_RequestSystemState: function(
     hSimConnect: THandle;
     RequestID: SIMCONNECT_DATA_REQUEST_ID;
-    const szState: PChar
+    const szState: PAnsiChar
     ): HRESULT; StdCall;
 
   SimConnect_SetSystemState: function(
     hSimConnect: THandle;
-    const szState: PChar;
+    const szState: PAnsiChar;
     dwInteger: Cardinal;
     fFloat: Single;
-    const szString: PChar
+    const szString: PAnsiChar
     ): HRESULT; StdCall;
 
   SimConnect_GetLastSentPacketID: function(
@@ -924,7 +924,7 @@ var
   SimConnect_MenuAddSubItem: function(
     hSimConnect: THandle;
     MenuEventID: SIMCONNECT_CLIENT_EVENT_ID;
-    const szMenuItem: PChar;
+    const szMenuItem: PAnsiChar;
     SubMenuEventID: SIMCONNECT_CLIENT_EVENT_ID;
     dwData: Cardinal
     ): HRESULT; StdCall;
@@ -942,7 +942,7 @@ var
     ): HRESULT; StdCall;
 
   SimConnect_FlightPlanLoad: function(hSimConnect: THandle; const szFileName:
-    PChar): HRESULT; StdCall;
+    PAnsiChar): HRESULT; StdCall;
 
   // BEWARE!!!!!
   // Unlike the C version these must not pass the GUID as a "const"
@@ -989,7 +989,7 @@ var
   SimConnect_RemoveInputEvent: function(
     hSimConnect: THandle;
     GroupID: SIMCONNECT_INPUT_GROUP_ID;
-    const szInputDefinition: PChar
+    const szInputDefinition: PAnsiChar
     ): HRESULT; StdCall;
 
   SimConnect_ClearInputGroup: function(
@@ -1013,8 +1013,8 @@ var
   SimConnect_WeatherCreateStation: function(
     hSimConnect: THandle;
     RequestID: SIMCONNECT_DATA_REQUEST_ID;
-    const szICAO: PChar;
-    const szName: PChar;
+    const szICAO: PAnsiChar;
+    const szName: PAnsiChar;
     lat: Single;
     lon: Single;
     alt: Single
@@ -1023,13 +1023,13 @@ var
   SimConnect_WeatherRemoveStation: function(
     hSimConnect: THandle;
     RequestID: SIMCONNECT_DATA_REQUEST_ID;
-    const szICAO: PChar
+    const szICAO: PAnsiChar
     ): HRESULT; StdCall;
 
   SimConnect_WeatherSetObservation: function(
     hSimConnect: THandle;
     Seconds: Cardinal;
-    const szMETAR: PChar
+    const szMETAR: PAnsiChar
     ): HRESULT; StdCall;
 
   SimConnect_WeatherSetModeServer: function(
@@ -1040,7 +1040,7 @@ var
 
   SimConnect_WeatherSetModeTheme: function(
     hSimConnect: THandle;
-    const szThemeName: PChar
+    const szThemeName: PAnsiChar
     ): HRESULT; StdCall;
 
   SimConnect_WeatherSetModeGlobal: function(
@@ -1104,16 +1104,16 @@ var
     ): HRESULT; StdCall;
 
   SimConnect_InsertString: function(
-    pDest: PChar;
+    pDest: PAnsiChar;
     cbDest: Cardinal;
     var ppEnd: Pointer;
     var pcbStringV: Cardinal;
-    const pSource: PChar
+    const pSource: PAnsiChar
     ): HRESULT; StdCall;
 
   SimConnect_MapClientDataNameToID: function(
     hSimConnect: THandle;
-    const szClientDataName: PChar;
+    const szClientDataName: PAnsiChar;
     ClientDataID: SIMCONNECT_CLIENT_DATA_ID
     ): HRESULT; StdCall;
 
@@ -1407,7 +1407,7 @@ function InitSimConnectFromLibrary(Name: string): boolean;
 begin
   Result := False;
   CloseSimConnect;
-  ScHandle := LoadLibrary(Pchar(Name));
+  ScHandle := LoadLibrary(PChar(Name));
   if ScHandle <> 0 then
   begin
     LoadProcAddresses;

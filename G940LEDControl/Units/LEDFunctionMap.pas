@@ -10,12 +10,12 @@ uses
   
 type
   TLEDState = (lsOff, lsGreen, lsAmber, lsRed, lsWarning, lsError);
+  TLEDStateSet = set of TLEDState;
+
 
   TLEDFunctionMap = class(TObject)
   private
     FFunctions: TX2IIHash;
-  protected
-    function Find(AFunction: Integer; out ALEDIndex: Integer): Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -43,6 +43,10 @@ type
 
     function GetState(ALEDIndex: Integer; ADefault: TLEDState = lsGreen): TLEDState;
     function SetState(ALEDIndex: Integer; AState: TLEDState): Boolean;
+
+    function HasStates(AStates: TLEDStateSet): Boolean;
+    function FindFirst(AStates: TLEDStateSet; out ALEDIndex: Integer; out AState: TLEDState): Boolean;
+    function FindNext(AStates: TLEDStateSet; out ALEDIndex: Integer; out AState: TLEDState): Boolean;
   end;
 
 
@@ -108,21 +112,14 @@ end;
 function TLEDFunctionMap.FindFirst(AFunction: Integer; out ALEDIndex: Integer): Boolean;
 begin
   FFunctions.First;
-  Result := Find(AFunction, ALEDIndex);
+  Result := FindNext(AFunction, ALEDIndex);
 end;
 
 
 function TLEDFunctionMap.FindNext(AFunction: Integer; out ALEDIndex: Integer): Boolean;
 begin
-  Result := Find(AFunction, ALEDIndex);
-end;
-
-
-
-function TLEDFunctionMap.Find(AFunction: Integer; out ALEDIndex: Integer): Boolean;
-begin
   Result := False;
-  
+
   while FFunctions.Next do
   begin
     if FFunctions.CurrentValue = AFunction then
@@ -175,6 +172,39 @@ begin
 
   if Result then
     FStates[ALEDIndex] := Ord(AState);
+end;
+
+
+function TLEDStateMap.HasStates(AStates: TLEDStateSet): Boolean;
+var
+  ledIndex: Integer;
+  state: TLEDState;
+
+begin
+  Result := FindFirst(AStates, ledIndex, state);
+end;
+
+
+
+function TLEDStateMap.FindFirst(AStates: TLEDStateSet; out ALEDIndex: Integer; out AState: TLEDState): Boolean;
+begin
+  FStates.First;
+  Result := FindNext(AStates, ALEDIndex, AState);
+end;
+
+
+function TLEDStateMap.FindNext(AStates: TLEDStateSet; out ALEDIndex: Integer; out AState: TLEDState): Boolean;
+begin
+  Result := False;
+
+  while FStates.Next do
+    if TLEDState(FStates.CurrentValue) in AStates then
+    begin
+      ALEDIndex := FStates.CurrentKey;
+      AState := TLEDState(FStates.CurrentValue);
+      Result := True;
+      break;
+    end;
 end;
 
 end.

@@ -66,11 +66,11 @@ begin
   LogiJoystickDLLHandle := LoadLibrary(LogiJoystickDLLFileName);
   if LogiJoystickDLLHandle <> 0 then
   begin
-    @SetButtonColor := GetProcAddress(LogiJoystickDLLHandle, 'LJ_SetButtonColor');
-    @SetAllButtonsColor := GetProcAddress(LogiJoystickDLLHandle, 'LJ_SetAllButtonsColor');
-    @IsButtonColor := GetProcAddress(LogiJoystickDLLHandle, 'LJ_IsButtonColor');
-    @SetLEDs := GetProcAddress(LogiJoystickDLLHandle, 'LJ_SetLEDs');
-    @GetLEDs := GetProcAddress(LogiJoystickDLLHandle, 'LJ_GetLEDs');
+    @SetButtonColor := GetProcAddress(LogiJoystickDLLHandle, 'SetButtonColor');
+    @SetAllButtonsColor := GetProcAddress(LogiJoystickDLLHandle, 'SetAllButtonsColor');
+    @IsButtonColor := GetProcAddress(LogiJoystickDLLHandle, 'IsButtonColor');
+    @SetLEDs := GetProcAddress(LogiJoystickDLLHandle, 'SetLEDs');
+    @GetLEDs := GetProcAddress(LogiJoystickDLLHandle, 'GetLEDs');
   end;
 end;
 

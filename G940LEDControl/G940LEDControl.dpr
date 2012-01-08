@@ -7,7 +7,9 @@ uses
   LEDStateConsumer in 'Units\LEDStateConsumer.pas',
   LEDStateProvider in 'Units\LEDStateProvider.pas',
   LEDFunctionMap in 'Units\LEDFunctionMap.pas',
-  G940LEDStateConsumer in 'Units\G940LEDStateConsumer.pas';
+  G940LEDStateConsumer in 'Units\G940LEDStateConsumer.pas',
+  LogiJoystickDLL in '..\Shared\LogiJoystickDLL.pas',
+  SimConnect in '..\Shared\SimConnect.pas';
 
 {$R *.res}
 
