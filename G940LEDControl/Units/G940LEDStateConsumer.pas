@@ -21,11 +21,16 @@ type
   private
     FDirectInput: IDirectInput8;
     FThrottleDevice: IDirectInputDevice8;
+
+    FRed: Byte;
+    FGreen: Byte;
   protected
     procedure MsgFindThrottleDevice(var msg: TOmniMessage); message MSG_FINDTHROTTLEDEVICE;
   protected
     function Initialize: Boolean; override;
+    procedure ResetLEDState; override;
     procedure LEDStateChanged(ALEDIndex: Integer; AState: TLEDState); override;
+    procedure Changed; override;
 
     procedure FindThrottleDevice;
     procedure FoundThrottleDevice(ADeviceGUID: TGUID);
@@ -54,16 +59,17 @@ uses
   LogiJoystickDLL;
 
 
+
 type
-  TRunInMainThreadSetButtonColor = class(TInterfacedObject, IRunInMainThread)
+  TRunInMainThreadSetLEDs = class(TInterfacedObject, IRunInMainThread)
   private
     FDevice: IDirectInputDevice8;
-    FButton: TLogiPanelButton;
-    FColor: TLogiColor;
+    FRed: Byte;
+    FGreen: Byte;
   protected
     procedure Execute;
   public
-    constructor Create(device: IDirectInputDevice8; button: TLogiPanelButton; color: TLogiColor);
+    constructor Create(ADevice: IDirectInputDevice8; ARed, AGreen: Byte);
   end;
 
 
@@ -103,9 +109,6 @@ begin
     exit;
   end;
 
-//    btnRetry.Visible := False;
-//    SetState(STATE_SEARCHING, False);
-
   if DirectInput8Create(SysInit.HInstance, DIRECTINPUT_VERSION, IDirectInput8, FDirectInput, nil) <> S_OK then
   begin
     Task.SetExitStatus(EXIT_ERROR_DIRECTINPUT, 'Failed to initialize DirectInput');
@@ -117,31 +120,68 @@ begin
 end;
 
 
+procedure TG940LEDStateConsumer.ResetLEDState;
+begin
+  FRed := 0;
+  FGreen := $FF;
+
+  inherited;
+end;
+
+
 procedure TG940LEDStateConsumer.LEDStateChanged(ALEDIndex: Integer; AState: TLEDState);
+
+  procedure SetBit(var AMask: Byte; ABit: Integer; ASet: Boolean); inline;
+  begin
+    if ASet then
+      AMask := AMask or (1 shl ABit)
+    else
+      AMask := AMask and not (1 shl ABit);
+  end;
+
 var
-  color: TLogiColor;
-//  msg: TMsg;
+  red: Boolean;
+  green: Boolean;
 
 begin
-  // ToDo SetLEDs gebruiken (vereist override van SetStateByFunction om te groeperen)
-  if Assigned(ThrottleDevice) then
-  begin
-    color := LOGI_GREEN;
+  red := False;
+  green := False;
 
-    case AState of
-      lsOff:      color := LOGI_OFF;
-      lsGreen:    color := LOGI_GREEN;
-      lsAmber:    color := LOGI_AMBER;
-      lsRed:      color := LOGI_RED;
+  case AState of
+    lsGreen:
+      green := True;
 
-      // ToDo timers voor warning / error
-      lsWarning:  color := LOGI_RED;
-      lsError:    color := LOGI_RED;
-    end;
+    lsAmber:
+      begin
+        red := True;
+        green := True;
+      end;
 
-    { Logitech SDK will not change the color outside of the main thread }
-    RunInMainThread(TRunInMainThreadSetButtonColor.Create(ThrottleDevice, TLogiPanelButton(ALEDIndex), color));
+    lsRed:
+      red := True;
+
+    // ToDo timers voor warning / error
+    lsWarning:
+      red := True;
+
+    lsError:
+      red := True;
   end;
+
+  SetBit(FRed, ALEDIndex, red);
+  SetBit(FGreen, ALEDIndex, green);
+
+  inherited;
+end;
+
+
+procedure TG940LEDStateConsumer.Changed;
+begin
+  inherited;
+
+  if Assigned(ThrottleDevice) then
+    { Logitech SDK will not change the color outside of the main thread }
+    RunInMainThread(TRunInMainThreadSetLEDs.Create(ThrottleDevice, FRed, FGreen));
 end;
 
 
@@ -154,7 +194,9 @@ begin
                           DIEDFL_ATTACHEDONLY);
 
   if not Assigned(ThrottleDevice) then
-    SetDeviceState(DEVICESTATE_NOTFOUND);
+    SetDeviceState(DEVICESTATE_NOTFOUND)
+  else
+    Changed;
 end;
 
 
@@ -177,43 +219,20 @@ begin
 end;
 
 
-//procedure TCustomLEDStateProvider.SetStateByFunction(AFunction: Integer; AState: TLEDState);
-//var
-//  functionMap: TLEDFunctionMap;
-//  ledIndex: Integer;
-//
-//begin
-//  functionMap := LockFunctionMap;
-//  try
-//    for ledIndex := 0 to Pred(functionMap.Count) do
-//      if functionMap.GetFunction(ledIndex) = AFunction then
-//      begin
-//        if AState <> FState[ledIndex] then
-//        begin
-//          FState[ledIndex] := AState;
-//          ConsumerChannel.Send(MSG_STATECHANGED, [ledIndex, Ord(AState)]);
-//        end;
-//      end;
-//  finally
-//    UnlockFunctionMap;
-//  end;
-//end;
-
-
-{ TRunInMainThreadSetButtonColor }
-constructor TRunInMainThreadSetButtonColor.Create(device: IDirectInputDevice8; button: TLogiPanelButton; color: TLogiColor);
+{ TRunInMainThreadSetLEDs }
+constructor TRunInMainThreadSetLEDs.Create(ADevice: IDirectInputDevice8; ARed, AGreen: Byte);
 begin
   inherited Create;
 
-  FDevice := device;
-  FButton := button;
-  FColor := color;
+  FDevice := ADevice;
+  FRed := ARed;
+  FGreen := AGreen;
 end;
 
 
-procedure TRunInMainThreadSetButtonColor.Execute;
+procedure TRunInMainThreadSetLEDs.Execute;
 begin
-  SetButtonColor(FDevice, FButton, FColor);
+  SetLEDs(FDevice, FRed, FGreen);
 end;
 
 end.

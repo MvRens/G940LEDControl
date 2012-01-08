@@ -39,7 +39,7 @@ type
 
     property Consumer: ILEDStateConsumer read FConsumer;
   public
-    constructor Create(AConsumer: ILEDStateConsumer);
+    constructor Create(AConsumer: ILEDStateConsumer); virtual;
     destructor Destroy; override;
 
     procedure Initialize; virtual;

@@ -51,21 +51,15 @@ type
     btnFSXConnect: TButton;
     btnFSXDisconnect: TButton;
     lblFSXLocal: TLabel;
-    tmrG940Init: TTimer;
 
     procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
     procedure btnRetryClick(Sender: TObject);
     procedure btnFSXConnectClick(Sender: TObject);
     procedure btnFSXDisconnectClick(Sender: TObject);
-//    procedure tmrG940InitTimer(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     FEventMonitor: TOmniEventMonitor;
     FStateConsumerTask: IOmniTaskControl;
-
-//    FInitCounter: Integer;
-//    FInitRedState: Byte;
-//    FInitGreenState: Byte;
   protected
     procedure SetDeviceState(const AMessage: string; AFound: Boolean);
 
@@ -76,6 +70,8 @@ type
     procedure UpdateMappingFSX;
 
     procedure EventMonitorMessage(const task: IOmniTaskControl; const msg: TOmniMessage);
+    procedure EventMonitorTerminated(const task: IOmniTaskControl);
+
     procedure HandleDeviceStateMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
     procedure HandleRunInMainThreadMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
 
@@ -90,6 +86,7 @@ uses
   SysUtils,
   Windows,
 
+  OtlCommon,
   OtlTask,
 
   FSXLEDStateProvider,
@@ -125,17 +122,18 @@ begin
 
   // ToDo handle OnTerminate, check exit code for initialization errors
   EventMonitor.OnTaskMessage := EventMonitorMessage;
+  EventMonitor.OnTaskTerminated := EventMonitorTerminated;
   StateConsumerTask.Run;
 end;
 
 
-procedure TMainForm.FormDestroy(Sender: TObject);
+procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  FinalizeStateProvider;
-
-  StateConsumerTask.Terminate;
-  StateConsumerTask.WaitFor(INFINITE);
-  FStateConsumerTask := nil;
+  if Assigned(StateConsumerTask) then
+  begin
+    StateConsumerTask.Terminate;
+    CanClose := False;
+  end;
 end;
 
 
@@ -227,6 +225,8 @@ begin
   TLEDStateConsumer.SetFunction(StateConsumerTask, 2, FUNCTION_FSX_LANDINGLIGHTS);
   TLEDStateConsumer.SetFunction(StateConsumerTask, 3, FUNCTION_FSX_GEAR);
   TLEDStateConsumer.SetFunction(StateConsumerTask, 6, FUNCTION_FSX_INSTRUMENTLIGHTS);
+
+  TLEDStateConsumer.SetFunction(StateConsumerTask, 7, FUNCTION_OFF);
 end;
 
 
@@ -235,6 +235,16 @@ begin
   case msg.MsgID of
     MSG_NOTIFY_DEVICESTATE:   HandleDeviceStateMessage(task, msg);
     MSG_RUN_IN_MAINTHREAD:    HandleRunInMainThreadMessage(task, msg);
+  end;
+end;
+
+
+procedure TMainForm.EventMonitorTerminated(const task: IOmniTaskControl);
+begin
+  if task = StateConsumerTask then
+  begin
+    FStateConsumerTask := nil;
+    Close;
   end;
 end;
 
@@ -258,8 +268,16 @@ end;
 
 
 procedure TMainForm.HandleRunInMainThreadMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
+var
+  waitableObject: TObject;
+  waitableValue: TOmniWaitableValue;
+
 begin
-  (AMessage.MsgData.AsInterface as IRunInMainThread).Execute;
+  waitableObject := ATask.Param[0].AsObject;
+  waitableValue := (waitableObject as TOmniWaitableValue);
+
+//  (waitableValue.Value.AsInterface as IRunInMainThread).Execute;
+//  waitableValue.Signal;
 end;
 
 

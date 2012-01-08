@@ -14,8 +14,8 @@ object MainForm: TMainForm
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
-  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object pcConnections: TPageControl
@@ -669,10 +669,5 @@ object MainForm: TMainForm
       Visible = False
       OnClick = btnRetryClick
     end
-  end
-  object tmrG940Init: TTimer
-    Interval = 250
-    Left = 268
-    Top = 24
   end
 end

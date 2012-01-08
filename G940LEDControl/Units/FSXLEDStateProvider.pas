@@ -7,16 +7,17 @@ uses
   Classes,
   SyncObjs,
 
+  LEDFunctionMap,
   LEDStateConsumer,
   LEDStateProvider,
   SimConnect;
 
   
 const
-  FUNCTION_FSX_GEAR = 1;
-  FUNCTION_FSX_LANDINGLIGHTS = 2;
-  FUNCTION_FSX_INSTRUMENTLIGHTS = 3;
-  FUNCTION_FSX_PARKINGBRAKE = 4;
+  FUNCTION_FSX_GEAR = FUNCTION_PROVIDER_OFFSET + 1;
+  FUNCTION_FSX_LANDINGLIGHTS = FUNCTION_PROVIDER_OFFSET + 2;
+  FUNCTION_FSX_INSTRUMENTLIGHTS = FUNCTION_PROVIDER_OFFSET + 3;
+  FUNCTION_FSX_PARKINGBRAKE = FUNCTION_PROVIDER_OFFSET + 4;
 
   EXIT_ERROR_INITSIMCONNECT = 1;
   EXIT_ERROR_CONNECT = 2;
@@ -26,19 +27,24 @@ type
   TFSXLEDStateProvider = class(TLEDStateProvider)
   private
     FSimConnectHandle: THandle;
-    FUseFunctionGear: Boolean;
+    FDefinitions: TList;
   protected
     function GetProcessMessagesInterval: Integer; override;
 
-    procedure SetInitialState;
     procedure UpdateMap;
     procedure HandleDispatch(AData: PSimConnectRecv);
+
+    procedure AddDefinition(ADefinition: Cardinal);
+    procedure ClearDefinitions;
 
     function GetDataBoolean(var AData: Cardinal): Boolean;
     function GetDataDouble(var AData: Cardinal): Double;
 
     property SimConnectHandle: THandle read FSimConnectHandle;
   public
+    constructor Create(AConsumer: ILEDStateConsumer); override;
+    destructor Destroy; override;
+
     procedure Initialize; override;
     procedure Finalize; override;
     procedure ProcessMessages; override;
@@ -48,9 +54,7 @@ type
 implementation
 uses
   ComObj,
-  SysUtils,
-
-  LEDFunctionMap;
+  SysUtils;
 
 
 const
@@ -76,6 +80,22 @@ const
 
 
 { TFSXLEDStateProvider }
+constructor TFSXLEDStateProvider.Create(AConsumer: ILEDStateConsumer);
+begin
+  inherited;
+
+  FDefinitions := TList.Create;
+end;
+
+
+destructor TFSXLEDStateProvider.Destroy;
+begin
+  FreeAndNil(FDefinitions);
+
+  inherited;
+end;
+
+
 procedure TFSXLEDStateProvider.Initialize;
 begin
   if not InitSimConnect then
@@ -85,13 +105,14 @@ begin
     raise EInitializeError.Create('Connection to Flight Simulator could not be established', EXIT_ERROR_CONNECT);
 
   UpdateMap;
-  SetInitialState;
 end;
 
 
 procedure TFSXLEDStateProvider.Finalize;
 begin
   inherited;
+
+  ClearDefinitions;
 
   if SimConnectHandle <> 0 then
   begin
@@ -114,26 +135,11 @@ begin
 end;
 
 
-procedure TFSXLEDStateProvider.SetInitialState;
-begin
-//  if FUseFunctionGear then
-//  begin
-//    SimConnect_RequestDataOnSimObject(SimConnectHandle, REQUEST_GEAR,
-//                                      DEFINITION_GEAR,
-//                                      SIMCONNECT_OBJECT_ID_USER,
-//                                      SIMCONNECT_PERIOD_ONCE,
-//                                      SIMCONNECT_DATA_REQUEST_FLAG_DEFAULT);
-//  end;
-end;
-
-
 procedure TFSXLEDStateProvider.UpdateMap;
 begin
-  if FUseFunctionGear then
-    SimConnect_ClearDataDefinition(SimConnectHandle, DEFINITION_GEAR);
-
-  FUseFunctionGear := Consumer.FunctionMap.HasFunction(FUNCTION_FSX_GEAR);  
-  if FUseFunctionGear then
+  ClearDefinitions;
+  
+  if Consumer.FunctionMap.HasFunction(FUNCTION_FSX_GEAR) then
   begin
     SimConnect_AddToDataDefinition(SimConnectHandle, DEFINITION_GEAR,
                                    FSX_VARIABLE_GEARTOTALPCTEXTENDED,
@@ -143,11 +149,9 @@ begin
                                       SIMCONNECT_OBJECT_ID_USER,
                                       SIMCONNECT_PERIOD_SIM_FRAME,
                                       SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
-  end;
 
-// ToDo for other vars too!
-//  if FUseFunctionGear then
-//    SimConnect_ClearDataDefinition(SimConnectHandle, DEFINITION_GEAR);
+    AddDefinition(DEFINITION_GEAR);
+  end;
 
   if Consumer.FunctionMap.HasFunction(FUNCTION_FSX_LANDINGLIGHTS) or
      Consumer.FunctionMap.HasFunction(FUNCTION_FSX_INSTRUMENTLIGHTS) then
@@ -161,6 +165,8 @@ begin
                                       SIMCONNECT_OBJECT_ID_USER,
                                       SIMCONNECT_PERIOD_SIM_FRAME,
                                       SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
+
+    AddDefinition(DEFINITION_LIGHTS);
   end;
 
   if Consumer.FunctionMap.HasFunction(FUNCTION_FSX_PARKINGBRAKE) then
@@ -174,6 +180,8 @@ begin
                                       SIMCONNECT_OBJECT_ID_USER,
                                       SIMCONNECT_PERIOD_SIM_FRAME,
                                       SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
+
+    AddDefinition(DEFINITION_PARKINGBRAKE);
   end;
 end;
 
@@ -224,6 +232,27 @@ begin
     SIMCONNECT_RECV_ID_QUIT:
       Terminate;
   end;
+end;
+
+
+procedure TFSXLEDStateProvider.AddDefinition(ADefinition: Cardinal);
+begin
+  FDefinitions.Add(Pointer(ADefinition));
+end;
+
+
+procedure TFSXLEDStateProvider.ClearDefinitions;
+var
+  definition: Pointer;
+
+begin
+  if SimConnectHandle <> 0 then
+  begin
+    for definition in FDefinitions do
+      SimConnect_ClearDataDefinition(SimConnectHandle, Cardinal(definition));
+  end;
+
+  FDefinitions.Clear;
 end;
 
 

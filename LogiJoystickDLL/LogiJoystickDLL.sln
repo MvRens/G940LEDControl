@@ -1,17 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LogiJoystickDLL", "LogiJoystickDLL\LogiJoystickDLL.vcxproj", "{CEC7BCB7-FB0A-4454-B345-1DE883F8FD4F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LogiJoystickDLL", "LogiJoystickDLL\LogiJoystickDLL.vcxproj", "{62FA1486-30C0-4289-9557-6F5206977593}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CEC7BCB7-FB0A-4454-B345-1DE883F8FD4F}.Debug|Win32.ActiveCfg = Debug|Win32
-		{CEC7BCB7-FB0A-4454-B345-1DE883F8FD4F}.Debug|Win32.Build.0 = Debug|Win32
-		{CEC7BCB7-FB0A-4454-B345-1DE883F8FD4F}.Release|Win32.ActiveCfg = Release|Win32
+		{62FA1486-30C0-4289-9557-6F5206977593}.Release|Win32.ActiveCfg = Release|Win32
+		{62FA1486-30C0-4289-9557-6F5206977593}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,7 @@
+LIBRARY LogiJoystickDLL
+EXPORTS
+	SetButtonColor	@1
+	SetAllButtonsColor	@2
+	IsButtonColor	@3
+	SetLEDs	@4
+	GetLEDs	@5

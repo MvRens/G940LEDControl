@@ -15,8 +15,9 @@ const
   MSG_INITIALIZE_PROVIDER = 3;
   MSG_FINALIZE_PROVIDER = 4;
   MSG_PROCESS_MESSAGES = 5;
+  MSG_FINALIZE = 6;
 
-  MSG_RUN_IN_MAINTHREAD = 6;
+  MSG_RUN_IN_MAINTHREAD = 7;
 
   MSG_CONSUMER_OFFSET = MSG_RUN_IN_MAINTHREAD;
 
@@ -37,18 +38,26 @@ type
     FStateMap: TLEDStateMap;
     FProvider: TLEDStateProvider;
     FTimerSet: Boolean;
+    FChanged: Boolean;
+    FUpdateCount: Integer;
   protected
     procedure MsgClearFunctions(var msg: TOmniMessage); message MSG_CLEAR_FUNCTIONS;
     procedure MsgSetFunction(var msg: TOmniMessage); message MSG_SET_FUNCTION;
     procedure MsgInitializeProvider(var msg: TOmniMessage); message MSG_INITIALIZE_PROVIDER;
     procedure MsgFinalizeProvider(var msg: TOmniMessage); message MSG_FINALIZE_PROVIDER;
     procedure MsgProcessMessages(var msg: TOmniMessage); message MSG_PROCESS_MESSAGES;
+    procedure MsgFinalize(var msg: TOmniMessage); message MSG_FINALIZE;
+
+    procedure Cleanup; override;
 
     procedure InitializeProvider(AProviderClass: TLEDStateProviderClass);
     procedure FinalizeProvider;
 
     procedure RunInMainThread(AExecutor: IRunInMainThread);
+    procedure InitializeLEDState; virtual;
+    procedure ResetLEDState; virtual;
     procedure LEDStateChanged(ALEDIndex: Integer; AState: TLEDState); virtual;
+    procedure Changed; virtual;
 
     { ILEDStateConsumer }
     function GetFunctionMap: TLEDFunctionMap;
@@ -57,14 +66,18 @@ type
     property FunctionMap: TLEDFunctionMap read GetFunctionMap;
     property StateMap: TLEDStateMap read FStateMap;
     property Provider: TLEDStateProvider read FProvider;
+    property UpdateCount: Integer read FUpdateCount write FUpdateCount;
   public
     constructor Create;
-    destructor Destroy; override;
+
+    procedure BeginUpdate;
+    procedure EndUpdate;
 
     class procedure ClearFunctions(AConsumer: IOmniTaskControl);
     class procedure SetFunction(AConsumer: IOmniTaskControl; ALEDIndex, AFunction: Integer);
     class procedure InitializeStateProvider(AConsumer: IOmniTaskControl; AProviderClass: TLEDStateProviderClass);
     class procedure FinalizeStateProvider(AConsumer: IOmniTaskControl);
+    class procedure Finalize(AConsumer: IOmniTaskControl);
   end;
 
 
@@ -77,6 +90,10 @@ uses
   OtlCommon;
 
 
+const
+  G940_LED_COUNT = 8;
+
+
 { TLEDStateConsumer }
 constructor TLEDStateConsumer.Create;
 begin
@@ -84,17 +101,38 @@ begin
 
   FFunctionMap := TLEDFunctionMap.Create;
   FStateMap := TLEDStateMap.Create;
+
+  InitializeLEDState;
+
+
 end;
 
 
-destructor TLEDStateConsumer.Destroy;
+procedure TLEDStateConsumer.Cleanup;
 begin
-  FinalizeProvider;
-  
+  inherited;
+
   FreeAndNil(FStateMap);
   FreeAndNil(FFunctionMap);
+end;
 
-  inherited;
+
+procedure TLEDStateConsumer.BeginUpdate;
+begin
+  if FUpdateCount = 0 then
+    FChanged := False;
+
+  Inc(FUpdateCount);
+end;
+
+
+procedure TLEDStateConsumer.EndUpdate;
+begin
+  if FUpdateCount > 0 then
+    Dec(FUpdateCount);
+
+  if (FUpdateCount = 0) and FChanged then
+    Changed;
 end;
 
 
@@ -148,7 +186,18 @@ end;
 
 procedure TLEDStateConsumer.MsgProcessMessages(var msg: TOmniMessage);
 begin
-  Provider.ProcessMessages;
+  BeginUpdate;
+  try
+    Provider.ProcessMessages;
+  finally
+    EndUpdate;
+  end;
+end;
+
+
+procedure TLEDStateConsumer.MsgFinalize(var msg: TOmniMessage);
+begin
+  FinalizeProvider;
 end;
 
 
@@ -165,6 +214,8 @@ begin
     Task.SetTimer(TIMER_PROCESSMESSAGES, Provider.ProcessMessagesInterval, MSG_PROCESS_MESSAGES);
     FTimerSet := True;
   end;
+
+  InitializeLEDState;
 end;
 
 
@@ -181,18 +232,83 @@ begin
     Provider.Terminate;
     Provider.Finalize;
     FreeAndNil(FProvider);
+
+    StateMap.Clear;
+    ResetLEDState;
   end;
 end;
 
 
 procedure TLEDStateConsumer.RunInMainThread(AExecutor: IRunInMainThread);
+var
+  value: TOmniWaitableValue;
+
 begin
-  Task.Comm.Send(MSG_RUN_IN_MAINTHREAD, AExecutor); 
+  value := TOmniWaitableValue.Create;
+  try
+    value.Value.AsInterface := AExecutor;
+    Task.Comm.Send(MSG_RUN_IN_MAINTHREAD, value);
+
+    value.WaitFor(INFINITE);
+  finally
+    FreeAndNil(value);
+  end;
+end;
+
+
+procedure TLEDStateConsumer.InitializeLEDState;
+var
+  ledIndex: Integer;
+  state: TLEDState;
+  newState: TLEDState;
+
+begin
+  BeginUpdate;
+  try
+    ResetLEDState;
+
+    for ledIndex := 0 to Pred(G940_LED_COUNT) do
+    begin
+      state := StateMap.GetState(ledIndex, lsGreen);
+      newState := state;
+
+      case FunctionMap.GetFunction(ledIndex) of
+        FUNCTION_OFF:     newState := lsOff;
+        FUNCTION_RED:     newState := lsRed;
+        FUNCTION_AMBER:   newState := lsAmber;
+        FUNCTION_GREEN:   newState := lsGreen;
+      end;
+
+      if state <> newState then
+        LEDStateChanged(ledIndex, newState);
+    end;
+  finally
+    EndUpdate;
+  end;
+end;
+
+
+procedure TLEDStateConsumer.ResetLEDState;
+begin
+  if UpdateCount = 0 then
+    Changed
+  else
+    FChanged := True;
 end;
 
 
 procedure TLEDStateConsumer.LEDStateChanged(ALEDIndex: Integer; AState: TLEDState);
 begin
+  if UpdateCount = 0 then
+    Changed
+  else
+    FChanged := True;
+end;
+
+
+procedure TLEDStateConsumer.Changed;
+begin
+  FChanged := False;
 end;
 
 
@@ -217,6 +333,12 @@ end;
 class procedure TLEDStateConsumer.FinalizeStateProvider(AConsumer: IOmniTaskControl);
 begin
   AConsumer.Comm.Send(MSG_FINALIZE_PROVIDER);
+end;
+
+
+class procedure TLEDStateConsumer.Finalize(AConsumer: IOmniTaskControl);
+begin
+  AConsumer.Comm.Send(MSG_FINALIZE);
 end;
 
 end.
