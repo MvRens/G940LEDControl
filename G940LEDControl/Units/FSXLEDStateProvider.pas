@@ -39,6 +39,8 @@ type
 
     property SimConnectHandle: THandle read FSimConnectHandle;
   public
+    class procedure EnumFunctions(AConsumer: IFunctionConsumer); override;
+
     constructor Create(AConsumer: ILEDStateConsumer); override;
     destructor Destroy; override;
 
@@ -85,6 +87,14 @@ const
   FSX_LIGHTON_CABIN = $0200;
 
 
+  CATEGORY_DYNAMIC = 'Dynamic';
+  FUNCTION_DESC_FSX_ENGINE = 'Engine';
+  FUNCTION_DESC_FSX_INSTRUMENTLIGHTS = 'Instrument lights';
+  FUNCTION_DESC_FSX_GEAR = 'Landing gear';
+  FUNCTION_DESC_FSX_LANDINGLIGHTS = 'Landing lights';
+  FUNCTION_DESC_FSX_PARKINGBRAKE = 'Parking brake';
+
+
 type
   TGearData = packed record
     IsGearRetractable: Integer;
@@ -102,6 +112,19 @@ type
 
 
 { TFSXLEDStateProvider }
+class procedure TFSXLEDStateProvider.EnumFunctions(AConsumer: IFunctionConsumer);
+begin
+  inherited;
+
+  AConsumer.SetCategory(CATEGORY_DYNAMIC);
+  AConsumer.AddFunction(FUNCTION_FSX_ENGINE, FUNCTION_DESC_FSX_ENGINE);
+  AConsumer.AddFunction(FUNCTION_FSX_INSTRUMENTLIGHTS, FUNCTION_DESC_FSX_INSTRUMENTLIGHTS);
+  AConsumer.AddFunction(FUNCTION_FSX_GEAR, FUNCTION_DESC_FSX_GEAR);
+  AConsumer.AddFunction(FUNCTION_FSX_LANDINGLIGHTS, FUNCTION_DESC_FSX_LANDINGLIGHTS);
+  AConsumer.AddFunction(FUNCTION_FSX_PARKINGBRAKE, FUNCTION_DESC_FSX_PARKINGBRAKE);
+end;
+
+
 constructor TFSXLEDStateProvider.Create(AConsumer: ILEDStateConsumer);
 begin
   inherited;

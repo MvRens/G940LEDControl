@@ -105,123 +105,115 @@ object MainForm: TMainForm
           Height = 13
           Caption = 'P8'
         end
-        object cmbFSXP1: TComboBox
+        object cmbFSXP1: TComboBoxEx
+          Tag = 1
           Left = 69
           Top = 24
           Width = 348
-          Height = 21
-          Style = csDropDownList
+          Height = 22
+          ItemsEx = <>
+          Style = csExDropDownList
           Anchors = [akLeft, akTop, akRight]
-          DropDownCount = 20
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
           Font.Name = 'Tahoma'
           Font.Style = []
-          ItemIndex = 0
           ParentFont = False
           TabOrder = 0
-          Text = '<Not assigned>'
-          Items.Strings = (
-            '<Not assigned>')
+          OnChange = FunctionComboBoxChange
+          DropDownCount = 20
         end
-        object cmbFSXP2: TComboBox
+        object cmbFSXP2: TComboBoxEx
+          Tag = 2
           Left = 69
           Top = 51
           Width = 348
-          Height = 21
-          Style = csDropDownList
+          Height = 22
+          ItemsEx = <>
+          Style = csExDropDownList
           Anchors = [akLeft, akTop, akRight]
-          DropDownCount = 20
-          ItemIndex = 0
           TabOrder = 1
-          Text = 'Parking brake'
-          Items.Strings = (
-            'Parking brake')
+          OnChange = FunctionComboBoxChange
+          DropDownCount = 20
         end
-        object cmbFSXP3: TComboBox
+        object cmbFSXP3: TComboBoxEx
+          Tag = 3
           Left = 69
           Top = 78
           Width = 348
-          Height = 21
-          Style = csDropDownList
+          Height = 22
+          ItemsEx = <>
+          Style = csExDropDownList
           Anchors = [akLeft, akTop, akRight]
-          DropDownCount = 20
-          ItemIndex = 0
           TabOrder = 2
-          Text = 'Landing lights'
-          Items.Strings = (
-            'Landing lights')
+          OnChange = FunctionComboBoxChange
+          DropDownCount = 20
         end
-        object cmbFSXP4: TComboBox
+        object cmbFSXP4: TComboBoxEx
+          Tag = 4
           Left = 69
           Top = 105
           Width = 348
-          Height = 21
-          Style = csDropDownList
+          Height = 22
+          ItemsEx = <>
+          Style = csExDropDownList
           Anchors = [akLeft, akTop, akRight]
-          DropDownCount = 20
-          ItemIndex = 0
           TabOrder = 3
-          Text = 'Landing gear'
-          Items.Strings = (
-            'Landing gear')
+          OnChange = FunctionComboBoxChange
+          DropDownCount = 20
         end
-        object cmbFSXP5: TComboBox
+        object cmbFSXP5: TComboBoxEx
+          Tag = 5
           Left = 69
           Top = 132
           Width = 348
-          Height = 21
-          Style = csDropDownList
+          Height = 22
+          ItemsEx = <>
+          Style = csExDropDownList
           Anchors = [akLeft, akTop, akRight]
-          DropDownCount = 20
-          ItemIndex = 0
           TabOrder = 4
-          Text = '<Not assigned>'
-          Items.Strings = (
-            '<Not assigned>')
+          OnChange = FunctionComboBoxChange
+          DropDownCount = 20
         end
-        object cmbFSXP6: TComboBox
+        object cmbFSXP6: TComboBoxEx
+          Tag = 6
           Left = 69
           Top = 159
           Width = 348
-          Height = 21
-          Style = csDropDownList
+          Height = 22
+          ItemsEx = <>
+          Style = csExDropDownList
           Anchors = [akLeft, akTop, akRight]
-          DropDownCount = 20
-          ItemIndex = 0
           TabOrder = 5
-          Text = '<Not assigned>'
-          Items.Strings = (
-            '<Not assigned>')
+          OnChange = FunctionComboBoxChange
+          DropDownCount = 20
         end
-        object cmbFSXP7: TComboBox
+        object cmbFSXP7: TComboBoxEx
+          Tag = 7
           Left = 69
           Top = 186
           Width = 348
-          Height = 21
-          Style = csDropDownList
+          Height = 22
+          ItemsEx = <>
+          Style = csExDropDownList
           Anchors = [akLeft, akTop, akRight]
-          DropDownCount = 20
-          ItemIndex = 0
           TabOrder = 6
-          Text = 'Instrument lights'
-          Items.Strings = (
-            'Instrument lights')
+          OnChange = FunctionComboBoxChange
+          DropDownCount = 20
         end
-        object cmbFSXP8: TComboBox
+        object cmbFSXP8: TComboBoxEx
+          Tag = 8
           Left = 69
           Top = 213
           Width = 348
-          Height = 21
-          Style = csDropDownList
+          Height = 22
+          ItemsEx = <>
+          Style = csExDropDownList
           Anchors = [akLeft, akTop, akRight]
-          DropDownCount = 20
-          ItemIndex = 0
           TabOrder = 7
-          Text = '<Not assigned>'
-          Items.Strings = (
-            '<Not assigned>')
+          OnChange = FunctionComboBoxChange
+          DropDownCount = 20
         end
       end
       object gbFSXConnection: TGroupBox

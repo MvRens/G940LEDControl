@@ -20,6 +20,13 @@ type
   end;
 
 
+  IFunctionConsumer = interface
+    ['{97B47A29-BA7F-4C48-934D-EB66D2741647}']
+    procedure SetCategory(const ACategory: string);
+    procedure AddFunction(AFunction: Integer; const ADescription: string);
+  end;
+
+
   TLEDStateProvider = class(TObject)
   private
     FConsumer: ILEDStateConsumer;
@@ -31,6 +38,8 @@ type
 
     property Consumer: ILEDStateConsumer read FConsumer;
   public
+    class procedure EnumFunctions(AConsumer: IFunctionConsumer); virtual;
+
     constructor Create(AConsumer: ILEDStateConsumer); virtual;
     destructor Destroy; override;
 
@@ -55,9 +64,26 @@ const
   EXIT_PROVIDER_OFFSET = 200;
 
 implementation
+const
+  CATEGORY_STATIC = 'Static';
+
+  FUNCTION_DESC_OFF = 'Light off';
+  FUNCTION_DESC_GREEN = 'Green';
+  FUNCTION_DESC_AMBER = 'Amber';
+  FUNCTION_DESC_RED = 'Red';
 
 
 { TCustomLEDStateProvider }
+class procedure TLEDStateProvider.EnumFunctions(AConsumer: IFunctionConsumer);
+begin
+  AConsumer.SetCategory(CATEGORY_STATIC);
+  AConsumer.AddFunction(FUNCTION_OFF, FUNCTION_DESC_OFF);
+  AConsumer.AddFunction(FUNCTION_GREEN, FUNCTION_DESC_GREEN);
+  AConsumer.AddFunction(FUNCTION_AMBER, FUNCTION_DESC_AMBER);
+  AConsumer.AddFunction(FUNCTION_RED, FUNCTION_DESC_RED);
+end;
+
+
 constructor TLEDStateProvider.Create(AConsumer: ILEDStateConsumer);
 begin
   inherited Create;

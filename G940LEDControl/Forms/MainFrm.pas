@@ -3,17 +3,20 @@ unit MainFrm;
 interface
 uses
   Classes,
+  Contnrs,
   Controls,
   ComCtrls,
   ExtCtrls,
   Forms,
   Messages,
   StdCtrls,
+  Windows,
 
   OtlComm,
   OtlEventMonitor,
   OtlTaskControl,
   pngimage,
+  X2UtPersistIntf,
 
   LEDFunctionMap,
   LEDStateConsumer,
@@ -21,6 +24,9 @@ uses
 
 
 type
+  TComboBoxArray = array[0..7] of TComboBoxEx;
+
+
   TMainForm = class(TForm)
     imgStateNotFound: TImage;
     lblG940Throttle: TLabel;
@@ -32,20 +38,20 @@ type
     tsFSX: TTabSheet;
     gbFSXButtons: TGroupBox;
     lblFSXP1: TLabel;
-    cmbFSXP1: TComboBox;
-    cmbFSXP2: TComboBox;
+    cmbFSXP1: TComboBoxEx;
+    cmbFSXP2: TComboBoxEx;
     lblFSXP2: TLabel;
-    cmbFSXP3: TComboBox;
+    cmbFSXP3: TComboBoxEx;
     lblFSXP3: TLabel;
-    cmbFSXP4: TComboBox;
+    cmbFSXP4: TComboBoxEx;
     lblFSXP4: TLabel;
-    cmbFSXP5: TComboBox;
+    cmbFSXP5: TComboBoxEx;
     lblFSXP5: TLabel;
-    cmbFSXP6: TComboBox;
+    cmbFSXP6: TComboBoxEx;
     lblFSXP6: TLabel;
-    cmbFSXP7: TComboBox;
+    cmbFSXP7: TComboBoxEx;
     lblFSXP7: TLabel;
-    cmbFSXP8: TComboBox;
+    cmbFSXP8: TComboBoxEx;
     lblFSXP8: TLabel;
     gbFSXConnection: TGroupBox;
     btnFSXConnect: TButton;
@@ -57,17 +63,27 @@ type
     procedure btnFSXConnectClick(Sender: TObject);
     procedure btnFSXDisconnectClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure FunctionComboBoxChange(Sender: TObject);
   private
     FEventMonitor: TOmniEventMonitor;
     FStateConsumerTask: IOmniTaskControl;
+    FFSXComboBoxes: TComboBoxArray;
   protected
+    procedure LoadFunctions(AProviderClass: TLEDStateProviderClass; AComboBoxes: TComboBoxArray);
+    procedure SetFunctions(AComboBoxes: TComboBoxArray);
+
+    procedure ReadFunctions(AReader: IX2PersistReader; AComboBoxes: TComboBoxArray);
+    procedure WriteFunctions(AWriter: IX2PersistWriter; AComboBoxes: TComboBoxArray);
+
+    procedure LoadDefaultProfile;
+    procedure SaveDefaultProfile;
+
     procedure SetDeviceState(const AMessage: string; AFound: Boolean);
 
     procedure InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
     procedure FinalizeStateProvider;
 
     procedure UpdateMapping;
-    procedure UpdateMappingFSX;
 
     procedure EventMonitorMessage(const task: IOmniTaskControl; const msg: TOmniMessage);
     procedure EventMonitorTerminated(const task: IOmniTaskControl);
@@ -87,10 +103,10 @@ uses
   ComObj,
   Dialogs,
   SysUtils,
-  Windows,
 
   OtlCommon,
   OtlTask,
+  X2UtPersistRegistry,
 
   FSXLEDStateProvider,
   G940LEDStateConsumer;
@@ -100,16 +116,31 @@ uses
 
 
 const
+  SPECIAL_CATEGORY = -1;
+
   TEXT_STATE_SEARCHING = 'Searching...';
   TEXT_STATE_NOTFOUND = 'Not found';
   TEXT_STATE_FOUND = 'Connected';
 
+  KEY_DEFAULTPROFILE = '\Software\X2Software\G940LEDControl\DefaultProfile\';
+  SECTION_FSX = 'FSX';
 
 
-procedure RunStateProvider(const task: IOmniTask);
-begin
+type
+  TComboBoxFunctionConsumer = class(TInterfacedObject, IFunctionConsumer)
+  private
+    FComboBox: TComboBoxEx;
+  protected
+    { IFunctionConsumer }
+    procedure SetCategory(const ACategory: string);
+    procedure AddFunction(AFunction: Integer; const ADescription: string);
 
-end;
+    property ComboBox: TComboBoxEx read FComboBox;
+  public
+    constructor Create(AComboBox: TComboBoxEx);
+  end;
+
+
 
 
 { TMainForm }
@@ -123,10 +154,20 @@ begin
   consumer := TG940LEDStateConsumer.Create;
   FStateConsumerTask := FEventMonitor.Monitor(CreateTask(consumer)).MsgWait;
 
-  // ToDo handle OnTerminate, check exit code for initialization errors
   EventMonitor.OnTaskMessage := EventMonitorMessage;
   EventMonitor.OnTaskTerminated := EventMonitorTerminated;
   StateConsumerTask.Run;
+
+  FFSXComboBoxes[0] := cmbFSXP1;
+  FFSXComboBoxes[1] := cmbFSXP2;
+  FFSXComboBoxes[2] := cmbFSXP3;
+  FFSXComboBoxes[3] := cmbFSXP4;
+  FFSXComboBoxes[4] := cmbFSXP5;
+  FFSXComboBoxes[5] := cmbFSXP6;
+  FFSXComboBoxes[6] := cmbFSXP7;
+  FFSXComboBoxes[7] := cmbFSXP8;
+  LoadFunctions(TFSXLEDStateProvider, FFSXComboBoxes);
+  LoadDefaultProfile;
 end;
 
 
@@ -134,6 +175,8 @@ procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   if Assigned(StateConsumerTask) then
   begin
+    SaveDefaultProfile;
+
     LEDStateConsumer.Finalize(StateConsumerTask);
     CanClose := False;
   end;
@@ -199,8 +242,126 @@ end;
 *)
 
 
+procedure TMainForm.LoadFunctions(AProviderClass: TLEDStateProviderClass; AComboBoxes: TComboBoxArray);
+var
+  comboBox: TComboBoxEx;
+
+begin
+  for comboBox in AComboBoxes do
+  begin
+    comboBox.Items.BeginUpdate;
+    try
+      comboBox.Items.Clear;
+      AProviderClass.EnumFunctions(TComboBoxFunctionConsumer.Create(comboBox));
+
+      comboBox.ItemIndex := 0;
+      if Assigned(comboBox.OnChange) then
+        comboBox.OnChange(comboBox);
+    finally
+      comboBox.Items.EndUpdate;
+    end;
+  end;
+end;
+
+
+procedure TMainForm.SetFunctions(AComboBoxes: TComboBoxArray);
+var
+  comboBox: TComboBoxEx;
+
+begin
+  for comboBox in AComboBoxes do
+  begin
+    if comboBox.ItemIndex > -1 then
+      LEDStateConsumer.SetFunction(StateConsumerTask, comboBox.Tag, Integer(comboBox.ItemsEx[comboBox.ItemIndex].Data));
+  end;
+end;
+
+
+procedure TMainForm.ReadFunctions(AReader: IX2PersistReader; AComboBoxes: TComboBoxArray);
+var
+  comboBox: TComboBoxEx;
+  value: Integer;
+  itemIndex: Integer;
+
+begin
+  if AReader.BeginSection(SECTION_FSX) then
+  try
+    for comboBox in AComboBoxes do
+    begin
+      if AReader.ReadInteger('Function' + IntToStr(comboBox.Tag), value) then
+      begin
+        for itemIndex := 0 to Pred(comboBox.ItemsEx.Count) do
+          if Integer(comboBox.ItemsEx[itemIndex].Data) = value then
+          begin
+            comboBox.ItemIndex := itemIndex;
+            break;
+          end;
+      end;
+    end;
+  finally
+    AReader.EndSection;
+  end;
+end;
+
+
+procedure TMainForm.WriteFunctions(AWriter: IX2PersistWriter; AComboBoxes: TComboBoxArray);
+var
+  comboBox: TComboBoxEx;
+  value: Integer;
+
+begin
+  if AWriter.BeginSection(SECTION_FSX) then
+  try
+    for comboBox in AComboBoxes do
+    begin
+      value := -1;
+      if comboBox.ItemIndex > -1 then
+        value := Integer(comboBox.ItemsEx[comboBox.ItemIndex].Data);
+
+      AWriter.WriteInteger('Function' + IntToStr(comboBox.Tag), value);
+    end;
+  finally
+    AWriter.EndSection;
+  end;
+end;
+
+
+procedure TMainForm.LoadDefaultProfile;
+var
+  registryReader: TX2UtPersistRegistry;
+
+begin
+  registryReader := TX2UtPersistRegistry.Create;
+  try
+    registryReader.RootKey := HKEY_CURRENT_USER;
+    registryReader.Key := KEY_DEFAULTPROFILE;
+
+    ReadFunctions(registryReader.CreateReader, FFSXComboBoxes);
+  finally
+    FreeAndNil(registryReader);
+  end;
+end;
+
+
+procedure TMainForm.SaveDefaultProfile;
+var
+  registryWriter: TX2UtPersistRegistry;
+
+begin
+  registryWriter := TX2UtPersistRegistry.Create;
+  try
+    registryWriter.RootKey := HKEY_CURRENT_USER;
+    registryWriter.Key := KEY_DEFAULTPROFILE;
+
+    WriteFunctions(registryWriter.CreateWriter, FFSXComboBoxes);
+  finally
+    FreeAndNil(registryWriter);
+  end;
+end;
+
+
 procedure TMainForm.InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
-begin  
+begin
   UpdateMapping;
   LEDStateConsumer.InitializeStateProvider(StateConsumerTask, AProviderClass);
 end;
@@ -218,20 +379,7 @@ begin
     Exit;
 
   LEDStateConsumer.ClearFunctions(StateConsumerTask);
-  UpdateMappingFSX;
-end;
-
-
-procedure TMainForm.UpdateMappingFSX;
-begin
-  LEDStateConsumer.SetFunction(StateConsumerTask, 1, FUNCTION_FSX_PARKINGBRAKE);
-  LEDStateConsumer.SetFunction(StateConsumerTask, 2, FUNCTION_FSX_LANDINGLIGHTS);
-  LEDStateConsumer.SetFunction(StateConsumerTask, 3, FUNCTION_FSX_GEAR);
-
-  LEDStateConsumer.SetFunction(StateConsumerTask, 4, FUNCTION_FSX_ENGINE);
-  LEDStateConsumer.SetFunction(StateConsumerTask, 6, FUNCTION_FSX_INSTRUMENTLIGHTS);
-
-//  LEDStateConsumer.SetFunction(StateConsumerTask, 7, FUNCTION_OFF);
+  SetFunctions(FFSXComboBoxes);
 end;
 
 
@@ -306,6 +454,7 @@ end;
 
 procedure TMainForm.btnFSXConnectClick(Sender: TObject);
 begin
+  SaveDefaultProfile;
   InitializeStateProvider(TFSXLEDStateProvider);
 
   btnFSXDisconnect.Enabled := True;
@@ -325,6 +474,49 @@ procedure TMainForm.btnRetryClick(Sender: TObject);
 begin
   btnRetry.Visible := False;
   StateConsumerTask.Comm.Send(MSG_FINDTHROTTLEDEVICE);
+end;
+
+
+procedure TMainForm.FunctionComboBoxChange(Sender: TObject);
+var
+  comboBox: TComboBoxEx;
+
+begin
+  comboBox := TComboBoxEx(Sender);
+  if comboBox.ItemIndex > -1 then
+  begin
+    if not Assigned(comboBox.ItemsEx[comboBox.ItemIndex].Data) then
+      comboBox.ItemIndex := Succ(comboBox.ItemIndex);
+  end;
+end;
+
+{ TComboBoxFunctionConsumer }
+constructor TComboBoxFunctionConsumer.Create(AComboBox: TComboBoxEx);
+begin
+  inherited Create;
+
+  FComboBox := AComboBox;
+end;
+
+
+procedure TComboBoxFunctionConsumer.SetCategory(const ACategory: string);
+begin
+  with ComboBox.ItemsEx.Add do
+  begin
+    Caption := ACategory;
+    Data := nil;
+  end;
+end;
+
+
+procedure TComboBoxFunctionConsumer.AddFunction(AFunction: Integer; const ADescription: string);
+begin
+  with ComboBox.ItemsEx.Add do
+  begin
+    Caption := ADescription;
+    Indent := 1;
+    Data := Pointer(AFunction);
+  end;
 end;
 
 end.
