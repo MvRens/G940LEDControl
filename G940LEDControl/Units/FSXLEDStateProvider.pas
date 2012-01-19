@@ -76,6 +76,9 @@ const
   FSX_VARIABLE_ENGCOMBUSTION = 'GENERAL ENG COMBUSTION:%d';
   FSX_VARIABLE_ENGFAILED = 'ENG FAILED:%d';
   FSX_VARIABLE_ENGONFIRE = 'ENG ON FIRE:%d';
+  FSX_VARIABLE_GEARDAMAGEBYSPEED = 'GEAR DAMAGE BY SPEED';
+  FSX_VARIABLE_GEARSPEEDEXCEEDED = 'GEAR SPEED EXCEEDED';
+
 
   FSX_UNIT_PERCENT = 'percent';
   FSX_UNIT_MASK = 'mask';
@@ -99,6 +102,8 @@ type
   TGearData = packed record
     IsGearRetractable: Integer;
     TotalPctExtended: Double;
+    DamageBySpeed: Integer;
+    SpeedExceeded: Integer;
   end;
   PGearData = ^TGearData;
 
@@ -143,6 +148,8 @@ end;
 
 procedure TFSXLEDStateProvider.Initialize;
 begin
+  inherited;
+
   if not InitSimConnect then
     raise EInitializeError.Create('SimConnect.dll could not be loaded');
 
@@ -183,6 +190,7 @@ end;
 procedure TFSXLEDStateProvider.UpdateMap;
 var
   engineIndex: Integer;
+
 begin
   ClearDefinitions;
 
@@ -191,6 +199,8 @@ begin
   begin
     AddVariable(DEFINITION_GEAR, FSX_VARIABLE_ISGEARRETRACTABLE, FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
     AddVariable(DEFINITION_GEAR, FSX_VARIABLE_GEARTOTALPCTEXTENDED, FSX_UNIT_PERCENT);
+    AddVariable(DEFINITION_GEAR, FSX_VARIABLE_GEARDAMAGEBYSPEED, FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    AddVariable(DEFINITION_GEAR, FSX_VARIABLE_GEARSPEEDEXCEEDED, FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
     AddDefinition(DEFINITION_GEAR);
   end;
 
@@ -248,7 +258,13 @@ begin
             begin
               gearData := @simObjectData^.dwData;
 
-              if gearData^.IsGearRetractable <> 0 then
+              if gearData^.DamageBySpeed <> 0 then
+                Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsError)
+
+              else if gearData^.SpeedExceeded <> 0 then
+                Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsWarning)
+
+              else if gearData^.IsGearRetractable <> 0 then
               begin
                 case Trunc(gearData^.TotalPctExtended * 100) of
                   0:    Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsRed);

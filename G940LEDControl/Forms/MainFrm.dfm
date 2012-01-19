@@ -106,7 +106,6 @@ object MainForm: TMainForm
           Caption = 'P8'
         end
         object cmbFSXP1: TComboBoxEx
-          Tag = 1
           Left = 69
           Top = 24
           Width = 348
@@ -125,9 +124,9 @@ object MainForm: TMainForm
           DropDownCount = 20
         end
         object cmbFSXP2: TComboBoxEx
-          Tag = 2
+          Tag = 1
           Left = 69
-          Top = 51
+          Top = 50
           Width = 348
           Height = 22
           ItemsEx = <>
@@ -138,7 +137,7 @@ object MainForm: TMainForm
           DropDownCount = 20
         end
         object cmbFSXP3: TComboBoxEx
-          Tag = 3
+          Tag = 2
           Left = 69
           Top = 78
           Width = 348
@@ -151,7 +150,7 @@ object MainForm: TMainForm
           DropDownCount = 20
         end
         object cmbFSXP4: TComboBoxEx
-          Tag = 4
+          Tag = 3
           Left = 69
           Top = 105
           Width = 348
@@ -164,9 +163,9 @@ object MainForm: TMainForm
           DropDownCount = 20
         end
         object cmbFSXP5: TComboBoxEx
-          Tag = 5
+          Tag = 4
           Left = 69
-          Top = 132
+          Top = 131
           Width = 348
           Height = 22
           ItemsEx = <>
@@ -177,7 +176,7 @@ object MainForm: TMainForm
           DropDownCount = 20
         end
         object cmbFSXP6: TComboBoxEx
-          Tag = 6
+          Tag = 5
           Left = 69
           Top = 159
           Width = 348
@@ -190,7 +189,7 @@ object MainForm: TMainForm
           DropDownCount = 20
         end
         object cmbFSXP7: TComboBoxEx
-          Tag = 7
+          Tag = 6
           Left = 69
           Top = 186
           Width = 348
@@ -203,7 +202,7 @@ object MainForm: TMainForm
           DropDownCount = 20
         end
         object cmbFSXP8: TComboBoxEx
-          Tag = 8
+          Tag = 7
           Left = 69
           Top = 213
           Width = 348
