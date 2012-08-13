@@ -84,13 +84,14 @@ type
     FRed: Byte;
     FGreen: Byte;
   protected
+    { IRunInMainThread }
     procedure Execute;
   public
     constructor Create(ADevice: IDirectInputDevice8; ARed, AGreen: Byte);
   end;
 
 
-function EnumDevicesProc(var lpddi: TDIDeviceInstanceA; pvRef: Pointer): BOOL; stdcall;
+function EnumDevicesProc(var lpddi: TDIDeviceInstanceW; pvRef: Pointer): BOOL; stdcall;
 var
   vendorID: Word;
   productID: Word;

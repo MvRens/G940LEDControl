@@ -9,7 +9,8 @@ uses
   LEDFunctionMap in 'Units\LEDFunctionMap.pas',
   G940LEDStateConsumer in 'Units\G940LEDStateConsumer.pas',
   LogiJoystickDLL in '..\Shared\LogiJoystickDLL.pas',
-  SimConnect in '..\Shared\SimConnect.pas';
+  SimConnect in '..\Shared\SimConnect.pas',
+  ButtonSelectFrm in 'Forms\ButtonSelectFrm.pas' {ButtonSelectForm};
 
 {$R *.res}
 

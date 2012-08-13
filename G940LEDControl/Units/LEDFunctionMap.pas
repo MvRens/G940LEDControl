@@ -57,6 +57,8 @@ const
   FUNCTION_AMBER = 3;
   FUNCTION_GREEN = 4;
 
+  { Note: if this offset ever changes, make sure to write a conversion for
+    existing configurations. And probably reserve a bit more. }
   FUNCTION_PROVIDER_OFFSET = FUNCTION_GREEN;
 
 

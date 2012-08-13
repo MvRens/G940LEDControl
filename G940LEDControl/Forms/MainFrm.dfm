@@ -4,7 +4,7 @@ object MainForm: TMainForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'G940 LED Control'
-  ClientHeight = 461
+  ClientHeight = 513
   ClientWidth = 465
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -23,7 +23,7 @@ object MainForm: TMainForm
     Left = 8
     Top = 80
     Width = 449
-    Height = 373
+    Height = 425
     Margins.Left = 8
     Margins.Top = 8
     Margins.Right = 8
@@ -33,188 +33,6 @@ object MainForm: TMainForm
     TabOrder = 1
     object tsFSX: TTabSheet
       Caption = 'Flight Simulator X'
-      object gbFSXButtons: TGroupBox
-        AlignWithMargins = True
-        Left = 6
-        Top = 75
-        Width = 429
-        Height = 251
-        Margins.Left = 6
-        Margins.Top = 6
-        Margins.Right = 6
-        Margins.Bottom = 6
-        Align = alTop
-        Caption = ' Button configuration '
-        TabOrder = 1
-        DesignSize = (
-          429
-          251)
-        object lblFSXP1: TLabel
-          Left = 12
-          Top = 27
-          Width = 12
-          Height = 13
-          Caption = 'P1'
-        end
-        object lblFSXP2: TLabel
-          Left = 12
-          Top = 54
-          Width = 12
-          Height = 13
-          Caption = 'P2'
-        end
-        object lblFSXP3: TLabel
-          Left = 12
-          Top = 81
-          Width = 12
-          Height = 13
-          Caption = 'P3'
-        end
-        object lblFSXP4: TLabel
-          Left = 12
-          Top = 108
-          Width = 12
-          Height = 13
-          Caption = 'P4'
-        end
-        object lblFSXP5: TLabel
-          Left = 12
-          Top = 135
-          Width = 12
-          Height = 13
-          Caption = 'P5'
-        end
-        object lblFSXP6: TLabel
-          Left = 12
-          Top = 162
-          Width = 12
-          Height = 13
-          Caption = 'P6'
-        end
-        object lblFSXP7: TLabel
-          Left = 12
-          Top = 189
-          Width = 12
-          Height = 13
-          Caption = 'P7'
-        end
-        object lblFSXP8: TLabel
-          Left = 12
-          Top = 216
-          Width = 12
-          Height = 13
-          Caption = 'P8'
-        end
-        object cmbFSXP1: TComboBoxEx
-          Left = 69
-          Top = 24
-          Width = 348
-          Height = 22
-          ItemsEx = <>
-          Style = csExDropDownList
-          Anchors = [akLeft, akTop, akRight]
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-          TabOrder = 0
-          OnChange = FunctionComboBoxChange
-          DropDownCount = 20
-        end
-        object cmbFSXP2: TComboBoxEx
-          Tag = 1
-          Left = 69
-          Top = 50
-          Width = 348
-          Height = 22
-          ItemsEx = <>
-          Style = csExDropDownList
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 1
-          OnChange = FunctionComboBoxChange
-          DropDownCount = 20
-        end
-        object cmbFSXP3: TComboBoxEx
-          Tag = 2
-          Left = 69
-          Top = 78
-          Width = 348
-          Height = 22
-          ItemsEx = <>
-          Style = csExDropDownList
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 2
-          OnChange = FunctionComboBoxChange
-          DropDownCount = 20
-        end
-        object cmbFSXP4: TComboBoxEx
-          Tag = 3
-          Left = 69
-          Top = 105
-          Width = 348
-          Height = 22
-          ItemsEx = <>
-          Style = csExDropDownList
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 3
-          OnChange = FunctionComboBoxChange
-          DropDownCount = 20
-        end
-        object cmbFSXP5: TComboBoxEx
-          Tag = 4
-          Left = 69
-          Top = 131
-          Width = 348
-          Height = 22
-          ItemsEx = <>
-          Style = csExDropDownList
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 4
-          OnChange = FunctionComboBoxChange
-          DropDownCount = 20
-        end
-        object cmbFSXP6: TComboBoxEx
-          Tag = 5
-          Left = 69
-          Top = 159
-          Width = 348
-          Height = 22
-          ItemsEx = <>
-          Style = csExDropDownList
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 5
-          OnChange = FunctionComboBoxChange
-          DropDownCount = 20
-        end
-        object cmbFSXP7: TComboBoxEx
-          Tag = 6
-          Left = 69
-          Top = 186
-          Width = 348
-          Height = 22
-          ItemsEx = <>
-          Style = csExDropDownList
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 6
-          OnChange = FunctionComboBoxChange
-          DropDownCount = 20
-        end
-        object cmbFSXP8: TComboBoxEx
-          Tag = 7
-          Left = 69
-          Top = 213
-          Width = 348
-          Height = 22
-          ItemsEx = <>
-          Style = csExDropDownList
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 7
-          OnChange = FunctionComboBoxChange
-          DropDownCount = 20
-        end
-      end
       object gbFSXConnection: TGroupBox
         AlignWithMargins = True
         Left = 6
@@ -254,6 +72,441 @@ object MainForm: TMainForm
           TabOrder = 1
           OnClick = btnFSXDisconnectClick
         end
+      end
+      object pcFSXOptions: TPageControl
+        AlignWithMargins = True
+        Left = 6
+        Top = 75
+        Width = 429
+        Height = 316
+        Margins.Left = 6
+        Margins.Top = 6
+        Margins.Right = 6
+        Margins.Bottom = 6
+        ActivePage = tsFSXLEDButtons
+        Align = alClient
+        TabOrder = 1
+        object tsFSXLEDButtons: TTabSheet
+          Caption = 'LED Buttons'
+          object gbFSXButtons: TGroupBox
+            AlignWithMargins = True
+            Left = 6
+            Top = 6
+            Width = 409
+            Height = 251
+            Margins.Left = 6
+            Margins.Top = 6
+            Margins.Right = 6
+            Margins.Bottom = 6
+            Align = alTop
+            Caption = ' Button configuration '
+            TabOrder = 0
+            DesignSize = (
+              409
+              251)
+            object lblFSXP1: TLabel
+              Left = 12
+              Top = 27
+              Width = 12
+              Height = 13
+              Caption = 'P1'
+            end
+            object lblFSXP2: TLabel
+              Left = 12
+              Top = 54
+              Width = 12
+              Height = 13
+              Caption = 'P2'
+            end
+            object lblFSXP3: TLabel
+              Left = 12
+              Top = 81
+              Width = 12
+              Height = 13
+              Caption = 'P3'
+            end
+            object lblFSXP4: TLabel
+              Left = 12
+              Top = 108
+              Width = 12
+              Height = 13
+              Caption = 'P4'
+            end
+            object lblFSXP5: TLabel
+              Left = 12
+              Top = 135
+              Width = 12
+              Height = 13
+              Caption = 'P5'
+            end
+            object lblFSXP6: TLabel
+              Left = 12
+              Top = 162
+              Width = 12
+              Height = 13
+              Caption = 'P6'
+            end
+            object lblFSXP7: TLabel
+              Left = 12
+              Top = 189
+              Width = 12
+              Height = 13
+              Caption = 'P7'
+            end
+            object lblFSXP8: TLabel
+              Left = 12
+              Top = 216
+              Width = 12
+              Height = 13
+              Caption = 'P8'
+            end
+            object cmbFSXP1: TComboBoxEx
+              Left = 69
+              Top = 24
+              Width = 328
+              Height = 22
+              ItemsEx = <>
+              Style = csExDropDownList
+              Anchors = [akLeft, akTop, akRight]
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              ParentFont = False
+              TabOrder = 0
+              OnChange = FunctionComboBoxChange
+              DropDownCount = 20
+            end
+            object cmbFSXP2: TComboBoxEx
+              Tag = 1
+              Left = 69
+              Top = 50
+              Width = 328
+              Height = 22
+              ItemsEx = <>
+              Style = csExDropDownList
+              Anchors = [akLeft, akTop, akRight]
+              TabOrder = 1
+              OnChange = FunctionComboBoxChange
+              DropDownCount = 20
+            end
+            object cmbFSXP3: TComboBoxEx
+              Tag = 2
+              Left = 69
+              Top = 78
+              Width = 328
+              Height = 22
+              ItemsEx = <>
+              Style = csExDropDownList
+              Anchors = [akLeft, akTop, akRight]
+              TabOrder = 2
+              OnChange = FunctionComboBoxChange
+              DropDownCount = 20
+            end
+            object cmbFSXP4: TComboBoxEx
+              Tag = 3
+              Left = 69
+              Top = 105
+              Width = 328
+              Height = 22
+              ItemsEx = <>
+              Style = csExDropDownList
+              Anchors = [akLeft, akTop, akRight]
+              TabOrder = 3
+              OnChange = FunctionComboBoxChange
+              DropDownCount = 20
+            end
+            object cmbFSXP5: TComboBoxEx
+              Tag = 4
+              Left = 69
+              Top = 131
+              Width = 328
+              Height = 22
+              ItemsEx = <>
+              Style = csExDropDownList
+              Anchors = [akLeft, akTop, akRight]
+              TabOrder = 4
+              OnChange = FunctionComboBoxChange
+              DropDownCount = 20
+            end
+            object cmbFSXP6: TComboBoxEx
+              Tag = 5
+              Left = 69
+              Top = 159
+              Width = 328
+              Height = 22
+              ItemsEx = <>
+              Style = csExDropDownList
+              Anchors = [akLeft, akTop, akRight]
+              TabOrder = 5
+              OnChange = FunctionComboBoxChange
+              DropDownCount = 20
+            end
+            object cmbFSXP7: TComboBoxEx
+              Tag = 6
+              Left = 69
+              Top = 186
+              Width = 328
+              Height = 22
+              ItemsEx = <>
+              Style = csExDropDownList
+              Anchors = [akLeft, akTop, akRight]
+              TabOrder = 6
+              OnChange = FunctionComboBoxChange
+              DropDownCount = 20
+            end
+            object cmbFSXP8: TComboBoxEx
+              Tag = 7
+              Left = 69
+              Top = 213
+              Width = 328
+              Height = 22
+              ItemsEx = <>
+              Style = csExDropDownList
+              Anchors = [akLeft, akTop, akRight]
+              TabOrder = 7
+              OnChange = FunctionComboBoxChange
+              DropDownCount = 20
+            end
+          end
+        end
+        object tsFSXExtra: TTabSheet
+          Caption = 'Extra'
+          ImageIndex = 1
+          TabVisible = False
+          object GroupBox1: TGroupBox
+            AlignWithMargins = True
+            Left = 6
+            Top = 6
+            Width = 409
+            Height = 171
+            Margins.Left = 6
+            Margins.Top = 6
+            Margins.Right = 6
+            Margins.Bottom = 0
+            Align = alTop
+            Caption = ' Zoom '
+            TabOrder = 0
+            object lblFSXToggleZoomButton: TLabel
+              Left = 57
+              Top = 56
+              Width = 77
+              Height = 13
+              Caption = 'Joystick button:'
+            end
+            object lblFSXZoomDepressed: TLabel
+              Left = 59
+              Top = 111
+              Width = 151
+              Height = 13
+              Caption = 'Zoom level (button depressed):'
+            end
+            object lblFSXZoomPressed: TLabel
+              Left = 59
+              Top = 142
+              Width = 139
+              Height = 13
+              Caption = 'Zoom level (button pressed):'
+            end
+            object lblFSXToggleZoomButtonName: TLabel
+              Left = 57
+              Top = 75
+              Width = 305
+              Height = 13
+              AutoSize = False
+              Caption = '[runtime]'
+              EllipsisPosition = epEndEllipsis
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -11
+              Font.Name = 'Tahoma'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object cbFSXToggleZoom: TCheckBox
+              Left = 16
+              Top = 24
+              Width = 161
+              Height = 17
+              Caption = ' Toggle zoom level'
+              Checked = True
+              State = cbChecked
+              TabOrder = 0
+            end
+            object btnFSXToggleZoom: TButton
+              Left = 368
+              Top = 70
+              Width = 34
+              Height = 25
+              Caption = '...'
+              TabOrder = 1
+              OnClick = btnFSXToggleZoomClick
+            end
+            object cmbFSXZoomDepressed: TComboBox
+              Left = 288
+              Top = 106
+              Width = 114
+              Height = 21
+              Style = csDropDownList
+              DropDownCount = 20
+              ItemIndex = 5
+              TabOrder = 2
+              Text = '80%'
+              Items.Strings = (
+                '30%'
+                '40%'
+                '50%'
+                '60%'
+                '70%'
+                '80%'
+                '90%'
+                '100%'
+                '110%'
+                '120%'
+                '130%'
+                '140%'
+                '150%'
+                '175%'
+                '200%'
+                '250%'
+                '300%'
+                '400%')
+            end
+            object cmbFSXZoomPressed: TComboBox
+              Left = 288
+              Top = 133
+              Width = 114
+              Height = 21
+              Style = csDropDownList
+              DropDownCount = 20
+              ItemIndex = 16
+              TabOrder = 3
+              Text = '300%'
+              Items.Strings = (
+                '30%'
+                '40%'
+                '50%'
+                '60%'
+                '70%'
+                '80%'
+                '90%'
+                '100%'
+                '110%'
+                '120%'
+                '130%'
+                '140%'
+                '150%'
+                '175%'
+                '200%'
+                '250%'
+                '300%'
+                '400%')
+            end
+          end
+          object GroupBox2: TGroupBox
+            AlignWithMargins = True
+            Left = 6
+            Top = 183
+            Width = 409
+            Height = 98
+            Margins.Left = 6
+            Margins.Top = 6
+            Margins.Right = 6
+            Margins.Bottom = 0
+            Align = alTop
+            Caption = ' Engine thrust match '
+            TabOrder = 1
+            object TLabel
+              Left = 104
+              Top = 40
+              Width = 201
+              Height = 13
+              Caption = 'Sorry, configuration not implemented yet!'
+            end
+            object TLabel
+              Left = 120
+              Top = 59
+              Width = 160
+              Height = 13
+              Caption = 'Engine 1 links to 4, engine 2 to 3.'
+            end
+          end
+        end
+      end
+    end
+    object tsAbout: TTabSheet
+      Caption = 'About'
+      ImageIndex = 1
+      object lblVersionCaption: TLabel
+        Left = 16
+        Top = 67
+        Width = 39
+        Height = 13
+        Caption = 'Version:'
+      end
+      object lblVersion: TLabel
+        Left = 75
+        Top = 67
+        Width = 45
+        Height = 13
+        Caption = 'lblVersion'
+      end
+      object Label1: TLabel
+        Left = 16
+        Top = 16
+        Width = 96
+        Height = 13
+        Caption = 'G940 LED Control'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Label2: TLabel
+        Left = 16
+        Top = 35
+        Width = 95
+        Height = 13
+        Caption = #169' 2011 X'#178'Software'
+      end
+      object lblWebsite: TLabel
+        Left = 16
+        Top = 112
+        Width = 43
+        Height = 13
+        Caption = 'Website:'
+      end
+      object lblEmail: TLabel
+        Left = 16
+        Top = 135
+        Width = 32
+        Height = 13
+        Caption = 'E-mail:'
+      end
+      object lblWebsiteLink: TLinkLabel
+        Left = 75
+        Top = 111
+        Width = 143
+        Height = 17
+        Caption = 
+          '<a href="http://g940.x2software.net/">http://g940.x2software.net' +
+          '/</a>'
+        TabOrder = 0
+        OnLinkClick = lblLinkLinkClick
+      end
+      object lblEmailLink: TLinkLabel
+        Left = 75
+        Top = 134
+        Width = 126
+        Height = 17
+        Caption = 
+          '<a href="mailto:support@x2software.net">support@x2software.net</' +
+          'a>'
+        TabOrder = 1
+        OnLinkClick = lblLinkLinkClick
       end
     end
   end

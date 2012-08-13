@@ -57,28 +57,58 @@ type
     btnFSXConnect: TButton;
     btnFSXDisconnect: TButton;
     lblFSXLocal: TLabel;
+    pcFSXOptions: TPageControl;
+    tsFSXLEDButtons: TTabSheet;
+    tsFSXExtra: TTabSheet;
+    GroupBox1: TGroupBox;
+    cbFSXToggleZoom: TCheckBox;
+    lblFSXToggleZoomButton: TLabel;
+    lblFSXZoomDepressed: TLabel;
+    lblFSXZoomPressed: TLabel;
+    lblFSXToggleZoomButtonName: TLabel;
+    btnFSXToggleZoom: TButton;
+    cmbFSXZoomDepressed: TComboBox;
+    cmbFSXZoomPressed: TComboBox;
+    GroupBox2: TGroupBox;
+    tsAbout: TTabSheet;
+    lblVersionCaption: TLabel;
+    lblVersion: TLabel;
+    Label1: TLabel;
+    Label2: TLabel;
+    lblWebsiteLink: TLinkLabel;
+    lblEmailLink: TLinkLabel;
+    lblWebsite: TLabel;
+    lblEmail: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure btnRetryClick(Sender: TObject);
     procedure btnFSXConnectClick(Sender: TObject);
     procedure btnFSXDisconnectClick(Sender: TObject);
+    procedure btnFSXToggleZoomClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FunctionComboBoxChange(Sender: TObject);
+    procedure lblLinkLinkClick(Sender: TObject; const Link: string;
+      LinkType: TSysLinkType);
   private
     FEventMonitor: TOmniEventMonitor;
     FStateConsumerTask: IOmniTaskControl;
     FFSXComboBoxes: TComboBoxArray;
+    FFSXToggleZoomDeviceGUID: TGUID;
+    FFSXToggleZoomButtonIndex: Integer;
   protected
     procedure LoadFunctions(AProviderClass: TLEDStateProviderClass; AComboBoxes: TComboBoxArray);
     procedure SetFunctions(AComboBoxes: TComboBoxArray);
 
     procedure ReadFunctions(AReader: IX2PersistReader; AComboBoxes: TComboBoxArray);
+    procedure ReadFSXExtra(AReader: IX2PersistReader);
     procedure WriteFunctions(AWriter: IX2PersistWriter; AComboBoxes: TComboBoxArray);
+    procedure WriteFSXExtra(AWriter: IX2PersistWriter);
 
     procedure LoadDefaultProfile;
     procedure SaveDefaultProfile;
 
     procedure SetDeviceState(const AMessage: string; AFound: Boolean);
+    procedure SetFSXToggleZoomButton(const ADeviceGUID: TGUID; AButtonIndex: Integer; const ADisplayText: string);
 
     procedure InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
     procedure FinalizeStateProvider;
@@ -102,12 +132,15 @@ implementation
 uses
   ComObj,
   Dialogs,
+  ShellAPI,
   SysUtils,
 
   OtlCommon,
   OtlTask,
+  X2UtApp,
   X2UtPersistRegistry,
 
+  ButtonSelectFrm,
   FSXLEDStateProvider,
   G940LEDStateConsumer;
 
@@ -147,8 +180,14 @@ type
 procedure TMainForm.FormCreate(Sender: TObject);
 var
   consumer: IOmniWorker;
-  
+
 begin
+  lblVersion.Caption := App.Version.FormatVersion(False);
+
+  pcConnections.ActivePageIndex := 0;
+  pcFSXOptions.ActivePageIndex := 0;
+  lblFSXToggleZoomButtonName.Caption := '';
+
   FEventMonitor := TOmniEventMonitor.Create(Self);
 
   consumer := TG940LEDStateConsumer.Create;
@@ -193,53 +232,12 @@ begin
 end;
 
 
-(*
-procedure TMainForm.tmrG940InitTimer(Sender: TObject);
-
-  procedure TurnOn(ALEDPosition: Integer);
-  begin
-    FInitGreenState := FInitGreenState or (1 shl Pred(ALEDPosition));
-  end;
-
-  procedure TurnOff(ALEDPosition: Integer);
-  begin
-    FInitGreenState := FInitGreenState and not (1 shl Pred(ALEDPosition));
-    FInitRedState := FInitRedState and not (1 shl Pred(ALEDPosition));
-  end;
-
+procedure TMainForm.SetFSXToggleZoomButton(const ADeviceGUID: TGUID; AButtonIndex: Integer; const ADisplayText: string);
 begin
-  if not Assigned(ThrottleDevice) then
-  begin
-    tmrG940Init.Enabled := False;
-    exit;
-  end; 
-
-  if FInitCounter = 0 then
-    GetLEDs(ThrottleDevice, FInitRedState, FInitGreenState);
-
-  Inc(FInitCounter);
-  if FInitCounter > 8 then
-  begin
-    tmrG940Init.Enabled := False;
-    exit;
-  end;
-
-  { Clear all the LEDs in a right-to-left pattern for the top row and a
-    left-to-right pattern for the bottom row. Then light only the green LEDs
-    in the same pattern. }
-  if FInitCounter in [1..4] then
-  begin
-    TurnOff(5 - FInitCounter);
-    TurnOff(4 + FInitCounter);
-  end else
-  begin
-    TurnOn(5 - (FInitCounter - 4));
-    TurnOn(4 + (FInitCounter - 4));
-  end;
-
-  SetLEDs(ThrottleDevice, FInitRedState, FInitGreenState);
+  FFSXToggleZoomDeviceGUID := ADeviceGUID;
+  FFSXToggleZoomButtonIndex := AButtonIndex;
+  lblFSXToggleZoomButtonName.Caption := ADisplayText;
 end;
-*)
 
 
 procedure TMainForm.LoadFunctions(AProviderClass: TLEDStateProviderClass; AComboBoxes: TComboBoxArray);
@@ -304,6 +302,31 @@ begin
 end;
 
 
+procedure TMainForm.ReadFSXExtra(AReader: IX2PersistReader);
+var
+  deviceGUID: string;
+  buttonIndex: Integer;
+  displayText: string;
+
+begin
+  if AReader.BeginSection(SECTION_FSX) then
+  try
+    if AReader.ReadString('ToggleZoomDeviceGUID', deviceGUID) and
+       AReader.ReadInteger('ToggleZoomButtonIndex', buttonIndex) and
+       AReader.ReadString('ToggleZoomDisplayText', displayText) then
+    begin
+      try
+        SetFSXToggleZoomButton(StringToGUID(deviceGUID), buttonIndex, displayText);
+      except
+        on E:EConvertError do;
+      end;
+    end;
+  finally
+    AReader.EndSection;
+  end;
+end;
+
+
 procedure TMainForm.WriteFunctions(AWriter: IX2PersistWriter; AComboBoxes: TComboBoxArray);
 var
   comboBox: TComboBoxEx;
@@ -326,9 +349,24 @@ begin
 end;
 
 
+procedure TMainForm.WriteFSXExtra(AWriter: IX2PersistWriter);
+begin
+  if AWriter.BeginSection(SECTION_FSX) then
+  try
+    AWriter.WriteString('ToggleZoomDeviceGUID', GUIDToString(FFSXToggleZoomDeviceGUID));
+    AWriter.WriteInteger('ToggleZoomButtonIndex', FFSXToggleZoomButtonIndex);
+    AWriter.WriteString('ToggleZoomDisplayText', lblFSXToggleZoomButtonName.Caption);
+    // ToDo pressed / depressed levels
+  finally
+    AWriter.EndSection;
+  end;
+end;
+
+
 procedure TMainForm.LoadDefaultProfile;
 var
   registryReader: TX2UtPersistRegistry;
+  reader: IX2PersistReader;
 
 begin
   registryReader := TX2UtPersistRegistry.Create;
@@ -336,7 +374,10 @@ begin
     registryReader.RootKey := HKEY_CURRENT_USER;
     registryReader.Key := KEY_DEFAULTPROFILE;
 
-    ReadFunctions(registryReader.CreateReader, FFSXComboBoxes);
+    reader := registryReader.CreateReader;
+
+    ReadFunctions(reader, FFSXComboBoxes);
+    ReadFSXExtra(reader);
   finally
     FreeAndNil(registryReader);
   end;
@@ -346,6 +387,7 @@ end;
 procedure TMainForm.SaveDefaultProfile;
 var
   registryWriter: TX2UtPersistRegistry;
+  writer: IX2PersistWriter;
 
 begin
   registryWriter := TX2UtPersistRegistry.Create;
@@ -353,7 +395,9 @@ begin
     registryWriter.RootKey := HKEY_CURRENT_USER;
     registryWriter.Key := KEY_DEFAULTPROFILE;
 
-    WriteFunctions(registryWriter.CreateWriter, FFSXComboBoxes);
+    writer := registryWriter.CreateWriter;
+    WriteFunctions(writer, FFSXComboBoxes);
+    WriteFSXExtra(writer);
   finally
     FreeAndNil(registryWriter);
   end;
@@ -470,6 +514,21 @@ begin
 end;
 
 
+procedure TMainForm.btnFSXToggleZoomClick(Sender: TObject);
+var
+  deviceGUID: TGUID;
+  button: Integer;
+  displayText: string;
+
+begin
+  FillChar(deviceGUID, SizeOf(deviceGUID), 0);
+  button := -1;
+
+  if TButtonSelectForm.Execute(deviceGUID, button, displayText) then
+    SetFSXToggleZoomButton(deviceGUID, button, displayText);
+end;
+
+
 procedure TMainForm.btnRetryClick(Sender: TObject);
 begin
   btnRetry.Visible := False;
@@ -489,6 +548,13 @@ begin
       comboBox.ItemIndex := Succ(comboBox.ItemIndex);
   end;
 end;
+
+
+procedure TMainForm.lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
+begin
+  ShellExecute(Self.Handle, 'open', PChar(Link), nil, nil, SW_SHOWNORMAL);
+end;
+
 
 { TComboBoxFunctionConsumer }
 constructor TComboBoxFunctionConsumer.Create(AComboBox: TComboBoxEx);
