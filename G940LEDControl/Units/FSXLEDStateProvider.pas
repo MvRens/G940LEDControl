@@ -29,6 +29,8 @@ const
   FUNCTION_FSX_BATTERYMASTER = FUNCTION_PROVIDER_OFFSET + 11;
   FUNCTION_FSX_AVIONICSMASTER = FUNCTION_PROVIDER_OFFSET + 12;
 
+  FUNCTION_FSX_SPOILERS = FUNCTION_PROVIDER_OFFSET + 13;
+
 
 type
   TFSXLEDStateProvider = class(TLEDStateProvider)
@@ -90,7 +92,7 @@ const
   DEFINITION_ENGINE = 5;
   DEFINITION_THROTTLE = 6;
   DEFINITION_EXITDOOR = 7;
-  DEFINITION_FLAPS = 8;
+  DEFINITION_FLAPSSPOILERS = 8;
   DEFINITION_SWITCHES = 9;
 
   EVENT_ZOOM = 10;
@@ -107,9 +109,12 @@ const
   FSX_VARIABLE_GEARDAMAGEBYSPEED = 'GEAR DAMAGE BY SPEED';
   FSX_VARIABLE_GEARSPEEDEXCEEDED = 'GEAR SPEED EXCEEDED';
   FSX_VARIABLE_CANOPYOPEN = 'CANOPY OPEN';
+  FSX_VARIABLE_FLAPSAVAILABLE = 'FLAPS AVAILABLE';
   FSX_VARIABLE_FLAPSHANDLEPERCENT = 'FLAPS HANDLE PERCENT';
   FSX_VARIABLE_AVIONICSMASTERSWITCH = 'AVIONICS MASTER SWITCH';
   FSX_VARIABLE_ELECTRICALMASTERBATTERY = 'ELECTRICAL MASTER BATTERY';
+  FSX_VARIABLE_SPOILERSAVAILABLE = 'SPOILER AVAILABLE';
+  FSX_VARIABLE_SPOILERSHANDLEPOSITION = 'SPOILERS HANDLE POSITION';
 
 
 
@@ -141,6 +146,8 @@ const
   FUNCTION_DESC_FSX_BATTERYMASTER = 'Battery master switch';
   FUNCTION_DESC_FSX_AVIONICSMASTER = 'Avionics master switch';
 
+  FUNCTION_DESC_FSX_SPOILERS = 'Spoilers (air brake)';
+
 type
   TThrottleData = packed record
     NumberOfEngines: Integer;
@@ -168,6 +175,8 @@ begin
   AConsumer.AddFunction(FUNCTION_FSX_FLAPS, FUNCTION_DESC_FSX_FLAPS);
   AConsumer.AddFunction(FUNCTION_FSX_BATTERYMASTER, FUNCTION_DESC_FSX_BATTERYMASTER);
   AConsumer.AddFunction(FUNCTION_FSX_AVIONICSMASTER, FUNCTION_DESC_FSX_AVIONICSMASTER);
+
+  AConsumer.AddFunction(FUNCTION_FSX_SPOILERS, FUNCTION_DESC_FSX_SPOILERS);
 end;
 
 
@@ -307,11 +316,15 @@ begin
     AddDefinition(DEFINITION_EXITDOOR);
   end;
 
-  { Flaps }
-  if Consumer.FunctionMap.HasFunction(FUNCTION_FSX_FLAPS) then
+  { Flaps & spoilers }
+  if Consumer.FunctionMap.HasFunction(FUNCTION_FSX_FLAPS) or
+     Consumer.FunctionMap.HasFunction(FUNCTION_FSX_SPOILERS) then
   begin
-    AddVariable(DEFINITION_FLAPS, FSX_VARIABLE_FLAPSHANDLEPERCENT, FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
-    AddDefinition(DEFINITION_FLAPS);
+    AddVariable(DEFINITION_FLAPSSPOILERS, FSX_VARIABLE_FLAPSAVAILABLE, FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    AddVariable(DEFINITION_FLAPSSPOILERS, FSX_VARIABLE_FLAPSHANDLEPERCENT, FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+    AddVariable(DEFINITION_FLAPSSPOILERS, FSX_VARIABLE_SPOILERSAVAILABLE, FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    AddVariable(DEFINITION_FLAPSSPOILERS, FSX_VARIABLE_SPOILERSHANDLEPOSITION, FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+    AddDefinition(DEFINITION_FLAPSSPOILERS);
   end;
 
   { Master switches }
@@ -363,7 +376,7 @@ begin
           DEFINITION_PARKINGBRAKE:  HandleParkingBrakeData(data);
           DEFINITION_ENGINE:        HandleEngineData(data);
           DEFINITION_EXITDOOR:      HandleExitDoorData(data);
-          DEFINITION_FLAPS:         HandleFlapsData(data);
+          DEFINITION_FLAPSSPOILERS: HandleFlapsData(data);
           DEFINITION_SWITCHES:      HandleSwitchesData(data);
           {
           DEFINITION_THROTTLE:
@@ -397,7 +410,7 @@ procedure TFSXLEDStateProvider.HandleGearData(AData: Pointer);
 type
   PGearData = ^TGearData;
   TGearData = packed record
-    IsGearRetractable: Integer;
+    IsGearRetractable: Cardinal;
     TotalPctExtended: Double;
     DamageBySpeed: Integer;
     SpeedExceeded: Integer;
@@ -418,9 +431,9 @@ begin
   else if gearData^.IsGearRetractable <> 0 then
   begin
     case Trunc(gearData ^.TotalPctExtended * 100) of
-      0:    Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsRed);
-      100:  Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsGreen);
-    else    Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsAmber);
+      0:        Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsRed);
+      95..100:  Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsGreen);
+    else        Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsAmber);
     end;
   end else
     Consumer.SetStateByFunction(FUNCTION_FSX_GEAR, lsOff);
@@ -508,9 +521,9 @@ begin
   exitDoorData := AData;
 
   case Trunc(exitDoorData^.PercentOpen) of
-    0:    Consumer.SetStateByFunction(FUNCTION_FSX_EXITDOOR, lsGreen);
-    100:  Consumer.SetStateByFunction(FUNCTION_FSX_EXITDOOR, lsRed);
-  else    Consumer.SetStateByFunction(FUNCTION_FSX_EXITDOOR, lsAmber);
+    0:        Consumer.SetStateByFunction(FUNCTION_FSX_EXITDOOR, lsGreen);
+    95..100:  Consumer.SetStateByFunction(FUNCTION_FSX_EXITDOOR, lsRed);
+  else        Consumer.SetStateByFunction(FUNCTION_FSX_EXITDOOR, lsAmber);
   end;
 end;
 
@@ -519,7 +532,10 @@ procedure TFSXLEDStateProvider.HandleFlapsData(AData: Pointer);
 type
   PFlapsData = ^TFlapsData;
   TFlapsData = packed record
-    HandlePercent: Double;
+    FlapsAvailable: Cardinal;
+    FlapsHandlePercent: Double;
+    SpoilersAvailable: Cardinal;
+    SpoilersHandlePercent: Double;
   end;
 
 var
@@ -528,11 +544,25 @@ var
 begin
   flapsData := AData;
 
-  case Trunc(flapsData^.HandlePercent) of
-    0:    Consumer.SetStateByFunction(FUNCTION_FSX_FLAPS, lsGreen);
-    100:  Consumer.SetStateByFunction(FUNCTION_FSX_FLAPS, lsRed);
-  else    Consumer.SetStateByFunction(FUNCTION_FSX_FLAPS, lsAmber);
-  end;
+  if flapsData^.FlapsAvailable <> 0 then
+  begin
+    case Trunc(flapsData^.FlapsHandlePercent) of
+      0:        Consumer.SetStateByFunction(FUNCTION_FSX_FLAPS, lsGreen);
+      95..100:  Consumer.SetStateByFunction(FUNCTION_FSX_FLAPS, lsRed);
+    else        Consumer.SetStateByFunction(FUNCTION_FSX_FLAPS, lsAmber);
+    end;
+  end else
+    Consumer.SetStateByFunction(FUNCTION_FSX_FLAPS, lsOff);
+
+  if flapsData^.SpoilersAvailable <> 0 then
+  begin
+    case Trunc(flapsData^.SpoilersHandlePercent) of
+      0:        Consumer.SetStateByFunction(FUNCTION_FSX_SPOILERS, lsGreen);
+      95..100:  Consumer.SetStateByFunction(FUNCTION_FSX_SPOILERS, lsRed);
+    else        Consumer.SetStateByFunction(FUNCTION_FSX_SPOILERS, lsAmber);
+    end;
+  end else
+    Consumer.SetStateByFunction(FUNCTION_FSX_SPOILERS, lsOff);
 end;
 
 

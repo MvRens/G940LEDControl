@@ -87,8 +87,7 @@ type
     procedure btnFSXToggleZoomClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FunctionComboBoxChange(Sender: TObject);
-    procedure lblLinkLinkClick(Sender: TObject; const Link: string;
-      LinkType: TSysLinkType);
+    procedure lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
   private
     FEventMonitor: TOmniEventMonitor;
     FStateConsumerTask: IOmniTaskControl;
