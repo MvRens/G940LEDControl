@@ -3,14 +3,14 @@ program G940LEDControl;
 uses
   Forms,
   MainFrm in 'Forms\MainFrm.pas' {MainForm},
-  FSXLEDStateProvider in 'Units\FSXLEDStateProvider.pas',
-  LEDStateConsumer in 'Units\LEDStateConsumer.pas',
-  LEDStateProvider in 'Units\LEDStateProvider.pas',
-  LEDFunctionMap in 'Units\LEDFunctionMap.pas',
-  G940LEDStateConsumer in 'Units\G940LEDStateConsumer.pas',
   LogiJoystickDLL in '..\Shared\LogiJoystickDLL.pas',
   SimConnect in '..\Shared\SimConnect.pas',
-  ButtonSelectFrm in 'Forms\ButtonSelectFrm.pas' {ButtonSelectForm};
+  ButtonSelectFrm in 'Forms\ButtonSelectFrm.pas' {ButtonSelectForm},
+  FSXLEDStateProvider in 'Units\FSXLEDStateProvider.pas',
+  G940LEDStateConsumer in 'Units\G940LEDStateConsumer.pas',
+  LEDFunctionMap in 'Units\LEDFunctionMap.pas',
+  LEDStateConsumer in 'Units\LEDStateConsumer.pas',
+  LEDStateProvider in 'Units\LEDStateProvider.pas';
 
 {$R *.res}
 

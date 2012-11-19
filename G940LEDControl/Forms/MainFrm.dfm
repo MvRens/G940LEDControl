@@ -28,7 +28,7 @@ object MainForm: TMainForm
     Margins.Top = 8
     Margins.Right = 8
     Margins.Bottom = 8
-    ActivePage = tsFSX
+    ActivePage = tsAbout
     Align = alClient
     TabOrder = 1
     object tsFSX: TTabSheet
@@ -438,6 +438,7 @@ object MainForm: TMainForm
     object tsAbout: TTabSheet
       Caption = 'About'
       ImageIndex = 1
+      ExplicitLeft = 12
       object lblVersionCaption: TLabel
         Left = 16
         Top = 67
@@ -486,6 +487,19 @@ object MainForm: TMainForm
         Height = 13
         Caption = 'E-mail:'
       end
+      object lblProxy: TLabel
+        Left = 36
+        Top = 368
+        Width = 246
+        Height = 13
+        Caption = 'This might not work if you'#39're behind a proxy, sorry!'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGrayText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+      end
       object lblWebsiteLink: TLinkLabel
         Left = 75
         Top = 111
@@ -507,6 +521,23 @@ object MainForm: TMainForm
           'a>'
         TabOrder = 1
         OnLinkClick = lblLinkLinkClick
+      end
+      object cbCheckUpdates: TCheckBox
+        Left = 16
+        Top = 344
+        Width = 305
+        Height = 17
+        Caption = ' Automatically check for &updates'
+        TabOrder = 2
+      end
+      object btnCheckUpdates: TButton
+        Left = 344
+        Top = 340
+        Width = 83
+        Height = 25
+        Caption = '&Check now'
+        TabOrder = 3
+        OnClick = btnCheckUpdatesClick
       end
     end
   end
@@ -900,7 +931,7 @@ object MainForm: TMainForm
       Width = 75
       Height = 25
       Anchors = [akTop, akRight]
-      Caption = 'Retry'
+      Caption = '&Retry'
       TabOrder = 0
       Visible = False
       OnClick = btnRetryClick
