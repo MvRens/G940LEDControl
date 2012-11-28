@@ -25,7 +25,8 @@ type
     procedure SetFunction(ALEDIndex, AFunction: Integer);
     function GetFunction(ALEDIndex: Integer): Integer;
 
-    function HasFunction(AFunction: Integer): Boolean;
+    function HasFunction(AFunction: Integer): Boolean; overload;
+    function HasFunction(AFunctions: array of Integer): Boolean; overload;
 
     function FindFirst(AFunction: Integer; out ALEDIndex: Integer): Boolean;
     function FindNext(AFunction: Integer; out ALEDIndex: Integer): Boolean;
@@ -101,6 +102,21 @@ begin
   Result := FFunctions[ALEDIndex];
 end;
 
+
+function TLEDFunctionMap.HasFunction(AFunctions: array of Integer): Boolean;
+var
+  functionNo: Integer;
+
+begin
+  Result := False;
+
+  for functionNo in AFunctions do
+  begin
+    Result := HasFunction(functionNo);
+    if Result then
+      break;
+  end;
+end;
 
 function TLEDFunctionMap.HasFunction(AFunction: Integer): Boolean;
 var

@@ -28,7 +28,7 @@ object MainForm: TMainForm
     Margins.Top = 8
     Margins.Right = 8
     Margins.Bottom = 8
-    ActivePage = tsAbout
+    ActivePage = tsFSX
     Align = alClient
     TabOrder = 1
     object tsFSX: TTabSheet
@@ -275,6 +275,10 @@ object MainForm: TMainForm
           Caption = 'Extra'
           ImageIndex = 1
           TabVisible = False
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object GroupBox1: TGroupBox
             AlignWithMargins = True
             Left = 6
@@ -438,7 +442,6 @@ object MainForm: TMainForm
     object tsAbout: TTabSheet
       Caption = 'About'
       ImageIndex = 1
-      ExplicitLeft = 12
       object lblVersionCaption: TLabel
         Left = 16
         Top = 67
