@@ -36,6 +36,15 @@ const
   FUNCTION_FSX_AUTOPILOT = FUNCTION_PROVIDER_OFFSET + 16;
   FUNCTION_FSX_FUELPUMP = FUNCTION_PROVIDER_OFFSET + 17;
 
+  FUNCTION_FSX_TAILHOOK = FUNCTION_PROVIDER_OFFSET + 18;
+
+  FUNCTION_FSX_AUTOPILOT_AMBER = FUNCTION_PROVIDER_OFFSET + 19;
+  FUNCTION_FSX_AUTOPILOT_HEADING = FUNCTION_PROVIDER_OFFSET + 20;
+  FUNCTION_FSX_AUTOPILOT_APPROACH = FUNCTION_PROVIDER_OFFSET + 21;
+  FUNCTION_FSX_AUTOPILOT_BACKCOURSE = FUNCTION_PROVIDER_OFFSET + 22;
+  FUNCTION_FSX_AUTOPILOT_ALTITUDE = FUNCTION_PROVIDER_OFFSET + 23;
+  FUNCTION_FSX_AUTOPILOT_NAV = FUNCTION_PROVIDER_OFFSET + 24;
+
 
 type
   TFSXLEDStateProvider = class(TLEDStateProvider)
@@ -130,11 +139,17 @@ begin
 
   AConsumer.SetCategory('Dynamic');
 
+  AConsumer.AddFunction(FUNCTION_FSX_CARBHEAT, 'Anti-ice');
   AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT, 'Auto pilot (main)');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_AMBER, 'Auto pilot (main - off / amber)');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_ALTITUDE, 'Auto pilot - Altitude');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_APPROACH, 'Auto pilot - Approach');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_BACKCOURSE, 'Auto pilot - Backcourse');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_HEADING, 'Auto pilot - Heading');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_NAV, 'Auto pilot - Nav');
   AConsumer.AddFunction(FUNCTION_FSX_AVIONICSMASTER, 'Avionics master switch');
   AConsumer.AddFunction(FUNCTION_FSX_BATTERYMASTER, 'Battery master switch');
   AConsumer.AddFunction(FUNCTION_FSX_BEACONLIGHTS, 'Beacon lights');
-//  AConsumer.AddFunction(FUNCTION_FSX_CARBHEAT, 'Carburator heat / anti-ice');
   AConsumer.AddFunction(FUNCTION_FSX_ENGINE, 'Engine');
   AConsumer.AddFunction(FUNCTION_FSX_EXITDOOR, 'Exit door');
   AConsumer.AddFunction(FUNCTION_FSX_FLAPS, 'Flaps');
@@ -147,6 +162,7 @@ begin
   AConsumer.AddFunction(FUNCTION_FSX_PRESSURIZATIONDUMPSWITCH, 'Pressurization dump switch');
   AConsumer.AddFunction(FUNCTION_FSX_SPOILERS, 'Spoilers (air brake)');
   AConsumer.AddFunction(FUNCTION_FSX_STROBELIGHTS, 'Strobe lights');
+  AConsumer.AddFunction(FUNCTION_FSX_TAILHOOK, 'Tail hook');
 end;
 
 
@@ -278,9 +294,11 @@ begin
   end;
 
   { Exit door }
-  if Consumer.FunctionMap.HasFunction(FUNCTION_FSX_EXITDOOR) then
+  if Consumer.FunctionMap.HasFunction(FUNCTION_FSX_EXITDOOR) or
+     Consumer.FunctionMap.HasFunction(FUNCTION_FSX_TAILHOOK) then
   begin
     AddVariable(DEFINITION_EXITDOOR, 'CANOPY OPEN', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+    AddVariable(DEFINITION_EXITDOOR, 'TAILHOOK POSITION', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
     AddDefinition(DEFINITION_EXITDOOR);
   end;
 
@@ -297,16 +315,24 @@ begin
   { Master switches }
   if Consumer.FunctionMap.HasFunction([FUNCTION_FSX_BATTERYMASTER, FUNCTION_FSX_AVIONICSMASTER,
                                        FUNCTION_FSX_PRESSURIZATIONDUMPSWITCH, FUNCTION_FSX_CARBHEAT,
-                                       FUNCTION_FSX_AUTOPILOT, FUNCTION_FSX_FUELPUMP]) then
+                                       FUNCTION_FSX_AUTOPILOT, FUNCTION_FSX_FUELPUMP,
+                                       FUNCTION_FSX_AUTOPILOT_AMBER, FUNCTION_FSX_AUTOPILOT_HEADING,
+                                       FUNCTION_FSX_AUTOPILOT_APPROACH, FUNCTION_FSX_AUTOPILOT_BACKCOURSE,
+                                       FUNCTION_FSX_AUTOPILOT_ALTITUDE, FUNCTION_FSX_AUTOPILOT_NAV]) then
   begin
     AddVariable(DEFINITION_SWITCHES, 'AVIONICS MASTER SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
     AddVariable(DEFINITION_SWITCHES, 'ELECTRICAL MASTER BATTERY', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
     AddVariable(DEFINITION_SWITCHES, 'PRESSURIZATION DUMP SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
 //    AddVariable(DEFINITION_SWITCHES, 'CARB HEAT AVAILABLE', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
-//    AddVariable(DEFINITION_SWITCHES, 'PANEL ANTI ICE SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    AddVariable(DEFINITION_SWITCHES, 'PANEL ANTI ICE SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
     AddVariable(DEFINITION_SWITCHES, 'AUTOPILOT AVAILABLE', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
     AddVariable(DEFINITION_SWITCHES, 'AUTOPILOT MASTER', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
 //    AddVariable(DEFINITION_SWITCHES, 'fuel pump?', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    AddVariable(DEFINITION_SWITCHES, 'AUTOPILOT HEADING LOCK', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    AddVariable(DEFINITION_SWITCHES, 'AUTOPILOT APPROACH HOLD', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    AddVariable(DEFINITION_SWITCHES, 'AUTOPILOT BACKCOURSE HOLD', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    AddVariable(DEFINITION_SWITCHES, 'AUTOPILOT ALTITUDE LOCK', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    AddVariable(DEFINITION_SWITCHES, 'AUTOPILOT NAV1 LOCK', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
 
     AddDefinition(DEFINITION_SWITCHES);
   end;
@@ -487,6 +513,7 @@ type
   PExitDoorData = ^TExitDoorData;
   TExitDoorData = packed record
     PercentOpen: Double;
+    TailHookPercent: Double;
   end;
 
 var
@@ -499,6 +526,12 @@ begin
     0:        Consumer.SetStateByFunction(FUNCTION_FSX_EXITDOOR, lsGreen);
     95..100:  Consumer.SetStateByFunction(FUNCTION_FSX_EXITDOOR, lsRed);
   else        Consumer.SetStateByFunction(FUNCTION_FSX_EXITDOOR, lsAmber);
+  end;
+
+  case Trunc(exitDoorData^.TailHookPercent) of
+    0:        Consumer.SetStateByFunction(FUNCTION_FSX_TAILHOOK, lsGreen);
+    95..100:  Consumer.SetStateByFunction(FUNCTION_FSX_TAILHOOK, lsRed);
+  else        Consumer.SetStateByFunction(FUNCTION_FSX_TAILHOOK, lsAmber);
   end;
 end;
 
@@ -544,6 +577,7 @@ end;
 procedure TFSXLEDStateProvider.HandleSwitchesData(AData: Pointer);
 const
   ONOFF_STATE: array[Boolean] of TLEDState = (lsRed, lsGreen);
+  AMBER_ONOFF_STATE: array[Boolean] of TLEDState = (lsOff, lsAmber);
 
 type
   PSwitchesData = ^TSwitchesData;
@@ -552,9 +586,14 @@ type
     BatterySwitch: Cardinal;
     PressurizationDumpSwitch: Cardinal;
 //    CarbHeatAvailable: Cardinal;
-//    AntiIceSwitch: Cardinal;
+    AntiIceSwitch: Cardinal;
     AutoPilotAvailable: Cardinal;
     AutoPilotMaster: Cardinal;
+    AutoPilotHeading: Cardinal;
+    AutoPilotApproach: Cardinal;
+    AutoPilotBackcourse: Cardinal;
+    AutoPilotAltitude: Cardinal;
+    AutoPilotNav: Cardinal;
   end;
 
 var
@@ -568,14 +607,29 @@ begin
   Consumer.SetStateByFunction(FUNCTION_FSX_PRESSURIZATIONDUMPSWITCH, ONOFF_STATE[switchesData^.PressurizationDumpSwitch <> 0]);
 
 //  if switchesData^.CarbHeatAvailable <> 0 then
-//    Consumer.SetStateByFunction(FUNCTION_FSX_CARBHEAT, ONOFF_STATE[switchesData^.AntiIceSwitch <> 0])
+  Consumer.SetStateByFunction(FUNCTION_FSX_CARBHEAT, ONOFF_STATE[switchesData^.AntiIceSwitch <> 0]);
 //  else
 //    Consumer.SetStateByFunction(FUNCTION_FSX_CARBHEAT, lsOff);
 
   if switchesData^.AutoPilotAvailable <> 0 then
-    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT, ONOFF_STATE[switchesData^.AutoPilotMaster <> 0])
-  else
+  begin
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT, ONOFF_STATE[switchesData^.AutoPilotMaster <> 0]);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_AMBER, AMBER_ONOFF_STATE[switchesData^.AutoPilotMaster <> 0]);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_HEADING, AMBER_ONOFF_STATE[switchesData^.AutoPilotHeading <> 0]);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_APPROACH, AMBER_ONOFF_STATE[switchesData^.AutoPilotApproach <> 0]);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_BACKCOURSE, AMBER_ONOFF_STATE[switchesData^.AutoPilotBackcourse <> 0]);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_ALTITUDE, AMBER_ONOFF_STATE[switchesData^.AutoPilotAltitude <> 0]);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_NAV, AMBER_ONOFF_STATE[switchesData^.AutoPilotNav <> 0]);
+  end else
+  begin
     Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT, lsOff);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_AMBER, lsOff);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_HEADING, lsOff);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_APPROACH, lsOff);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_BACKCOURSE, lsOff);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_ALTITUDE, lsOff);
+    Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_NAV, lsOff);
+  end;
 end;
 
 
