@@ -46,6 +46,7 @@ const
   FUNCTION_FSX_AUTOPILOT_NAV = FUNCTION_PROVIDER_OFFSET + 24;
 
   FUNCTION_FSX_TAXILIGHTS = FUNCTION_PROVIDER_OFFSET + 25;
+  FUNCTION_FSX_RECOGNITIONLIGHTS = FUNCTION_PROVIDER_OFFSET + 26;
 
 
 type
@@ -124,6 +125,7 @@ const
   FSX_LIGHTON_TAXI = $0008;
   FSX_LIGHTON_STROBE = $0010;
   FSX_LIGHTON_PANEL = $0020;
+  FSX_LIGHTON_RECOGNITION = $0040;
   FSX_LIGHTON_CABIN = $0200;
 
 
@@ -163,6 +165,7 @@ begin
   AConsumer.AddFunction(FUNCTION_FSX_NAVLIGHTS, 'Nav lights');
   AConsumer.AddFunction(FUNCTION_FSX_PARKINGBRAKE, 'Parking brake');
   AConsumer.AddFunction(FUNCTION_FSX_PRESSURIZATIONDUMPSWITCH, 'Pressurization dump switch');
+  AConsumer.AddFunction(FUNCTION_FSX_RECOGNITIONLIGHTS, 'Recognition lights');
   AConsumer.AddFunction(FUNCTION_FSX_SPOILERS, 'Spoilers (air brake)');
   AConsumer.AddFunction(FUNCTION_FSX_STROBELIGHTS, 'Strobe lights');
   AConsumer.AddFunction(FUNCTION_FSX_TAILHOOK, 'Tail hook');
@@ -267,7 +270,8 @@ begin
   { Lights }
   if Consumer.FunctionMap.HasFunction([FUNCTION_FSX_LANDINGLIGHTS, FUNCTION_FSX_INSTRUMENTLIGHTS,
                                        FUNCTION_FSX_STROBELIGHTS, FUNCTION_FSX_NAVLIGHTS,
-                                       FUNCTION_FSX_BEACONLIGHTS, FUNCTION_FSX_TAXILIGHTS]) then
+                                       FUNCTION_FSX_BEACONLIGHTS, FUNCTION_FSX_TAXILIGHTS,
+                                       FUNCTION_FSX_RECOGNITIONLIGHTS]) then
   begin
     AddVariable(DEFINITION_LIGHTS, 'LIGHT ON STATES', FSX_UNIT_MASK, SIMCONNECT_DATATYPE_INT32);
     AddDefinition(DEFINITION_LIGHTS);
@@ -458,6 +462,7 @@ begin
   SetFSXLightState(state, FSX_LIGHTON_NAV, FUNCTION_FSX_NAVLIGHTS);
   SetFSXLightState(state, FSX_LIGHTON_STROBE, FUNCTION_FSX_STROBELIGHTS);
   SetFSXLightState(state, FSX_LIGHTON_TAXI, FUNCTION_FSX_TAXILIGHTS);
+  SetFSXLightState(state, FSX_LIGHTON_RECOGNITION, FUNCTION_FSX_RECOGNITIONLIGHTS);
 end;
 
 
