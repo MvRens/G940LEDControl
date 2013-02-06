@@ -10,7 +10,15 @@ uses
   G940LEDStateConsumer in 'Units\G940LEDStateConsumer.pas',
   LEDFunctionMap in 'Units\LEDFunctionMap.pas',
   LEDStateConsumer in 'Units\LEDStateConsumer.pas',
-  LEDStateProvider in 'Units\LEDStateProvider.pas';
+  LEDStateProvider in 'Units\LEDStateProvider.pas',
+  LEDStateIntf in 'Units\LEDStateIntf.pas',
+  LEDState in 'Units\LEDState.pas',
+  LEDFunctionIntf in 'Units\LEDFunctionIntf.pas',
+  ObserverIntf in 'Units\ObserverIntf.pas',
+  LEDFunction in 'Units\LEDFunction.pas',
+  StaticLEDFunction in 'Units\StaticLEDFunction.pas',
+  ConfigConversion in 'Units\ConfigConversion.pas',
+  LEDFunctionRegistry in 'Units\LEDFunctionRegistry.pas';
 
 {$R *.res}
 

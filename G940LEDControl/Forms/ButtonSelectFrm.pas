@@ -116,7 +116,7 @@ begin
   info.InstanceGUID := lpddi.guidInstance;
   info.ProductGUID := lpddi.guidProduct;
 
-  items.AddObject(String(lpddi.tszProductName), info);
+  items.AddObject(string(lpddi.tszProductName), info);
   Result := True;
 end;
 

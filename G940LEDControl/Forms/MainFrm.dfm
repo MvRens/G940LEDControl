@@ -275,10 +275,6 @@ object MainForm: TMainForm
           Caption = 'Extra'
           ImageIndex = 1
           TabVisible = False
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object GroupBox1: TGroupBox
             AlignWithMargins = True
             Left = 6

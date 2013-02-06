@@ -67,7 +67,6 @@ object ButtonSelectForm: TButtonSelectForm
     Default = True
     ModalResult = 1
     TabOrder = 1
-    ExplicitTop = 94
   end
   object btnCancel: TButton
     Left = 401
@@ -79,7 +78,6 @@ object ButtonSelectForm: TButtonSelectForm
     Caption = 'Cancel'
     ModalResult = 2
     TabOrder = 2
-    ExplicitTop = 94
   end
   object edtButton: TEdit
     Left = 80
