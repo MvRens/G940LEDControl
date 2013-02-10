@@ -43,7 +43,7 @@ object MainForm: TMainForm
         446)
       object lblP1Function: TLabel
         Left = 64
-        Top = 89
+        Top = 73
         Width = 364
         Height = 13
         Anchors = [akLeft, akTop, akRight]
@@ -56,54 +56,24 @@ object MainForm: TMainForm
         Font.Name = 'Tahoma'
         Font.Style = [fsBold]
         ParentFont = False
-        ExplicitWidth = 421
       end
       object lblP1Category: TLabel
         Left = 64
-        Top = 73
+        Top = 89
         Width = 364
         Height = 13
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = '[runtime: category]'
         EllipsisPosition = epEndEllipsis
-        ExplicitWidth = 421
       end
       object lblP2Function: TLabel
-        Left = 64
-        Top = 136
-        Width = 364
-        Height = 13
-        Anchors = [akLeft, akTop, akRight]
-        AutoSize = False
-        Caption = '[runtime: function]'
-        EllipsisPosition = epEndEllipsis
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = [fsBold]
-        ParentFont = False
-        ExplicitWidth = 421
-      end
-      object lblP2Category: TLabel
         Left = 64
         Top = 120
         Width = 364
         Height = 13
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
-        Caption = '[runtime: category]'
-        EllipsisPosition = epEndEllipsis
-        ExplicitWidth = 421
-      end
-      object lblP3Function: TLabel
-        Left = 64
-        Top = 183
-        Width = 364
-        Height = 13
-        Anchors = [akLeft, akTop, akRight]
-        AutoSize = False
         Caption = '[runtime: function]'
         EllipsisPosition = epEndEllipsis
         Font.Charset = DEFAULT_CHARSET
@@ -112,26 +82,24 @@ object MainForm: TMainForm
         Font.Name = 'Tahoma'
         Font.Style = [fsBold]
         ParentFont = False
-        ExplicitWidth = 421
       end
-      object lblP3Category: TLabel
+      object lblP2Category: TLabel
+        Left = 64
+        Top = 136
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+      end
+      object lblP3Function: TLabel
         Left = 64
         Top = 167
         Width = 364
         Height = 13
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
-        Caption = '[runtime: category]'
-        EllipsisPosition = epEndEllipsis
-        ExplicitWidth = 421
-      end
-      object lblP4Function: TLabel
-        Left = 64
-        Top = 230
-        Width = 364
-        Height = 13
-        Anchors = [akLeft, akTop, akRight]
-        AutoSize = False
         Caption = '[runtime: function]'
         EllipsisPosition = epEndEllipsis
         Font.Charset = DEFAULT_CHARSET
@@ -140,26 +108,24 @@ object MainForm: TMainForm
         Font.Name = 'Tahoma'
         Font.Style = [fsBold]
         ParentFont = False
-        ExplicitWidth = 421
       end
-      object lblP4Category: TLabel
+      object lblP3Category: TLabel
+        Left = 64
+        Top = 183
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+      end
+      object lblP4Function: TLabel
         Left = 64
         Top = 214
         Width = 364
         Height = 13
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
-        Caption = '[runtime: category]'
-        EllipsisPosition = epEndEllipsis
-        ExplicitWidth = 421
-      end
-      object lblP5Function: TLabel
-        Left = 64
-        Top = 277
-        Width = 364
-        Height = 13
-        Anchors = [akLeft, akTop, akRight]
-        AutoSize = False
         Caption = '[runtime: function]'
         EllipsisPosition = epEndEllipsis
         Font.Charset = DEFAULT_CHARSET
@@ -168,26 +134,24 @@ object MainForm: TMainForm
         Font.Name = 'Tahoma'
         Font.Style = [fsBold]
         ParentFont = False
-        ExplicitWidth = 421
       end
-      object lblP5Category: TLabel
+      object lblP4Category: TLabel
+        Left = 64
+        Top = 230
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+      end
+      object lblP5Function: TLabel
         Left = 64
         Top = 261
         Width = 364
         Height = 13
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
-        Caption = '[runtime: category]'
-        EllipsisPosition = epEndEllipsis
-        ExplicitWidth = 421
-      end
-      object lblP6Function: TLabel
-        Left = 64
-        Top = 324
-        Width = 364
-        Height = 13
-        Anchors = [akLeft, akTop, akRight]
-        AutoSize = False
         Caption = '[runtime: function]'
         EllipsisPosition = epEndEllipsis
         Font.Charset = DEFAULT_CHARSET
@@ -196,26 +160,24 @@ object MainForm: TMainForm
         Font.Name = 'Tahoma'
         Font.Style = [fsBold]
         ParentFont = False
-        ExplicitWidth = 421
       end
-      object lblP6Category: TLabel
+      object lblP5Category: TLabel
+        Left = 64
+        Top = 277
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+      end
+      object lblP6Function: TLabel
         Left = 64
         Top = 308
         Width = 364
         Height = 13
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
-        Caption = '[runtime: category]'
-        EllipsisPosition = epEndEllipsis
-        ExplicitWidth = 421
-      end
-      object lblP7Function: TLabel
-        Left = 64
-        Top = 371
-        Width = 364
-        Height = 13
-        Anchors = [akLeft, akTop, akRight]
-        AutoSize = False
         Caption = '[runtime: function]'
         EllipsisPosition = epEndEllipsis
         Font.Charset = DEFAULT_CHARSET
@@ -224,22 +186,46 @@ object MainForm: TMainForm
         Font.Name = 'Tahoma'
         Font.Style = [fsBold]
         ParentFont = False
-        ExplicitWidth = 421
       end
-      object lblP7Category: TLabel
+      object lblP6Category: TLabel
+        Left = 64
+        Top = 324
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+      end
+      object lblP7Function: TLabel
         Left = 64
         Top = 355
         Width = 364
         Height = 13
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
+        Caption = '[runtime: function]'
+        EllipsisPosition = epEndEllipsis
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object lblP7Category: TLabel
+        Left = 64
+        Top = 371
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
         Caption = '[runtime: category]'
         EllipsisPosition = epEndEllipsis
-        ExplicitWidth = 421
       end
       object lblP8Function: TLabel
         Left = 64
-        Top = 418
+        Top = 402
         Width = 364
         Height = 13
         Anchors = [akLeft, akTop, akRight]
@@ -252,18 +238,16 @@ object MainForm: TMainForm
         Font.Name = 'Tahoma'
         Font.Style = [fsBold]
         ParentFont = False
-        ExplicitWidth = 421
       end
       object lblP8Category: TLabel
         Left = 64
-        Top = 402
+        Top = 418
         Width = 364
         Height = 13
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = '[runtime: category]'
         EllipsisPosition = epEndEllipsis
-        ExplicitWidth = 421
       end
       object lblProfile: TLabel
         Left = 11
@@ -350,8 +334,9 @@ object MainForm: TMainForm
         Height = 21
         Style = csDropDownList
         Anchors = [akLeft, akTop, akRight]
+        Sorted = True
         TabOrder = 8
-        ExplicitWidth = 270
+        OnClick = cmbProfilesClick
       end
       object btnSaveProfile: TButton
         Left = 283

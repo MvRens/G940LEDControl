@@ -18,8 +18,9 @@ type
   protected
     { ILEDFunctionProvider }
     function GetUID: string; virtual; abstract;
-
     function GetEnumerator: ILEDFunctionEnumerator; virtual;
+
+    function Find(const AFunctionUID: string): ILEDFunction; virtual;
   public
     constructor Create;
     destructor Destroy; override;
@@ -154,6 +155,22 @@ begin
   FreeAndNil(FFunctions);
 
   inherited;
+end;
+
+
+function TCustomLEDFunctionProvider.Find(const AFunctionUID: string): ILEDFunction;
+var
+  ledFunction: ILEDFunction;
+
+begin
+  Result := nil;
+
+  for ledFunction in (Self as ILEDFunctionProvider) do
+    if ledFunction.GetUID = AFunctionUID then
+    begin
+      Result := ledFunction;
+      break;
+    end;
 end;
 
 

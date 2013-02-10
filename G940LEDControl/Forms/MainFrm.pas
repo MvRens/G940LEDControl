@@ -100,12 +100,15 @@ type
     procedure btnCheckUpdatesClick(Sender: TObject);
     procedure LEDButtonClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure cmbProfilesClick(Sender: TObject);
   private
     FLEDControls: array[0..LED_COUNT - 1] of TLEDControls;
     FEventMonitor: TOmniEventMonitor;
 
     FProfilesFilename: string;
     FProfiles: TProfileList;
+    FActiveProfile: TProfile;
+    FLoadingProfiles: Boolean;
 //    FStateConsumerTask: IOmniTaskControl;
   protected
 //    procedure ReadFunctions(AReader: IX2PersistReader; AComboBoxes: TComboBoxArray);
@@ -120,9 +123,8 @@ type
     procedure SaveProfiles;
 
     function CreateDefaultProfile: TProfile;
-
-//    procedure LoadDefaultProfile;
-//    procedure SaveDefaultProfile;
+    procedure LoadActiveProfile;
+    procedure UpdateButton(AProfile: TProfile; AButtonIndex: Integer);
 
     procedure SetDeviceState(const AMessage: string; AFound: Boolean);
 //    procedure SetFSXToggleZoomButton(const ADeviceGUID: TGUID; AButtonIndex: Integer; const ADisplayText: string);
@@ -145,6 +147,7 @@ type
 
     procedure CMAskAutoUpdate(var Msg: TMessage); message CM_ASKAUTOUPDATE;
 
+    property ActiveProfile: TProfile read FActiveProfile;
     property EventMonitor: TOmniEventMonitor read FEventMonitor;
     property Profiles: TProfileList read FProfiles;
 //    property StateConsumerTask: IOmniTaskControl read FStateConsumerTask;
@@ -155,6 +158,7 @@ implementation
 uses
   ComObj,
   Dialogs,
+  Graphics,
   ShellAPI,
   SysUtils,
 
@@ -164,11 +168,13 @@ uses
   X2UtApp,
   X2UtPersistXML,
 
-  ButtonSelectFrm,
+  ButtonFunctionFrm,
   ConfigConversion,
   FSXLEDStateProvider,
   G940LEDStateConsumer,
   LEDColorIntf,
+  LEDFunctionIntf,
+  LEDFunctionRegistry,
   StaticLEDFunction;
 
 
@@ -176,7 +182,7 @@ uses
 
 
 const
-  NameDefaultProfile = 'Default';
+  DefaultProfileName = 'Default';
 
   FILENAME_PROFILES = 'G940LEDControl\Profiles.xml';
 
@@ -284,6 +290,7 @@ begin
 
     FLEDControls[ledIndex].ConfigureButton.OnClick := LEDButtonClick;
     FLEDControls[ledIndex].CategoryLabel.Caption := '';
+    FLEDControls[ledIndex].CategoryLabel.Font.Color := clGrayText;
     FLEDControls[ledIndex].FunctionLabel.Caption := '';
   end;
 end;
@@ -293,6 +300,7 @@ procedure TMainForm.LoadProfiles;
 var
   defaultProfile: TProfile;
   persistXML: TX2UtPersistXML;
+  profile: TProfile;
 
 begin
   if not FileExists(FProfilesFilename) then
@@ -305,7 +313,7 @@ begin
 
     if Assigned(defaultProfile) then
     begin
-      defaultProfile.Name := NameDefaultProfile;
+      defaultProfile.Name := DefaultProfileName;
       Profiles.Add(defaultProfile);
     end;
   end else
@@ -317,6 +325,29 @@ begin
     finally
       FreeAndNil(persistXML);
     end;
+  end;
+
+  FLoadingProfiles := True;
+  try
+    cmbProfiles.Items.BeginUpdate;
+    try
+      cmbProfiles.Items.Clear;
+
+      for profile in Profiles do
+        cmbProfiles.Items.AddObject(profile.Name, profile);
+    finally
+      cmbProfiles.Items.EndUpdate;
+
+      if cmbProfiles.Items.Count > 0 then
+      begin
+        cmbProfiles.ItemIndex := 0;
+
+        FActiveProfile := TProfile(cmbProfiles.Items.Objects[0]);
+        LoadActiveProfile;
+      end;
+    end;
+  finally
+    FLoadingProfiles := False;
   end;
 end;
 
@@ -337,18 +368,68 @@ end;
 
 
 function TMainForm.CreateDefaultProfile: TProfile;
+begin
+  { Default button functions are assigned during UpdateButton }
+  Result := TProfile.Create;
+end;
+
+
+procedure TMainForm.LoadActiveProfile;
 var
-  ledIndex: Integer;
-  button: TProfileButton;
+  buttonIndex: Integer;
 
 begin
-  Result := TProfile.Create;
+  if not Assigned(ActiveProfile) then
+    exit;
 
-  for ledIndex := 0 to Pred(LED_COUNT) do
+  for buttonIndex := 0 to Pred(LED_COUNT) do
+    UpdateButton(ActiveProfile, buttonIndex);
+end;
+
+
+procedure TMainForm.UpdateButton(AProfile: TProfile; AButtonIndex: Integer);
+var
+  button: TProfileButton;
+  providerUID: string;
+  functionUID: string;
+  provider: ILEDFunctionProvider;
+  buttonFunction: ILEDFunction;
+
+begin
+  if AProfile.HasButton(AButtonIndex) then
   begin
-    button := Result.Buttons[ledIndex];
-    button.ProviderUID := StaticProviderUID;
-    button.FunctionUID := StaticFunctionUID[lcGreen];
+    button := AProfile.Buttons[AButtonIndex];
+    providerUID := button.ProviderUID;
+    functionUID := button.FunctionUID;
+  end else
+  begin
+    providerUID := StaticProviderUID;
+    functionUID := StaticFunctionUID[lcGreen];
+  end;
+
+  buttonFunction := nil;
+  provider := TLEDFunctionRegistry.Find(providerUID);
+  if Assigned(provider) then
+    buttonFunction := provider.Find(functionUID);
+
+  if Assigned(buttonFunction) then
+  begin
+    FLEDControls[AButtonIndex].CategoryLabel.Caption := buttonFunction.GetCategoryName;
+    FLEDControls[AButtonIndex].FunctionLabel.Caption := buttonFunction.GetDisplayName;
+  end;
+end;
+
+
+procedure TMainForm.cmbProfilesClick(Sender: TObject);
+begin
+  if not FLoadingProfiles then
+  begin
+    if cmbProfiles.ItemIndex > -1 then
+      FActiveProfile := TProfile(cmbProfiles.Items.Objects[cmbProfiles.ItemIndex])
+    else
+      FActiveProfile := nil;
+
+    LoadActiveProfile;
   end;
 end;
 
@@ -518,11 +599,15 @@ end;
 
 procedure TMainForm.LEDButtonClick(Sender: TObject);
 var
-  ledIndex: NativeInt;
+  buttonIndex: NativeInt;
 
 begin
-  ledIndex := (Sender as TComponent).Tag;
-  // TODO configure led
+  if not Assigned(ActiveProfile) then
+    exit;
+
+  buttonIndex := (Sender as TComponent).Tag;
+  if TButtonFunctionForm.Execute(ActiveProfile, buttonIndex) then
+    UpdateButton(ActiveProfile, buttonIndex);
 end;
 
 

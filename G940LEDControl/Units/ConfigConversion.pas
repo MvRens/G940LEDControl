@@ -14,6 +14,8 @@ function Convert0To1: TProfile;
 begin
   Result := nil;
 
+
+
 //  FUNCTION_NONE = 0;
 //  FUNCTION_OFF = 1;
 //  FUNCTION_RED = 2;

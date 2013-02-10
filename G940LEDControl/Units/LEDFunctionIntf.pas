@@ -8,6 +8,7 @@ uses
 
 
 type
+  ILEDFunction = interface;
   ILEDFunctionEnumerator = interface;
   ILEDStateEnumerator = interface;
 
@@ -15,8 +16,9 @@ type
   ILEDFunctionProvider = interface
     ['{B38F6F90-DC96-42CE-B8F0-21F0DD8AA537}']
     function GetUID: string;
-
     function GetEnumerator: ILEDFunctionEnumerator;
+
+    function Find(const AFunctionUID: string): ILEDFunction;
   end;
 
 
@@ -26,8 +28,13 @@ type
     function GetDisplayName: string;
     function GetUID: string;
 
-    function GetEnumerator: ILEDStateEnumerator;
     function GetCurrentState: ILEDState;
+  end;
+
+
+  ILEDMultiStateFunction = interface(ILEDFunction)
+    ['{F16ADF7E-1C1C-4676-8D4F-135B68A80B52}']
+    function GetEnumerator: ILEDStateEnumerator;
   end;
 
 

@@ -38,6 +38,8 @@ type
     constructor Create;
     destructor Destroy; override;
 
+    function HasButton(AIndex: Integer): Boolean;
+
     property Name: string read FName write FName;
 
     property ButtonCount: Integer read GetButtonCount;
@@ -137,6 +139,13 @@ begin
       AWriter.EndSection;
     end;
   end;
+end;
+
+
+function TProfile.HasButton(AIndex: Integer): Boolean;
+begin
+  Result := (FButtons.Count > AIndex) and
+            Assigned(FButtons[AIndex]);
 end;
 
 

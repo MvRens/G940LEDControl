@@ -3,7 +3,8 @@ unit StaticLEDFunction;
 interface
 uses
   LEDFunction,
-  LEDColorIntf;
+  LEDColorIntf,
+  LEDStateIntf;
 
 
 type
@@ -22,6 +23,8 @@ type
     function GetCategoryName: string; override;
     function GetDisplayName: string; override;
     function GetUID: string; override;
+
+    function GetCurrentState: ILEDState; override;
   public
     constructor Create(AColor: TLEDColor);
   end;
@@ -99,6 +102,13 @@ function TStaticLEDFunction.GetUID: string;
 begin
   Result := StaticFunctionUID[FColor];
 end;
+
+
+function TStaticLEDFunction.GetCurrentState: ILEDState;
+begin
+
+end;
+
 
 
 initialization

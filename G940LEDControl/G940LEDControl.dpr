@@ -23,14 +23,16 @@ uses
   DynamicLEDColor in 'Units\DynamicLEDColor.pas',
   LEDStateIntf in 'Units\LEDStateIntf.pas',
   LEDState in 'Units\LEDState.pas',
-  Profile in 'Units\Profile.pas';
+  Profile in 'Units\Profile.pas',
+  LEDColorPool in 'Units\LEDColorPool.pas',
+  ButtonFunctionFrm in 'Forms\ButtonFunctionFrm.pas' {ButtonFunctionForm};
 
 {$R *.res}
 
 
 var
   MainForm: TMainForm;
-  
+
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
