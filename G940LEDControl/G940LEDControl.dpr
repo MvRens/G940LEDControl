@@ -11,14 +11,19 @@ uses
   LEDFunctionMap in 'Units\LEDFunctionMap.pas',
   LEDStateConsumer in 'Units\LEDStateConsumer.pas',
   LEDStateProvider in 'Units\LEDStateProvider.pas',
-  LEDStateIntf in 'Units\LEDStateIntf.pas',
-  LEDState in 'Units\LEDState.pas',
+  LEDColorIntf in 'Units\LEDColorIntf.pas',
+  LEDColor in 'Units\LEDColor.pas',
   LEDFunctionIntf in 'Units\LEDFunctionIntf.pas',
   ObserverIntf in 'Units\ObserverIntf.pas',
   LEDFunction in 'Units\LEDFunction.pas',
   StaticLEDFunction in 'Units\StaticLEDFunction.pas',
   ConfigConversion in 'Units\ConfigConversion.pas',
-  LEDFunctionRegistry in 'Units\LEDFunctionRegistry.pas';
+  LEDFunctionRegistry in 'Units\LEDFunctionRegistry.pas',
+  StaticLEDColor in 'Units\StaticLEDColor.pas',
+  DynamicLEDColor in 'Units\DynamicLEDColor.pas',
+  LEDStateIntf in 'Units\LEDStateIntf.pas',
+  LEDState in 'Units\LEDState.pas',
+  Profile in 'Units\Profile.pas';
 
 {$R *.res}
 

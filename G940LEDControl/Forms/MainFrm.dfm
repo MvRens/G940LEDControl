@@ -4,7 +4,7 @@ object MainForm: TMainForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'G940 LED Control'
-  ClientHeight = 513
+  ClientHeight = 562
   ClientWidth = 465
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -16,14 +16,15 @@ object MainForm: TMainForm
   Position = poScreenCenter
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object pcConnections: TPageControl
+  object PageControl: TPageControl
     AlignWithMargins = True
     Left = 8
     Top = 80
     Width = 449
-    Height = 425
+    Height = 474
     Margins.Left = 8
     Margins.Top = 8
     Margins.Right = 8
@@ -31,417 +32,353 @@ object MainForm: TMainForm
     ActivePage = tsFSX
     Align = alClient
     TabOrder = 1
+    ExplicitWidth = 390
+    ExplicitHeight = 510
     object tsFSX: TTabSheet
-      Caption = 'Flight Simulator X'
-      object gbFSXConnection: TGroupBox
-        AlignWithMargins = True
-        Left = 6
-        Top = 6
-        Width = 429
-        Height = 63
-        Margins.Left = 6
-        Margins.Top = 6
-        Margins.Right = 6
-        Margins.Bottom = 0
-        Align = alTop
-        Caption = ' Connection '
-        TabOrder = 0
-        object lblFSXLocal: TLabel
-          Left = 12
-          Top = 29
-          Width = 24
-          Height = 13
-          Caption = 'Local'
-        end
-        object btnFSXConnect: TButton
-          Left = 69
-          Top = 24
-          Width = 75
-          Height = 25
-          Caption = '&Connect'
-          TabOrder = 0
-          OnClick = btnFSXConnectClick
-        end
-        object btnFSXDisconnect: TButton
-          Left = 150
-          Top = 24
-          Width = 75
-          Height = 25
-          Caption = '&Disconnect'
-          Enabled = False
-          TabOrder = 1
-          OnClick = btnFSXDisconnectClick
-        end
+      Caption = 'Configuration'
+      ExplicitWidth = 382
+      ExplicitHeight = 482
+      DesignSize = (
+        441
+        446)
+      object lblP1Function: TLabel
+        Left = 64
+        Top = 89
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: function]'
+        EllipsisPosition = epEndEllipsis
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ExplicitWidth = 421
       end
-      object pcFSXOptions: TPageControl
-        AlignWithMargins = True
-        Left = 6
-        Top = 75
-        Width = 429
-        Height = 316
-        Margins.Left = 6
-        Margins.Top = 6
-        Margins.Right = 6
-        Margins.Bottom = 6
-        ActivePage = tsFSXLEDButtons
-        Align = alClient
+      object lblP1Category: TLabel
+        Left = 64
+        Top = 73
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+        ExplicitWidth = 421
+      end
+      object lblP2Function: TLabel
+        Left = 64
+        Top = 136
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: function]'
+        EllipsisPosition = epEndEllipsis
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ExplicitWidth = 421
+      end
+      object lblP2Category: TLabel
+        Left = 64
+        Top = 120
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+        ExplicitWidth = 421
+      end
+      object lblP3Function: TLabel
+        Left = 64
+        Top = 183
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: function]'
+        EllipsisPosition = epEndEllipsis
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ExplicitWidth = 421
+      end
+      object lblP3Category: TLabel
+        Left = 64
+        Top = 167
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+        ExplicitWidth = 421
+      end
+      object lblP4Function: TLabel
+        Left = 64
+        Top = 230
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: function]'
+        EllipsisPosition = epEndEllipsis
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ExplicitWidth = 421
+      end
+      object lblP4Category: TLabel
+        Left = 64
+        Top = 214
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+        ExplicitWidth = 421
+      end
+      object lblP5Function: TLabel
+        Left = 64
+        Top = 277
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: function]'
+        EllipsisPosition = epEndEllipsis
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ExplicitWidth = 421
+      end
+      object lblP5Category: TLabel
+        Left = 64
+        Top = 261
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+        ExplicitWidth = 421
+      end
+      object lblP6Function: TLabel
+        Left = 64
+        Top = 324
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: function]'
+        EllipsisPosition = epEndEllipsis
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ExplicitWidth = 421
+      end
+      object lblP6Category: TLabel
+        Left = 64
+        Top = 308
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+        ExplicitWidth = 421
+      end
+      object lblP7Function: TLabel
+        Left = 64
+        Top = 371
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: function]'
+        EllipsisPosition = epEndEllipsis
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ExplicitWidth = 421
+      end
+      object lblP7Category: TLabel
+        Left = 64
+        Top = 355
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+        ExplicitWidth = 421
+      end
+      object lblP8Function: TLabel
+        Left = 64
+        Top = 418
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: function]'
+        EllipsisPosition = epEndEllipsis
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ExplicitWidth = 421
+      end
+      object lblP8Category: TLabel
+        Left = 64
+        Top = 402
+        Width = 364
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = '[runtime: category]'
+        EllipsisPosition = epEndEllipsis
+        ExplicitWidth = 421
+      end
+      object lblProfile: TLabel
+        Left = 11
+        Top = 19
+        Width = 30
+        Height = 13
+        Caption = 'Profile'
+      end
+      object bvlProfiles: TBevel
+        Left = 11
+        Top = 52
+        Width = 474
+        Height = 13
+        Shape = bsTopLine
+      end
+      object btnP1: TButton
+        Left = 11
+        Top = 67
+        Width = 41
+        Height = 41
+        Caption = 'P1'
+        TabOrder = 0
+      end
+      object btnP2: TButton
+        Left = 11
+        Top = 114
+        Width = 41
+        Height = 41
+        Caption = 'P2'
         TabOrder = 1
-        object tsFSXLEDButtons: TTabSheet
-          Caption = 'LED Buttons'
-          object gbFSXButtons: TGroupBox
-            AlignWithMargins = True
-            Left = 6
-            Top = 6
-            Width = 409
-            Height = 251
-            Margins.Left = 6
-            Margins.Top = 6
-            Margins.Right = 6
-            Margins.Bottom = 6
-            Align = alTop
-            Caption = ' Button configuration '
-            TabOrder = 0
-            DesignSize = (
-              409
-              251)
-            object lblFSXP1: TLabel
-              Left = 12
-              Top = 27
-              Width = 12
-              Height = 13
-              Caption = 'P1'
-            end
-            object lblFSXP2: TLabel
-              Left = 12
-              Top = 54
-              Width = 12
-              Height = 13
-              Caption = 'P2'
-            end
-            object lblFSXP3: TLabel
-              Left = 12
-              Top = 81
-              Width = 12
-              Height = 13
-              Caption = 'P3'
-            end
-            object lblFSXP4: TLabel
-              Left = 12
-              Top = 108
-              Width = 12
-              Height = 13
-              Caption = 'P4'
-            end
-            object lblFSXP5: TLabel
-              Left = 12
-              Top = 135
-              Width = 12
-              Height = 13
-              Caption = 'P5'
-            end
-            object lblFSXP6: TLabel
-              Left = 12
-              Top = 162
-              Width = 12
-              Height = 13
-              Caption = 'P6'
-            end
-            object lblFSXP7: TLabel
-              Left = 12
-              Top = 189
-              Width = 12
-              Height = 13
-              Caption = 'P7'
-            end
-            object lblFSXP8: TLabel
-              Left = 12
-              Top = 216
-              Width = 12
-              Height = 13
-              Caption = 'P8'
-            end
-            object cmbFSXP1: TComboBoxEx
-              Left = 69
-              Top = 24
-              Width = 328
-              Height = 22
-              ItemsEx = <>
-              Style = csExDropDownList
-              Anchors = [akLeft, akTop, akRight]
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = []
-              ParentFont = False
-              TabOrder = 0
-              OnChange = FunctionComboBoxChange
-              DropDownCount = 20
-            end
-            object cmbFSXP2: TComboBoxEx
-              Tag = 1
-              Left = 69
-              Top = 50
-              Width = 328
-              Height = 22
-              ItemsEx = <>
-              Style = csExDropDownList
-              Anchors = [akLeft, akTop, akRight]
-              TabOrder = 1
-              OnChange = FunctionComboBoxChange
-              DropDownCount = 20
-            end
-            object cmbFSXP3: TComboBoxEx
-              Tag = 2
-              Left = 69
-              Top = 78
-              Width = 328
-              Height = 22
-              ItemsEx = <>
-              Style = csExDropDownList
-              Anchors = [akLeft, akTop, akRight]
-              TabOrder = 2
-              OnChange = FunctionComboBoxChange
-              DropDownCount = 20
-            end
-            object cmbFSXP4: TComboBoxEx
-              Tag = 3
-              Left = 69
-              Top = 105
-              Width = 328
-              Height = 22
-              ItemsEx = <>
-              Style = csExDropDownList
-              Anchors = [akLeft, akTop, akRight]
-              TabOrder = 3
-              OnChange = FunctionComboBoxChange
-              DropDownCount = 20
-            end
-            object cmbFSXP5: TComboBoxEx
-              Tag = 4
-              Left = 69
-              Top = 131
-              Width = 328
-              Height = 22
-              ItemsEx = <>
-              Style = csExDropDownList
-              Anchors = [akLeft, akTop, akRight]
-              TabOrder = 4
-              OnChange = FunctionComboBoxChange
-              DropDownCount = 20
-            end
-            object cmbFSXP6: TComboBoxEx
-              Tag = 5
-              Left = 69
-              Top = 159
-              Width = 328
-              Height = 22
-              ItemsEx = <>
-              Style = csExDropDownList
-              Anchors = [akLeft, akTop, akRight]
-              TabOrder = 5
-              OnChange = FunctionComboBoxChange
-              DropDownCount = 20
-            end
-            object cmbFSXP7: TComboBoxEx
-              Tag = 6
-              Left = 69
-              Top = 186
-              Width = 328
-              Height = 22
-              ItemsEx = <>
-              Style = csExDropDownList
-              Anchors = [akLeft, akTop, akRight]
-              TabOrder = 6
-              OnChange = FunctionComboBoxChange
-              DropDownCount = 20
-            end
-            object cmbFSXP8: TComboBoxEx
-              Tag = 7
-              Left = 69
-              Top = 213
-              Width = 328
-              Height = 22
-              ItemsEx = <>
-              Style = csExDropDownList
-              Anchors = [akLeft, akTop, akRight]
-              TabOrder = 7
-              OnChange = FunctionComboBoxChange
-              DropDownCount = 20
-            end
-          end
-        end
-        object tsFSXExtra: TTabSheet
-          Caption = 'Extra'
-          ImageIndex = 1
-          TabVisible = False
-          object GroupBox1: TGroupBox
-            AlignWithMargins = True
-            Left = 6
-            Top = 6
-            Width = 409
-            Height = 171
-            Margins.Left = 6
-            Margins.Top = 6
-            Margins.Right = 6
-            Margins.Bottom = 0
-            Align = alTop
-            Caption = ' Zoom '
-            TabOrder = 0
-            object lblFSXToggleZoomButton: TLabel
-              Left = 57
-              Top = 56
-              Width = 77
-              Height = 13
-              Caption = 'Joystick button:'
-            end
-            object lblFSXZoomDepressed: TLabel
-              Left = 59
-              Top = 111
-              Width = 151
-              Height = 13
-              Caption = 'Zoom level (button depressed):'
-            end
-            object lblFSXZoomPressed: TLabel
-              Left = 59
-              Top = 142
-              Width = 139
-              Height = 13
-              Caption = 'Zoom level (button pressed):'
-            end
-            object lblFSXToggleZoomButtonName: TLabel
-              Left = 57
-              Top = 75
-              Width = 305
-              Height = 13
-              AutoSize = False
-              Caption = '[runtime]'
-              EllipsisPosition = epEndEllipsis
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = [fsBold]
-              ParentFont = False
-            end
-            object cbFSXToggleZoom: TCheckBox
-              Left = 16
-              Top = 24
-              Width = 161
-              Height = 17
-              Caption = ' Toggle zoom level'
-              Checked = True
-              State = cbChecked
-              TabOrder = 0
-            end
-            object btnFSXToggleZoom: TButton
-              Left = 368
-              Top = 70
-              Width = 34
-              Height = 25
-              Caption = '...'
-              TabOrder = 1
-              OnClick = btnFSXToggleZoomClick
-            end
-            object cmbFSXZoomDepressed: TComboBox
-              Left = 288
-              Top = 106
-              Width = 114
-              Height = 21
-              Style = csDropDownList
-              DropDownCount = 20
-              ItemIndex = 5
-              TabOrder = 2
-              Text = '80%'
-              Items.Strings = (
-                '30%'
-                '40%'
-                '50%'
-                '60%'
-                '70%'
-                '80%'
-                '90%'
-                '100%'
-                '110%'
-                '120%'
-                '130%'
-                '140%'
-                '150%'
-                '175%'
-                '200%'
-                '250%'
-                '300%'
-                '400%')
-            end
-            object cmbFSXZoomPressed: TComboBox
-              Left = 288
-              Top = 133
-              Width = 114
-              Height = 21
-              Style = csDropDownList
-              DropDownCount = 20
-              ItemIndex = 16
-              TabOrder = 3
-              Text = '300%'
-              Items.Strings = (
-                '30%'
-                '40%'
-                '50%'
-                '60%'
-                '70%'
-                '80%'
-                '90%'
-                '100%'
-                '110%'
-                '120%'
-                '130%'
-                '140%'
-                '150%'
-                '175%'
-                '200%'
-                '250%'
-                '300%'
-                '400%')
-            end
-          end
-          object GroupBox2: TGroupBox
-            AlignWithMargins = True
-            Left = 6
-            Top = 183
-            Width = 409
-            Height = 98
-            Margins.Left = 6
-            Margins.Top = 6
-            Margins.Right = 6
-            Margins.Bottom = 0
-            Align = alTop
-            Caption = ' Engine thrust match '
-            TabOrder = 1
-            object TLabel
-              Left = 104
-              Top = 40
-              Width = 201
-              Height = 13
-              Caption = 'Sorry, configuration not implemented yet!'
-            end
-            object TLabel
-              Left = 120
-              Top = 59
-              Width = 160
-              Height = 13
-              Caption = 'Engine 1 links to 4, engine 2 to 3.'
-            end
-          end
-        end
+      end
+      object btnP3: TButton
+        Left = 11
+        Top = 161
+        Width = 41
+        Height = 41
+        Caption = 'P3'
+        TabOrder = 2
+      end
+      object btnP4: TButton
+        Left = 11
+        Top = 208
+        Width = 41
+        Height = 41
+        Caption = 'P4'
+        TabOrder = 3
+      end
+      object btnP5: TButton
+        Left = 11
+        Top = 255
+        Width = 41
+        Height = 41
+        Caption = 'P5'
+        TabOrder = 4
+      end
+      object btnP6: TButton
+        Left = 11
+        Top = 302
+        Width = 41
+        Height = 41
+        Caption = 'P6'
+        TabOrder = 5
+      end
+      object btnP7: TButton
+        Left = 11
+        Top = 349
+        Width = 41
+        Height = 41
+        Caption = 'P7'
+        TabOrder = 6
+      end
+      object btnP8: TButton
+        Left = 11
+        Top = 396
+        Width = 41
+        Height = 41
+        Caption = 'P8'
+        TabOrder = 7
+      end
+      object cmbProfiles: TComboBox
+        Left = 64
+        Top = 16
+        Width = 213
+        Height = 21
+        Style = csDropDownList
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 8
+        ExplicitWidth = 270
+      end
+      object btnSaveProfile: TButton
+        Left = 283
+        Top = 16
+        Width = 75
+        Height = 21
+        Anchors = [akTop, akRight]
+        Caption = 'Save as...'
+        TabOrder = 9
+        ExplicitLeft = 340
+      end
+      object btnDeleteProfile: TButton
+        Left = 364
+        Top = 16
+        Width = 64
+        Height = 21
+        Anchors = [akTop, akRight]
+        Caption = 'Delete'
+        TabOrder = 10
+        ExplicitLeft = 421
       end
     end
     object tsAbout: TTabSheet
       Caption = 'About'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 382
+      ExplicitHeight = 482
       object lblVersionCaption: TLabel
         Left = 16
         Top = 67
@@ -456,7 +393,7 @@ object MainForm: TMainForm
         Height = 13
         Caption = 'lblVersion'
       end
-      object Label1: TLabel
+      object lblProductName: TLabel
         Left = 16
         Top = 16
         Width = 96
@@ -469,7 +406,7 @@ object MainForm: TMainForm
         Font.Style = [fsBold]
         ParentFont = False
       end
-      object Label2: TLabel
+      object lblCopyright: TLabel
         Left = 16
         Top = 35
         Width = 95
@@ -557,6 +494,7 @@ object MainForm: TMainForm
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitWidth = 390
     DesignSize = (
       449
       64)
@@ -938,6 +876,7 @@ object MainForm: TMainForm
       TabOrder = 0
       Visible = False
       OnClick = btnRetryClick
+      ExplicitLeft = 315
     end
   end
 end

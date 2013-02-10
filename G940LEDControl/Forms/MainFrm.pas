@@ -21,7 +21,8 @@ uses
 
   LEDFunctionMap,
   LEDStateConsumer,
-  LEDStateProvider;
+  LEDStateProvider,
+  Profile;
 
 
 const
@@ -30,8 +31,15 @@ const
   MSG_UPDATE = 1;
   MSG_NOUPDATE = 2;
 
+  LED_COUNT = 8;
+
 type
-  TComboBoxArray = array[0..7] of TComboBoxEx;
+  TLEDControls = record
+    ConfigureButton: TButton;
+    CategoryLabel: TLabel;
+    FunctionLabel: TLabel;
+  end;
+
 
   TMainForm = class(TForm)
     imgStateNotFound: TImage;
@@ -39,48 +47,13 @@ type
     imgStateFound: TImage;
     lblG940ThrottleState: TLabel;
     btnRetry: TButton;
-    pcConnections: TPageControl;
+    PageControl: TPageControl;
     pnlG940: TPanel;
-    tsFSX: TTabSheet;
-    gbFSXButtons: TGroupBox;
-    lblFSXP1: TLabel;
-    cmbFSXP1: TComboBoxEx;
-    cmbFSXP2: TComboBoxEx;
-    lblFSXP2: TLabel;
-    cmbFSXP3: TComboBoxEx;
-    lblFSXP3: TLabel;
-    cmbFSXP4: TComboBoxEx;
-    lblFSXP4: TLabel;
-    cmbFSXP5: TComboBoxEx;
-    lblFSXP5: TLabel;
-    cmbFSXP6: TComboBoxEx;
-    lblFSXP6: TLabel;
-    cmbFSXP7: TComboBoxEx;
-    lblFSXP7: TLabel;
-    cmbFSXP8: TComboBoxEx;
-    lblFSXP8: TLabel;
-    gbFSXConnection: TGroupBox;
-    btnFSXConnect: TButton;
-    btnFSXDisconnect: TButton;
-    lblFSXLocal: TLabel;
-    pcFSXOptions: TPageControl;
-    tsFSXLEDButtons: TTabSheet;
-    tsFSXExtra: TTabSheet;
-    GroupBox1: TGroupBox;
-    cbFSXToggleZoom: TCheckBox;
-    lblFSXToggleZoomButton: TLabel;
-    lblFSXZoomDepressed: TLabel;
-    lblFSXZoomPressed: TLabel;
-    lblFSXToggleZoomButtonName: TLabel;
-    btnFSXToggleZoom: TButton;
-    cmbFSXZoomDepressed: TComboBox;
-    cmbFSXZoomPressed: TComboBox;
-    GroupBox2: TGroupBox;
     tsAbout: TTabSheet;
     lblVersionCaption: TLabel;
     lblVersion: TLabel;
-    Label1: TLabel;
-    Label2: TLabel;
+    lblProductName: TLabel;
+    lblCopyright: TLabel;
     lblWebsiteLink: TLinkLabel;
     lblEmailLink: TLinkLabel;
     lblWebsite: TLabel;
@@ -88,43 +61,76 @@ type
     cbCheckUpdates: TCheckBox;
     btnCheckUpdates: TButton;
     lblProxy: TLabel;
+    tsFSX: TTabSheet;
+    btnP1: TButton;
+    lblP1Function: TLabel;
+    lblP1Category: TLabel;
+    btnP2: TButton;
+    lblP2Function: TLabel;
+    lblP2Category: TLabel;
+    btnP3: TButton;
+    lblP3Function: TLabel;
+    lblP3Category: TLabel;
+    btnP4: TButton;
+    lblP4Function: TLabel;
+    lblP4Category: TLabel;
+    btnP5: TButton;
+    lblP5Function: TLabel;
+    lblP5Category: TLabel;
+    btnP6: TButton;
+    lblP6Function: TLabel;
+    lblP6Category: TLabel;
+    btnP7: TButton;
+    lblP7Function: TLabel;
+    lblP7Category: TLabel;
+    btnP8: TButton;
+    lblP8Function: TLabel;
+    lblP8Category: TLabel;
+    lblProfile: TLabel;
+    cmbProfiles: TComboBox;
+    btnSaveProfile: TButton;
+    btnDeleteProfile: TButton;
+    bvlProfiles: TBevel;
 
     procedure FormCreate(Sender: TObject);
     procedure btnRetryClick(Sender: TObject);
-    procedure btnFSXConnectClick(Sender: TObject);
-    procedure btnFSXDisconnectClick(Sender: TObject);
-    procedure btnFSXToggleZoomClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FunctionComboBoxChange(Sender: TObject);
     procedure lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
     procedure btnCheckUpdatesClick(Sender: TObject);
+    procedure LEDButtonClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
+    FLEDControls: array[0..LED_COUNT - 1] of TLEDControls;
     FEventMonitor: TOmniEventMonitor;
-    FStateConsumerTask: IOmniTaskControl;
-    FFSXComboBoxes: TComboBoxArray;
-    FFSXToggleZoomDeviceGUID: TGUID;
-    FFSXToggleZoomButtonIndex: Integer;
+
+    FProfilesFilename: string;
+    FProfiles: TProfileList;
+//    FStateConsumerTask: IOmniTaskControl;
   protected
-    procedure LoadFunctions(AProviderClass: TLEDStateProviderClass; AComboBoxes: TComboBoxArray);
-    procedure SetFunctions(AComboBoxes: TComboBoxArray);
+//    procedure ReadFunctions(AReader: IX2PersistReader; AComboBoxes: TComboBoxArray);
+//    procedure ReadFSXExtra(AReader: IX2PersistReader);
+//    procedure ReadAutoUpdate(AReader: IX2PersistReader);
+//    procedure WriteFunctions(AWriter: IX2PersistWriter; AComboBoxes: TComboBoxArray);
+//    procedure WriteFSXExtra(AWriter: IX2PersistWriter);
+//    procedure WriteAutoUpdate(AWriter: IX2PersistWriter);
 
-    procedure ReadFunctions(AReader: IX2PersistReader; AComboBoxes: TComboBoxArray);
-    procedure ReadFSXExtra(AReader: IX2PersistReader);
-    procedure ReadAutoUpdate(AReader: IX2PersistReader);
-    procedure WriteFunctions(AWriter: IX2PersistWriter; AComboBoxes: TComboBoxArray);
-    procedure WriteFSXExtra(AWriter: IX2PersistWriter);
-    procedure WriteAutoUpdate(AWriter: IX2PersistWriter);
+    procedure FindLEDControls;
+    procedure LoadProfiles;
+    procedure SaveProfiles;
 
-    procedure LoadDefaultProfile;
-    procedure SaveDefaultProfile;
+    function CreateDefaultProfile: TProfile;
+
+//    procedure LoadDefaultProfile;
+//    procedure SaveDefaultProfile;
 
     procedure SetDeviceState(const AMessage: string; AFound: Boolean);
-    procedure SetFSXToggleZoomButton(const ADeviceGUID: TGUID; AButtonIndex: Integer; const ADisplayText: string);
+//    procedure SetFSXToggleZoomButton(const ADeviceGUID: TGUID; AButtonIndex: Integer; const ADisplayText: string);
 
-    procedure InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
-    procedure FinalizeStateProvider;
+//    procedure InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
+//    procedure FinalizeStateProvider;
 
-    procedure UpdateMapping;
+//    procedure UpdateMapping;
 
     procedure CheckForUpdatesThread(const ATask: IOmniTask);
     procedure CheckForUpdates(AReportNoUpdates: Boolean);
@@ -140,7 +146,8 @@ type
     procedure CMAskAutoUpdate(var Msg: TMessage); message CM_ASKAUTOUPDATE;
 
     property EventMonitor: TOmniEventMonitor read FEventMonitor;
-    property StateConsumerTask: IOmniTaskControl read FStateConsumerTask;
+    property Profiles: TProfileList read FProfiles;
+//    property StateConsumerTask: IOmniTaskControl read FStateConsumerTask;
   end;
 
 
@@ -155,17 +162,24 @@ uses
   IdHTTP,
   OtlCommon,
   X2UtApp,
-  X2UtPersistRegistry,
+  X2UtPersistXML,
 
   ButtonSelectFrm,
+  ConfigConversion,
   FSXLEDStateProvider,
-  G940LEDStateConsumer;
+  G940LEDStateConsumer,
+  LEDColorIntf,
+  StaticLEDFunction;
 
 
 {$R *.dfm}
 
 
 const
+  NameDefaultProfile = 'Default';
+
+  FILENAME_PROFILES = 'G940LEDControl\Profiles.xml';
+
   SPECIAL_CATEGORY = -1;
 
   TEXT_STATE_SEARCHING = 'Searching...';
@@ -197,46 +211,144 @@ type
 
 { TMainForm }
 procedure TMainForm.FormCreate(Sender: TObject);
-var
-  consumer: IOmniWorker;
-
+//var
+//  consumer: IOmniWorker;
+//
 begin
   lblVersion.Caption := App.Version.FormatVersion(False);
 
-  pcConnections.ActivePageIndex := 0;
-  pcFSXOptions.ActivePageIndex := 0;
-  lblFSXToggleZoomButtonName.Caption := '';
+  PageControl.ActivePageIndex := 0;
 
   FEventMonitor := TOmniEventMonitor.Create(Self);
 
-  consumer := TG940LEDStateConsumer.Create;
-  FStateConsumerTask := FEventMonitor.Monitor(CreateTask(consumer)).MsgWait;
+//  consumer := TG940LEDStateConsumer.Create;
+//  FStateConsumerTask := FEventMonitor.Monitor(CreateTask(consumer)).MsgWait;
 
   EventMonitor.OnTaskMessage := EventMonitorMessage;
   EventMonitor.OnTaskTerminated := EventMonitorTerminated;
-  StateConsumerTask.Run;
+//  StateConsumerTask.Run;
 
-  FFSXComboBoxes[0] := cmbFSXP1;
-  FFSXComboBoxes[1] := cmbFSXP2;
-  FFSXComboBoxes[2] := cmbFSXP3;
-  FFSXComboBoxes[3] := cmbFSXP4;
-  FFSXComboBoxes[4] := cmbFSXP5;
-  FFSXComboBoxes[5] := cmbFSXP6;
-  FFSXComboBoxes[6] := cmbFSXP7;
-  FFSXComboBoxes[7] := cmbFSXP8;
-  LoadFunctions(TFSXLEDStateProvider, FFSXComboBoxes);
-  LoadDefaultProfile;
+  FindLEDControls;
+
+  FProfilesFilename := App.UserPath + FILENAME_PROFILES;
+  FProfiles := TProfileList.Create(True);
+  LoadProfiles;
+
+//  LoadFunctions(TFSXLEDStateProvider, FFSXComboBoxes);
+//  LoadDefaultProfile;
 end;
 
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  if Assigned(StateConsumerTask) then
-  begin
-    SaveDefaultProfile;
+  SaveProfiles;
+//  if Assigned(StateConsumerTask) then
+//  begin
+//    SaveDefaultProfile;
+//
+//    LEDStateConsumer.Finalize(StateConsumerTask);
+//    CanClose := False;
+//  end;
+end;
 
-    LEDStateConsumer.Finalize(StateConsumerTask);
-    CanClose := False;
+
+procedure TMainForm.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(FProfiles);
+end;
+
+
+procedure TMainForm.FindLEDControls;
+
+  function ComponentByName(const AName: string; ATag: NativeInt): TComponent;
+  begin
+    Result := FindComponent(AName);
+    if not Assigned(Result) then
+      raise EArgumentException.CreateFmt('"%s" is not a valid component', [AName]);
+
+    Result.Tag := ATag;
+  end;
+
+var
+  ledIndex: Integer;
+  ledNumber: string;
+
+begin
+  for ledIndex := 0 to Pred(LED_COUNT) do
+  begin
+    ledNumber := IntToStr(Succ(ledIndex));
+
+    FLEDControls[ledIndex].ConfigureButton := (ComponentByName('btnP' + ledNumber, ledIndex) as TButton);
+    FLEDControls[ledIndex].CategoryLabel := (ComponentByName('lblP' + ledNumber + 'Category', ledIndex) as TLabel);
+    FLEDControls[ledIndex].FunctionLabel := (ComponentByName('lblP' + ledNumber + 'Function', ledIndex) as TLabel);
+
+    FLEDControls[ledIndex].ConfigureButton.OnClick := LEDButtonClick;
+    FLEDControls[ledIndex].CategoryLabel.Caption := '';
+    FLEDControls[ledIndex].FunctionLabel.Caption := '';
+  end;
+end;
+
+
+procedure TMainForm.LoadProfiles;
+var
+  defaultProfile: TProfile;
+  persistXML: TX2UtPersistXML;
+
+begin
+  if not FileExists(FProfilesFilename) then
+  begin
+    { Check if version 0.x settings are in the registry }
+    defaultProfile := ConfigConversion.Convert0To1;
+
+    if not Assigned(defaultProfile) then
+      defaultProfile := CreateDefaultProfile;
+
+    if Assigned(defaultProfile) then
+    begin
+      defaultProfile.Name := NameDefaultProfile;
+      Profiles.Add(defaultProfile);
+    end;
+  end else
+  begin
+    persistXML := TX2UtPersistXML.Create;
+    try
+      persistXML.FileName := FProfilesFilename;
+      Profiles.Load(persistXML.CreateReader);
+    finally
+      FreeAndNil(persistXML);
+    end;
+  end;
+end;
+
+
+procedure TMainForm.SaveProfiles;
+var
+  persistXML: TX2UtPersistXML;
+
+begin
+  persistXML := TX2UtPersistXML.Create;
+  try
+    persistXML.FileName := FProfilesFilename;
+    Profiles.Save(persistXML.CreateWriter);
+  finally
+    FreeAndNil(persistXML);
+  end;
+end;
+
+
+function TMainForm.CreateDefaultProfile: TProfile;
+var
+  ledIndex: Integer;
+  button: TProfileButton;
+
+begin
+  Result := TProfile.Create;
+
+  for ledIndex := 0 to Pred(LED_COUNT) do
+  begin
+    button := Result.Buttons[ledIndex];
+    button.ProviderUID := StaticProviderUID;
+    button.FunctionUID := StaticFunctionUID[lcGreen];
   end;
 end;
 
@@ -262,249 +374,155 @@ begin
 end;
 
 
-procedure TMainForm.SetFSXToggleZoomButton(const ADeviceGUID: TGUID; AButtonIndex: Integer; const ADisplayText: string);
-begin
-  FFSXToggleZoomDeviceGUID := ADeviceGUID;
-  FFSXToggleZoomButtonIndex := AButtonIndex;
-  lblFSXToggleZoomButtonName.Caption := ADisplayText;
-end;
+//procedure TMainForm.ReadFunctions(AReader: IX2PersistReader; AComboBoxes: TComboBoxArray);
+//var
+//  comboBox: TComboBoxEx;
+//  value: Integer;
+//  itemIndex: Integer;
+//
+//begin
+//  if AReader.BeginSection(SECTION_FSX) then
+//  try
+//    for comboBox in AComboBoxes do
+//    begin
+//      if AReader.ReadInteger('Function' + IntToStr(comboBox.Tag), value) then
+//      begin
+//        for itemIndex := 0 to Pred(comboBox.ItemsEx.Count) do
+//          if Integer(comboBox.ItemsEx[itemIndex].Data) = value then
+//          begin
+//            comboBox.ItemIndex := itemIndex;
+//            break;
+//          end;
+//      end;
+//    end;
+//  finally
+//    AReader.EndSection;
+//  end;
+//end;
 
 
-procedure TMainForm.LoadFunctions(AProviderClass: TLEDStateProviderClass; AComboBoxes: TComboBoxArray);
+//procedure TMainForm.ReadAutoUpdate(AReader: IX2PersistReader);
+//var
+//  checkUpdates: Boolean;
+//  askAutoUpdate: Boolean;
+//
+//begin
+//  askAutoUpdate := True;
+//
+//  if AReader.BeginSection(SECTION_SETTINGS) then
+//  try
+//    if AReader.ReadBoolean('CheckUpdates', checkUpdates) then
+//    begin
+//      cbCheckUpdates.Checked := checkUpdates;
+//      askAutoUpdate := False;
+//    end;
+//  finally
+//    AReader.EndSection;
+//  end;
+//
+//  if askAutoUpdate then
+//    PostMessage(Self.Handle, CM_ASKAUTOUPDATE, 0, 0)
+//  else if cbCheckUpdates.Checked then
+//    CheckForUpdates(False);
+//end;
+
+
+//procedure TMainForm.WriteAutoUpdate(AWriter: IX2PersistWriter);
+//begin
+//  if AWriter.BeginSection(SECTION_SETTINGS) then
+//  try
+//    AWriter.WriteBoolean('CheckUpdates', cbCheckUpdates.Checked);
+//  finally
+//    AWriter.EndSection;
+//  end;
+//end;
+
+
+//procedure TMainForm.LoadDefaultProfile;
+//var
+//  registryReader: TX2UtPersistRegistry;
+//  reader: IX2PersistReader;
+//
+//begin
+//  registryReader := TX2UtPersistRegistry.Create;
+//  try
+//    registryReader.RootKey := HKEY_CURRENT_USER;
+//    registryReader.Key := KEY_SETTINGS;
+//
+//    reader := registryReader.CreateReader;
+//
+//    if reader.BeginSection(SECTION_DEFAULTPROFILE) then
+//    try
+//      ReadFunctions(reader, FFSXComboBoxes);
+//      ReadFSXExtra(reader);
+//    finally
+//      reader.EndSection;
+//    end;
+//
+//    ReadAutoUpdate(reader);
+//  finally
+//    FreeAndNil(registryReader);
+//  end;
+//end;
+//
+//
+//procedure TMainForm.SaveDefaultProfile;
+//var
+//  registryWriter: TX2UtPersistRegistry;
+//  writer: IX2PersistWriter;
+//
+//begin
+//  registryWriter := TX2UtPersistRegistry.Create;
+//  try
+//    registryWriter.RootKey := HKEY_CURRENT_USER;
+//    registryWriter.Key := KEY_SETTINGS;
+//
+//    writer := registryWriter.CreateWriter;
+//    if writer.BeginSection(SECTION_DEFAULTPROFILE) then
+//    try
+//      WriteFunctions(writer, FFSXComboBoxes);
+//      WriteFSXExtra(writer);
+//    finally
+//      writer.EndSection;
+//    end;
+//
+//    WriteAutoUpdate(writer);
+//  finally
+//    FreeAndNil(registryWriter);
+//  end;
+//end;
+
+
+//procedure TMainForm.InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
+//begin
+//  UpdateMapping;
+//  LEDStateConsumer.InitializeStateProvider(StateConsumerTask, AProviderClass);
+//end;
+//
+//
+//procedure TMainForm.FinalizeStateProvider;
+//begin
+//  LEDStateConsumer.FinalizeStateProvider(StateConsumerTask);
+//end;
+
+
+//procedure TMainForm.UpdateMapping;
+//begin
+//  if not Assigned(StateConsumerTask) then
+//    Exit;
+//
+//  LEDStateConsumer.ClearFunctions(StateConsumerTask);
+//  SetFunctions(FFSXComboBoxes);
+//end;
+
+
+procedure TMainForm.LEDButtonClick(Sender: TObject);
 var
-  comboBox: TComboBoxEx;
+  ledIndex: NativeInt;
 
 begin
-  for comboBox in AComboBoxes do
-  begin
-    comboBox.Items.BeginUpdate;
-    try
-      comboBox.Items.Clear;
-      AProviderClass.EnumFunctions(TComboBoxFunctionConsumer.Create(comboBox));
-
-      comboBox.ItemIndex := 0;
-      if Assigned(comboBox.OnChange) then
-        comboBox.OnChange(comboBox);
-    finally
-      comboBox.Items.EndUpdate;
-    end;
-  end;
-end;
-
-
-procedure TMainForm.SetFunctions(AComboBoxes: TComboBoxArray);
-var
-  comboBox: TComboBoxEx;
-
-begin
-  for comboBox in AComboBoxes do
-  begin
-    if comboBox.ItemIndex > -1 then
-      LEDStateConsumer.SetFunction(StateConsumerTask, comboBox.Tag, Integer(comboBox.ItemsEx[comboBox.ItemIndex].Data));
-  end;
-end;
-
-
-procedure TMainForm.ReadFunctions(AReader: IX2PersistReader; AComboBoxes: TComboBoxArray);
-var
-  comboBox: TComboBoxEx;
-  value: Integer;
-  itemIndex: Integer;
-
-begin
-  if AReader.BeginSection(SECTION_FSX) then
-  try
-    for comboBox in AComboBoxes do
-    begin
-      if AReader.ReadInteger('Function' + IntToStr(comboBox.Tag), value) then
-      begin
-        for itemIndex := 0 to Pred(comboBox.ItemsEx.Count) do
-          if Integer(comboBox.ItemsEx[itemIndex].Data) = value then
-          begin
-            comboBox.ItemIndex := itemIndex;
-            break;
-          end;
-      end;
-    end;
-  finally
-    AReader.EndSection;
-  end;
-end;
-
-
-procedure TMainForm.ReadFSXExtra(AReader: IX2PersistReader);
-var
-  deviceGUID: string;
-  buttonIndex: Integer;
-  displayText: string;
-
-begin
-  if AReader.BeginSection(SECTION_FSX) then
-  try
-    if AReader.ReadString('ToggleZoomDeviceGUID', deviceGUID) and
-       AReader.ReadInteger('ToggleZoomButtonIndex', buttonIndex) and
-       AReader.ReadString('ToggleZoomDisplayText', displayText) then
-    begin
-      try
-        SetFSXToggleZoomButton(StringToGUID(deviceGUID), buttonIndex, displayText);
-      except
-        on E:EConvertError do;
-      end;
-    end;
-  finally
-    AReader.EndSection;
-  end;
-end;
-
-
-procedure TMainForm.ReadAutoUpdate(AReader: IX2PersistReader);
-var
-  checkUpdates: Boolean;
-  askAutoUpdate: Boolean;
-
-begin
-  askAutoUpdate := True;
-
-  if AReader.BeginSection(SECTION_SETTINGS) then
-  try
-    if AReader.ReadBoolean('CheckUpdates', checkUpdates) then
-    begin
-      cbCheckUpdates.Checked := checkUpdates;
-      askAutoUpdate := False;
-    end;
-  finally
-    AReader.EndSection;
-  end;
-
-  if askAutoUpdate then
-    PostMessage(Self.Handle, CM_ASKAUTOUPDATE, 0, 0)
-  else if cbCheckUpdates.Checked then
-    CheckForUpdates(False);
-end;
-
-
-procedure TMainForm.WriteFunctions(AWriter: IX2PersistWriter; AComboBoxes: TComboBoxArray);
-var
-  comboBox: TComboBoxEx;
-  value: Integer;
-
-begin
-  if AWriter.BeginSection(SECTION_FSX) then
-  try
-    for comboBox in AComboBoxes do
-    begin
-      value := -1;
-      if comboBox.ItemIndex > -1 then
-        value := Integer(comboBox.ItemsEx[comboBox.ItemIndex].Data);
-
-      AWriter.WriteInteger('Function' + IntToStr(comboBox.Tag), value);
-    end;
-  finally
-    AWriter.EndSection;
-  end;
-end;
-
-
-procedure TMainForm.WriteFSXExtra(AWriter: IX2PersistWriter);
-begin
-  if AWriter.BeginSection(SECTION_FSX) then
-  try
-    AWriter.WriteString('ToggleZoomDeviceGUID', GUIDToString(FFSXToggleZoomDeviceGUID));
-    AWriter.WriteInteger('ToggleZoomButtonIndex', FFSXToggleZoomButtonIndex);
-    AWriter.WriteString('ToggleZoomDisplayText', lblFSXToggleZoomButtonName.Caption);
-    // ToDo pressed / depressed levels
-  finally
-    AWriter.EndSection;
-  end;
-end;
-
-
-procedure TMainForm.WriteAutoUpdate(AWriter: IX2PersistWriter);
-begin
-  if AWriter.BeginSection(SECTION_SETTINGS) then
-  try
-    AWriter.WriteBoolean('CheckUpdates', cbCheckUpdates.Checked);
-  finally
-    AWriter.EndSection;
-  end;
-end;
-
-
-procedure TMainForm.LoadDefaultProfile;
-var
-  registryReader: TX2UtPersistRegistry;
-  reader: IX2PersistReader;
-
-begin
-  registryReader := TX2UtPersistRegistry.Create;
-  try
-    registryReader.RootKey := HKEY_CURRENT_USER;
-    registryReader.Key := KEY_SETTINGS;
-
-    reader := registryReader.CreateReader;
-
-    if reader.BeginSection(SECTION_DEFAULTPROFILE) then
-    try
-      ReadFunctions(reader, FFSXComboBoxes);
-      ReadFSXExtra(reader);
-    finally
-      reader.EndSection;
-    end;
-
-    ReadAutoUpdate(reader);
-  finally
-    FreeAndNil(registryReader);
-  end;
-end;
-
-
-procedure TMainForm.SaveDefaultProfile;
-var
-  registryWriter: TX2UtPersistRegistry;
-  writer: IX2PersistWriter;
-
-begin
-  registryWriter := TX2UtPersistRegistry.Create;
-  try
-    registryWriter.RootKey := HKEY_CURRENT_USER;
-    registryWriter.Key := KEY_SETTINGS;
-
-    writer := registryWriter.CreateWriter;
-    if writer.BeginSection(SECTION_DEFAULTPROFILE) then
-    try
-      WriteFunctions(writer, FFSXComboBoxes);
-      WriteFSXExtra(writer);
-    finally
-      writer.EndSection;
-    end;
-
-    WriteAutoUpdate(writer);
-  finally
-    FreeAndNil(registryWriter);
-  end;
-end;
-
-
-procedure TMainForm.InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
-begin
-  UpdateMapping;
-  LEDStateConsumer.InitializeStateProvider(StateConsumerTask, AProviderClass);
-end;
-
-
-procedure TMainForm.FinalizeStateProvider;
-begin
-  LEDStateConsumer.FinalizeStateProvider(StateConsumerTask);
-end;
-
-
-procedure TMainForm.UpdateMapping;
-begin
-  if not Assigned(StateConsumerTask) then
-    Exit;
-
-  LEDStateConsumer.ClearFunctions(StateConsumerTask);
-  SetFunctions(FFSXComboBoxes);
+  ledIndex := (Sender as TComponent).Tag;
+  // TODO configure led
 end;
 
 
@@ -631,12 +649,12 @@ end;
 
 procedure TMainForm.EventMonitorTerminated(const task: IOmniTaskControl);
 begin
-  if task = StateConsumerTask then
-  begin
-    FStateConsumerTask := nil;
-    Close;
-  end else if task.Name = 'CheckForUpdatesThread' then
-    btnCheckUpdates.Enabled := True;
+//  if task = StateConsumerTask then
+//  begin
+//    FStateConsumerTask := nil;
+//    Close;
+//  end else if task.Name = 'CheckForUpdatesThread' then
+//    btnCheckUpdates.Enabled := True;
 end;
 
 
@@ -680,8 +698,8 @@ var
   msg: string;
 
 begin
-  btnFSXDisconnect.Enabled := False;
-  btnFSXConnect.Enabled := True;
+//  btnFSXDisconnect.Enabled := False;
+//  btnFSXConnect.Enabled := True;
 
   msg := AMessage.MsgData;
   if Length(msg) > 0 then
@@ -694,43 +712,11 @@ begin
   CheckForUpdates(True);
 end;
 
-procedure TMainForm.btnFSXConnectClick(Sender: TObject);
-begin
-  SaveDefaultProfile;
-  InitializeStateProvider(TFSXLEDStateProvider);
-
-  btnFSXDisconnect.Enabled := True;
-  btnFSXConnect.Enabled := False;
-end;
-
-
-procedure TMainForm.btnFSXDisconnectClick(Sender: TObject);
-begin
-  FinalizeStateProvider;
-  btnFSXDisconnect.Enabled := False;
-  btnFSXConnect.Enabled := True;
-end;
-
-
-procedure TMainForm.btnFSXToggleZoomClick(Sender: TObject);
-var
-  deviceGUID: TGUID;
-  button: Integer;
-  displayText: string;
-
-begin
-  FillChar(deviceGUID, SizeOf(deviceGUID), 0);
-  button := -1;
-
-  if TButtonSelectForm.Execute(deviceGUID, button, displayText) then
-    SetFSXToggleZoomButton(deviceGUID, button, displayText);
-end;
-
 
 procedure TMainForm.btnRetryClick(Sender: TObject);
 begin
   btnRetry.Visible := False;
-  StateConsumerTask.Comm.Send(MSG_FINDTHROTTLEDEVICE);
+//  StateConsumerTask.Comm.Send(MSG_FINDTHROTTLEDEVICE);
 end;
 
 

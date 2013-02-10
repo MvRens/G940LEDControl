@@ -28,7 +28,6 @@ const
 
   
 type
-  { This interface name made me giggle. Because it's true. }
   IRunInMainThread = interface(IOmniWaitableValue)
     ['{68B8F2F7-ED40-4078-9D99-503D7AFA068B}']
     procedure Execute;

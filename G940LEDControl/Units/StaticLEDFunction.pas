@@ -3,13 +3,13 @@ unit StaticLEDFunction;
 interface
 uses
   LEDFunction,
-  LEDStateIntf;
+  LEDColorIntf;
 
 
 type
   TStaticLEDFunctionProvider = class(TCustomLEDFunctionProvider)
   protected
-    function GetUniqueName: string; override;
+    function GetUID: string; override;
   public
     constructor Create;
   end;
@@ -21,10 +21,21 @@ type
   protected
     function GetCategoryName: string; override;
     function GetDisplayName: string; override;
-    function GetUniqueName: string; override;
+    function GetUID: string; override;
   public
     constructor Create(AColor: TLEDColor);
   end;
+
+
+const
+  StaticProviderUID = 'static';
+  StaticFunctionUID: array[TLEDColor] of string =
+                     (
+                       'off',
+                       'green',
+                       'amber',
+                       'red'
+                     );
 
 
 implementation
@@ -34,17 +45,6 @@ uses
 
 const
   CategoryStatic = 'Static';
-
-  ProviderUniqueName = 'static';
-
-  FunctionUniqueName: array[TLEDColor] of string =
-                      (
-                        'off',
-                        'green',
-                        'amber',
-                        'red'
-                      );
-
   FunctionDisplayName: array[TLEDColor] of string =
                        (
                          'Off',
@@ -68,9 +68,9 @@ begin
 end;
 
 
-function TStaticLEDFunctionProvider.GetUniqueName: string;
+function TStaticLEDFunctionProvider.GetUID: string;
 begin
-  Result := ProviderUniqueName;
+  Result := StaticProviderUID;
 end;
 
 
@@ -95,9 +95,9 @@ begin
 end;
 
 
-function TStaticLEDFunction.GetUniqueName: string;
+function TStaticLEDFunction.GetUID: string;
 begin
-  Result := FunctionUniqueName[FColor];
+  Result := StaticFunctionUID[FColor];
 end;
 
 

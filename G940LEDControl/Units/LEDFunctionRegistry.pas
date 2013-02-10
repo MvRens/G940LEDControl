@@ -18,7 +18,7 @@ type
 
     procedure DoRegister(AProvider: ILEDFunctionProvider);
     procedure DoUnregister(AProvider: ILEDFunctionProvider);
-    function DoFind(const AUniqueName: string): ILEDFunctionProvider;
+    function DoFind(const AUID: string): ILEDFunctionProvider;
 
     function GetProviders: TLEDFunctionProviderList;
   public
@@ -28,7 +28,7 @@ type
     class procedure Register(AProvider: ILEDFunctionProvider);
     class procedure Unregister(AProvider: ILEDFunctionProvider);
 
-    class function Find(const AUniqueName: string): ILEDFunctionProvider;
+    class function Find(const AUID: string): ILEDFunctionProvider;
 
     class function Providers: TLEDFunctionProviderList;
   end;
@@ -46,7 +46,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    function Find(const AUniqueName: string): ILEDFunctionProvider;
+    function Find(const AUID: string): ILEDFunctionProvider;
 
     function GetEnumerator: TLEDFunctionProviderListEnumerator;
   end;
@@ -81,9 +81,9 @@ begin
 end;
 
 
-class function TLEDFunctionRegistry.Find(const AUniqueName: string): ILEDFunctionProvider;
+class function TLEDFunctionRegistry.Find(const AUID: string): ILEDFunctionProvider;
 begin
-  Result := Instance.DoFind(AUniqueName);
+  Result := Instance.DoFind(AUID);
 end;
 
 
@@ -130,9 +130,9 @@ begin
 end;
 
 
-function TLEDFunctionRegistry.DoFind(const AUniqueName: string): ILEDFunctionProvider;
+function TLEDFunctionRegistry.DoFind(const AUID: string): ILEDFunctionProvider;
 begin
-  Result := FProviders.Find(AUniqueName);
+  Result := FProviders.Find(AUID);
 end;
 
 
@@ -159,7 +159,7 @@ begin
 end;
 
 
-function TLEDFunctionProviderList.Find(const AUniqueName: string): ILEDFunctionProvider;
+function TLEDFunctionProviderList.Find(const AUID: string): ILEDFunctionProvider;
 var
   provider: ILEDFunctionProvider;
 
@@ -167,7 +167,7 @@ begin
   Result := nil;
 
   for provider in Self do
-    if provider.GetUniqueName = AUniqueName then
+    if provider.GetUID = AUID then
     begin
       Result := provider;
       break;

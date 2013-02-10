@@ -8,7 +8,7 @@
 			<FrameworkType>VCL</FrameworkType>
 			<ProjectVersion>13.4</ProjectVersion>
 			<Base>True</Base>
-			<Config Condition="'$(Config)'==''">Release</Config>
+			<Config Condition="'$(Config)'==''">Debug</Config>
 			<Platform Condition="'$(Platform)'==''">Win32</Platform>
 			<TargetedPlatforms>1</TargetedPlatforms>
 			<AppType>Application</AppType>
@@ -173,14 +173,19 @@
 			<DCCReference Include="Units\LEDFunctionMap.pas"/>
 			<DCCReference Include="Units\LEDStateConsumer.pas"/>
 			<DCCReference Include="Units\LEDStateProvider.pas"/>
-			<DCCReference Include="Units\LEDStateIntf.pas"/>
-			<DCCReference Include="Units\LEDState.pas"/>
+			<DCCReference Include="Units\LEDColorIntf.pas"/>
+			<DCCReference Include="Units\LEDColor.pas"/>
 			<DCCReference Include="Units\LEDFunctionIntf.pas"/>
 			<DCCReference Include="Units\ObserverIntf.pas"/>
 			<DCCReference Include="Units\LEDFunction.pas"/>
 			<DCCReference Include="Units\StaticLEDFunction.pas"/>
 			<DCCReference Include="Units\ConfigConversion.pas"/>
 			<DCCReference Include="Units\LEDFunctionRegistry.pas"/>
+			<DCCReference Include="Units\StaticLEDColor.pas"/>
+			<DCCReference Include="Units\DynamicLEDColor.pas"/>
+			<DCCReference Include="Units\LEDStateIntf.pas"/>
+			<DCCReference Include="Units\LEDState.pas"/>
+			<DCCReference Include="Units\Profile.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

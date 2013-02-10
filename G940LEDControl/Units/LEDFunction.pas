@@ -17,7 +17,7 @@ type
     procedure RegisterFunction(AFunction: ILEDFunction);
   protected
     { ILEDFunctionProvider }
-    function GetUniqueName: string; virtual; abstract;
+    function GetUID: string; virtual; abstract;
 
     function GetEnumerator: ILEDFunctionEnumerator; virtual;
   public
@@ -28,10 +28,10 @@ type
 
   TCustomLEDFunction = class(TInterfacedObject, IObservable, ILEDFunction)
   private
-    FCurrentState: ILEDState;
     FObservers: TInterfaceList;
+    FStates: TInterfaceList;
   protected
-    procedure SetCurrentState(AState: ILEDState); virtual;
+//    procedure SetCurrentState(AState: ILEDState); virtual;
 
     procedure NotifyObservers; virtual;
 
@@ -44,9 +44,10 @@ type
     { ILEDFunction }
     function GetCategoryName: string; virtual; abstract;
     function GetDisplayName: string; virtual; abstract;
-    function GetUniqueName: string; virtual; abstract;
+    function GetUID: string; virtual; abstract;
 
-    function GetCurrentState: ILEDState; virtual;
+    function GetEnumerator: ILEDStateEnumerator; virtual;
+    function GetCurrentState: ILEDState; virtual; abstract;
   public
     constructor Create;
     destructor Destroy; override;
@@ -66,6 +67,20 @@ type
   end;
 
 
+  TLEDStateEnumerator = class(TInterfacedObject, ILEDStateEnumerator)
+  private
+    FList: TInterfaceList;
+    FIndex: Integer;
+  protected
+    { ILEDStateEnumerator }
+    function GetCurrent: ILEDState; virtual;
+    function MoveNext: Boolean; virtual;
+  public
+    constructor Create(AList: TInterfaceList);
+  end;
+
+
+
 implementation
 uses
   SysUtils;
@@ -77,11 +92,13 @@ begin
   inherited Create;
 
   FObservers := TInterfaceList.Create;
+  FStates := TInterfaceList.Create;
 end;
 
 
 destructor TCustomLEDFunction.Destroy;
 begin
+  FreeAndNil(FStates);
   FreeAndNil(FObservers);
 
   inherited Destroy;
@@ -90,27 +107,27 @@ end;
 
 procedure TCustomLEDFunction.Attach(AObserver: IObserver);
 begin
-
+  FObservers.Add(AObserver as IObserver);
 end;
 
 
 procedure TCustomLEDFunction.Detach(AObserver: IObserver);
 begin
-
+  FObservers.Remove(AObserver as IObserver);
 end;
 
 
-function TCustomLEDFunction.GetCurrentState: ILEDState;
+function TCustomLEDFunction.GetEnumerator: ILEDStateEnumerator;
 begin
-
+  Result := TLEDStateEnumerator.Create(FStates);
 end;
 
 
-procedure TCustomLEDFunction.SetCurrentState(AState: ILEDState);
-begin
-  FCurrentState := AState;
-  NotifyObservers;
-end;
+//procedure TCustomLEDFunction.SetCurrentState(AState: ILEDState);
+//begin
+//  FCurrentState := AState;
+//  NotifyObservers;
+//end;
 
 
 procedure TCustomLEDFunction.NotifyObservers;
@@ -142,9 +159,6 @@ end;
 
 procedure TCustomLEDFunctionProvider.RegisterFunction(AFunction: ILEDFunction);
 begin
-  { Make sure to explicitly request the ILEDFunction interface; I've experienced
-    incomparable pointers otherwise if we ever need to write an UnregisterFunction.
-    My best, but unverified, guess is that it works kinda like a VMT. }
   FFunctions.Add(AFunction as ILEDFunction);
 end;
 
@@ -172,6 +186,30 @@ end;
 
 
 function TLEDFunctionEnumerator.MoveNext: Boolean;
+begin
+  Result := (FIndex < Pred(FList.Count));
+  if Result then
+    Inc(FIndex);
+end;
+
+
+{ TLEDStateEnumerator }
+constructor TLEDStateEnumerator.Create(AList: TInterfaceList);
+begin
+  inherited Create;
+
+  FList := AList;
+  FIndex := -1;
+end;
+
+
+function TLEDStateEnumerator.GetCurrent: ILEDState;
+begin
+  Result := (FList[FIndex] as ILEDState);
+end;
+
+
+function TLEDStateEnumerator.MoveNext: Boolean;
 begin
   Result := (FIndex < Pred(FList.Count));
   if Result then
