@@ -26,9 +26,6 @@ object ButtonFunctionForm: TButtonFunctionForm
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitLeft = 168
-    ExplicitTop = 232
-    ExplicitWidth = 185
     DesignSize = (
       692
       41)
@@ -42,7 +39,6 @@ object ButtonFunctionForm: TButtonFunctionForm
       Default = True
       ModalResult = 1
       TabOrder = 0
-      ExplicitLeft = 467
     end
     object btnCancel: TButton
       Left = 609
@@ -54,7 +50,6 @@ object ButtonFunctionForm: TButtonFunctionForm
       Caption = 'Cancel'
       ModalResult = 2
       TabOrder = 1
-      ExplicitLeft = 548
     end
   end
   object vstFunctions: TVirtualStringTree
@@ -80,6 +75,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
     TreeOptions.SelectionOptions = [toFullRowSelect]
     OnGetText = vstFunctionsGetText
+    OnPaintText = vstFunctionsPaintText
     Columns = <
       item
         Position = 0
@@ -100,10 +96,6 @@ object ButtonFunctionForm: TButtonFunctionForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 2
-    ExplicitLeft = 224
-    ExplicitTop = 192
-    ExplicitWidth = 185
-    ExplicitHeight = 41
     object vstStates: TVirtualStringTree
       Left = 0
       Top = 113
@@ -118,9 +110,6 @@ object ButtonFunctionForm: TButtonFunctionForm
       Header.Font.Style = []
       Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
       TabOrder = 0
-      ExplicitTop = 93
-      ExplicitWidth = 407
-      ExplicitHeight = 259
       Columns = <
         item
           Position = 0
@@ -141,7 +130,6 @@ object ButtonFunctionForm: TButtonFunctionForm
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitWidth = 407
       DesignSize = (
         411
         113)

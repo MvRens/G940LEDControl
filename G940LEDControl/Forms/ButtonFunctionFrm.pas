@@ -6,6 +6,7 @@ uses
   Vcl.Controls,
   Vcl.ExtCtrls,
   Vcl.Forms,
+  Vcl.Graphics,
   Vcl.StdCtrls,
 
   VirtualTrees,
@@ -30,6 +31,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure vstFunctionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
+    procedure vstFunctionsPaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType);
   private
     FButtonIndex: Integer;
     FProfile: TProfile;
@@ -167,10 +169,26 @@ var
 
 begin
   nodeData := Sender.GetNodeData(Node);
+
   case nodeData^.NodeType of
     ntCategory: CellText := nodeData^.LEDFunction.GetCategoryName;
     ntFunction: CellText := nodeData^.LEDFunction.GetDisplayName;
   end;
+end;
+
+
+procedure TButtonFunctionForm.vstFunctionsPaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas;
+                                                    Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType);
+var
+  nodeData: PNodeData;
+
+begin
+  nodeData := Sender.GetNodeData(Node);
+
+  if nodeData^.NodeType = ntCategory then
+    TargetCanvas.Font.Style := [fsBold]
+  else
+    TargetCanvas.Font.Style := [];
 end;
 
 end.
