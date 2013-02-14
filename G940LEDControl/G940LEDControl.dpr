@@ -25,7 +25,11 @@ uses
   LEDState in 'Units\LEDState.pas',
   Profile in 'Units\Profile.pas',
   LEDColorPool in 'Units\LEDColorPool.pas',
-  ButtonFunctionFrm in 'Forms\ButtonFunctionFrm.pas' {ButtonFunctionForm};
+  ButtonFunctionFrm in 'Forms\ButtonFunctionFrm.pas' {ButtonFunctionForm},
+  FSXLEDFunction in 'Units\FSXLEDFunction.pas',
+  StaticResources in 'Units\StaticResources.pas',
+  FSXResources in 'Units\FSXResources.pas',
+  FSXSimConnectClient in 'Units\FSXSimConnectClient.pas';
 
 {$R *.res}
 

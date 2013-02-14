@@ -10,15 +10,16 @@ uses
 type
   TStaticLEDFunctionProvider = class(TCustomLEDFunctionProvider)
   protected
+    procedure RegisterFunctions; override;
+
     function GetUID: string; override;
-  public
-    constructor Create;
   end;
 
 
   TStaticLEDFunction = class(TCustomLEDFunction)
   private
     FColor: TLEDColor;
+    FState: ILEDState;
   protected
     function GetCategoryName: string; override;
     function GetDisplayName: string; override;
@@ -30,42 +31,20 @@ type
   end;
 
 
-const
-  StaticProviderUID = 'static';
-  StaticFunctionUID: array[TLEDColor] of string =
-                     (
-                       'off',
-                       'green',
-                       'amber',
-                       'red'
-                     );
-
-
 implementation
 uses
-  LEDFunctionRegistry;
-
-
-const
-  CategoryStatic = 'Static';
-  FunctionDisplayName: array[TLEDColor] of string =
-                       (
-                         'Off',
-                         'Green',
-                         'Amber',
-                         'Red'
-                       );
-
+  LEDColorPool,
+  LEDFunctionRegistry,
+  LEDState,
+  StaticResources;
 
 
 { TStaticLEDFunctionProvider }
-constructor TStaticLEDFunctionProvider.Create;
+procedure TStaticLEDFunctionProvider.RegisterFunctions;
 var
   color: TLEDColor;
 
 begin
-  inherited Create;
-
   for color := Low(TLEDColor) to High(TLEDColor) do
     RegisterFunction(TStaticLEDFunction.Create(color));
 end;
@@ -88,13 +67,13 @@ end;
 
 function TStaticLEDFunction.GetCategoryName: string;
 begin
-  Result := CategoryStatic;
+  Result := StaticCategory;
 end;
 
 
 function TStaticLEDFunction.GetDisplayName: string;
 begin
-  Result := FunctionDisplayName[FColor];
+  Result := StaticFunctionDisplayName[FColor];
 end;
 
 
@@ -106,7 +85,10 @@ end;
 
 function TStaticLEDFunction.GetCurrentState: ILEDState;
 begin
+  if not Assigned(FState) then
+    FState := TLEDState.Create('', '', TLEDColorPool.GetColor(FColor));
 
+  Result := FState;
 end;
 
 

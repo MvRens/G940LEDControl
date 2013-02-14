@@ -32,12 +32,8 @@ object MainForm: TMainForm
     ActivePage = tsFSX
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 390
-    ExplicitHeight = 510
     object tsFSX: TTabSheet
       Caption = 'Configuration'
-      ExplicitWidth = 382
-      ExplicitHeight = 482
       DesignSize = (
         441
         446)
@@ -346,7 +342,6 @@ object MainForm: TMainForm
         Anchors = [akTop, akRight]
         Caption = 'Save as...'
         TabOrder = 9
-        ExplicitLeft = 340
       end
       object btnDeleteProfile: TButton
         Left = 364
@@ -356,12 +351,13 @@ object MainForm: TMainForm
         Anchors = [akTop, akRight]
         Caption = 'Delete'
         TabOrder = 10
-        ExplicitLeft = 421
       end
     end
     object tsAbout: TTabSheet
       Caption = 'About'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
       ExplicitWidth = 382
       ExplicitHeight = 482
       object lblVersionCaption: TLabel
@@ -479,7 +475,6 @@ object MainForm: TMainForm
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 390
     DesignSize = (
       449
       64)
@@ -861,7 +856,6 @@ object MainForm: TMainForm
       TabOrder = 0
       Visible = False
       OnClick = btnRetryClick
-      ExplicitLeft = 315
     end
   end
 end

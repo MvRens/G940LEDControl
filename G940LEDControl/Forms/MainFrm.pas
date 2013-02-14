@@ -175,7 +175,7 @@ uses
   LEDColorIntf,
   LEDFunctionIntf,
   LEDFunctionRegistry,
-  StaticLEDFunction;
+  StaticResources;
 
 
 {$R *.dfm}
@@ -191,11 +191,6 @@ const
   TEXT_STATE_SEARCHING = 'Searching...';
   TEXT_STATE_NOTFOUND = 'Not found';
   TEXT_STATE_FOUND = 'Connected';
-
-  KEY_SETTINGS = '\Software\X2Software\G940LEDControl\';
-  SECTION_DEFAULTPROFILE = 'DefaultProfile';
-  SECTION_FSX = 'FSX';
-  SECTION_SETTINGS = 'Settings';
 
 
 type
@@ -306,7 +301,7 @@ begin
   if not FileExists(FProfilesFilename) then
   begin
     { Check if version 0.x settings are in the registry }
-    defaultProfile := ConfigConversion.Convert0To1;
+    defaultProfile := ConfigConversion.ConvertProfile0To1;
 
     if not Assigned(defaultProfile) then
       defaultProfile := CreateDefaultProfile;
@@ -515,61 +510,6 @@ end;
 //    AWriter.WriteBoolean('CheckUpdates', cbCheckUpdates.Checked);
 //  finally
 //    AWriter.EndSection;
-//  end;
-//end;
-
-
-//procedure TMainForm.LoadDefaultProfile;
-//var
-//  registryReader: TX2UtPersistRegistry;
-//  reader: IX2PersistReader;
-//
-//begin
-//  registryReader := TX2UtPersistRegistry.Create;
-//  try
-//    registryReader.RootKey := HKEY_CURRENT_USER;
-//    registryReader.Key := KEY_SETTINGS;
-//
-//    reader := registryReader.CreateReader;
-//
-//    if reader.BeginSection(SECTION_DEFAULTPROFILE) then
-//    try
-//      ReadFunctions(reader, FFSXComboBoxes);
-//      ReadFSXExtra(reader);
-//    finally
-//      reader.EndSection;
-//    end;
-//
-//    ReadAutoUpdate(reader);
-//  finally
-//    FreeAndNil(registryReader);
-//  end;
-//end;
-//
-//
-//procedure TMainForm.SaveDefaultProfile;
-//var
-//  registryWriter: TX2UtPersistRegistry;
-//  writer: IX2PersistWriter;
-//
-//begin
-//  registryWriter := TX2UtPersistRegistry.Create;
-//  try
-//    registryWriter.RootKey := HKEY_CURRENT_USER;
-//    registryWriter.Key := KEY_SETTINGS;
-//
-//    writer := registryWriter.CreateWriter;
-//    if writer.BeginSection(SECTION_DEFAULTPROFILE) then
-//    try
-//      WriteFunctions(writer, FFSXComboBoxes);
-//      WriteFSXExtra(writer);
-//    finally
-//      writer.EndSection;
-//    end;
-//
-//    WriteAutoUpdate(writer);
-//  finally
-//    FreeAndNil(registryWriter);
 //  end;
 //end;
 

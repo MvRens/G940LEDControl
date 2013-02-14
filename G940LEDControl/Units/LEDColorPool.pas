@@ -26,7 +26,8 @@ type
 
     function DoGetColor(AEntry: TLEDColorPoolEntry): ILEDColor;
   public
-    class function GetColor(AEntry: TLEDColorPoolEntry): ILEDColor;
+    class function GetColor(AEntry: TLEDColorPoolEntry): ILEDColor; overload;
+    class function GetColor(AColor: TLEDColor): ILEDColor; overload;
   end;
 
 
@@ -46,6 +47,19 @@ var
 class function TLEDColorPool.GetColor(AEntry: TLEDColorPoolEntry): ILEDColor;
 begin
   Result := Instance.DoGetColor(AEntry);
+end;
+
+
+class function TLEDColorPool.GetColor(AColor: TLEDColor): ILEDColor;
+begin
+  Result := nil;
+
+  case AColor of
+    lcOff:    Result := GetColor(cpeStaticOff);
+    lcGreen:  Result := GetColor(cpeStaticGreen);
+    lcAmber:  Result := GetColor(cpeStaticAmber);
+    lcRed:    Result := GetColor(cpeStaticRed);
+  end;
 end;
 
 
