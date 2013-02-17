@@ -32,7 +32,7 @@ const
   FUNCTION_FSX_SPOILERS = FUNCTION_PROVIDER_OFFSET + 13;
 
   FUNCTION_FSX_PRESSURIZATIONDUMPSWITCH = FUNCTION_PROVIDER_OFFSET + 14;
-  FUNCTION_FSX_CARBHEAT = FUNCTION_PROVIDER_OFFSET + 15;
+  FUNCTION_FSX_ENGINEANTIICE = FUNCTION_PROVIDER_OFFSET + 15;
   FUNCTION_FSX_AUTOPILOT = FUNCTION_PROVIDER_OFFSET + 16;
   FUNCTION_FSX_FUELPUMP = FUNCTION_PROVIDER_OFFSET + 17;
 
@@ -47,6 +47,8 @@ const
 
   FUNCTION_FSX_TAXILIGHTS = FUNCTION_PROVIDER_OFFSET + 25;
   FUNCTION_FSX_RECOGNITIONLIGHTS = FUNCTION_PROVIDER_OFFSET + 26;
+
+  FUNCTION_FSX_DEICE = FUNCTION_PROVIDER_OFFSET + 27;
 
 
 type
@@ -68,6 +70,7 @@ type
     procedure HandleExitDoorData(AData: Pointer);
     procedure HandleFlapsData(AData: Pointer);
     procedure HandleSwitchesData(AData: Pointer);
+    procedure HandleAntiIceData(AData: Pointer);
 
     procedure AddVariable(ADefineID: Cardinal; ADatumName, AUnitsName: string;
                           ADatumType: SIMCONNECT_DATAType = SIMCONNECT_DATAType_FLOAT64;
@@ -111,8 +114,9 @@ const
   DEFINITION_EXITDOOR = 7;
   DEFINITION_FLAPSSPOILERS = 8;
   DEFINITION_SWITCHES = 9;
+  DEFINITION_ANTIICE = 10;
 
-  EVENT_ZOOM = 10;
+//  EVENT_ZOOM = 10;
 
   FSX_UNIT_PERCENT = 'percent';
   FSX_UNIT_MASK = 'mask';
@@ -144,10 +148,10 @@ begin
 
   AConsumer.SetCategory('Dynamic');
 
-  AConsumer.AddFunction(FUNCTION_FSX_CARBHEAT, 'Anti-ice');
+//  AConsumer.AddFunction(FUNCTION_FSX_FUELPUMP, 'Fuel boost pump');
   AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT, 'Auto pilot (main)');
-  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_AMBER, 'Auto pilot (main - off / amber)');
   AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_ALTITUDE, 'Auto pilot - Altitude');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_AMBER, 'Auto pilot (main - off / amber)');
   AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_APPROACH, 'Auto pilot - Approach');
   AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_BACKCOURSE, 'Auto pilot - Backcourse');
   AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_HEADING, 'Auto pilot - Heading');
@@ -155,10 +159,11 @@ begin
   AConsumer.AddFunction(FUNCTION_FSX_AVIONICSMASTER, 'Avionics master switch');
   AConsumer.AddFunction(FUNCTION_FSX_BATTERYMASTER, 'Battery master switch');
   AConsumer.AddFunction(FUNCTION_FSX_BEACONLIGHTS, 'Beacon lights');
+  AConsumer.AddFunction(FUNCTION_FSX_DEICE, 'De-ice');
   AConsumer.AddFunction(FUNCTION_FSX_ENGINE, 'Engine');
+  AConsumer.AddFunction(FUNCTION_FSX_ENGINEANTIICE, 'Engine anti-ice');
   AConsumer.AddFunction(FUNCTION_FSX_EXITDOOR, 'Exit door');
   AConsumer.AddFunction(FUNCTION_FSX_FLAPS, 'Flaps');
-//  AConsumer.AddFunction(FUNCTION_FSX_FUELPUMP, 'Fuel boost pump');
   AConsumer.AddFunction(FUNCTION_FSX_GEAR, 'Landing gear');
   AConsumer.AddFunction(FUNCTION_FSX_INSTRUMENTLIGHTS, 'Instrument lights');
   AConsumer.AddFunction(FUNCTION_FSX_LANDINGLIGHTS, 'Landing lights');
@@ -201,7 +206,7 @@ begin
 
   UpdateMap;
 
-  SimConnect_MapClientEventToSimEvent(SimConnectHandle, EVENT_ZOOM, 'VIEW_ZOOM_SET');
+//  SimConnect_MapClientEventToSimEvent(SimConnectHandle, EVENT_ZOOM, 'VIEW_ZOOM_SET');
 end;
 
 
@@ -322,7 +327,7 @@ begin
 
   { Master switches }
   if Consumer.FunctionMap.HasFunction([FUNCTION_FSX_BATTERYMASTER, FUNCTION_FSX_AVIONICSMASTER,
-                                       FUNCTION_FSX_PRESSURIZATIONDUMPSWITCH, FUNCTION_FSX_CARBHEAT,
+                                       FUNCTION_FSX_PRESSURIZATIONDUMPSWITCH,
                                        FUNCTION_FSX_AUTOPILOT, FUNCTION_FSX_FUELPUMP,
                                        FUNCTION_FSX_AUTOPILOT_AMBER, FUNCTION_FSX_AUTOPILOT_HEADING,
                                        FUNCTION_FSX_AUTOPILOT_APPROACH, FUNCTION_FSX_AUTOPILOT_BACKCOURSE,
@@ -331,8 +336,6 @@ begin
     AddVariable(DEFINITION_SWITCHES, 'AVIONICS MASTER SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
     AddVariable(DEFINITION_SWITCHES, 'ELECTRICAL MASTER BATTERY', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
     AddVariable(DEFINITION_SWITCHES, 'PRESSURIZATION DUMP SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
-//    AddVariable(DEFINITION_SWITCHES, 'CARB HEAT AVAILABLE', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
-    AddVariable(DEFINITION_SWITCHES, 'PANEL ANTI ICE SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
     AddVariable(DEFINITION_SWITCHES, 'AUTOPILOT AVAILABLE', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
     AddVariable(DEFINITION_SWITCHES, 'AUTOPILOT MASTER', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
 //    AddVariable(DEFINITION_SWITCHES, 'fuel pump?', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
@@ -344,6 +347,25 @@ begin
 
     AddDefinition(DEFINITION_SWITCHES);
   end;
+
+  { Anti-ice }
+  if Consumer.FunctionMap.HasFunction([FUNCTION_FSX_ENGINEANTIICE, FUNCTION_FSX_DEICE]) then
+  begin
+    AddVariable(DEFINITION_ANTIICE, 'NUMBER OF ENGINES', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_INT32);
+
+//    for engineIndex := 1 to MAX_ENGINES do
+//      AddVariable(DEFINITION_ANTIICE, Format('GENERAL ENG ANTI ICE POSITION:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+//
+//    for engineIndex := 1 to MAX_ENGINES do
+//      AddVariable(DEFINITION_ANTIICE, Format('PROP DEICE SWITCH:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+
+    for engineIndex := 1 to MAX_ENGINES do
+      AddVariable(DEFINITION_ANTIICE, Format('ENG ANTI ICE:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+
+    AddVariable(DEFINITION_ANTIICE, 'STRUCTURAL DEICE SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    AddDefinition(DEFINITION_ANTIICE);
+  end;
+
 
   { Throttle }
   {
@@ -387,6 +409,7 @@ begin
           DEFINITION_EXITDOOR:      HandleExitDoorData(data);
           DEFINITION_FLAPSSPOILERS: HandleFlapsData(data);
           DEFINITION_SWITCHES:      HandleSwitchesData(data);
+          DEFINITION_ANTIICE:       HandleAntiIceData(data);
           {
           DEFINITION_THROTTLE:
             begin
@@ -595,8 +618,6 @@ type
     AvionicsSwitch: Cardinal;
     BatterySwitch: Cardinal;
     PressurizationDumpSwitch: Cardinal;
-//    CarbHeatAvailable: Cardinal;
-    AntiIceSwitch: Cardinal;
     AutoPilotAvailable: Cardinal;
     AutoPilotMaster: Cardinal;
     AutoPilotHeading: Cardinal;
@@ -615,11 +636,6 @@ begin
   Consumer.SetStateByFunction(FUNCTION_FSX_AVIONICSMASTER, ONOFF_STATE[switchesData^.AvionicsSwitch <> 0]);
   Consumer.SetStateByFunction(FUNCTION_FSX_BATTERYMASTER, ONOFF_STATE[switchesData^.BatterySwitch <> 0]);
   Consumer.SetStateByFunction(FUNCTION_FSX_PRESSURIZATIONDUMPSWITCH, ONOFF_STATE[switchesData^.PressurizationDumpSwitch <> 0]);
-
-//  if switchesData^.CarbHeatAvailable <> 0 then
-  Consumer.SetStateByFunction(FUNCTION_FSX_CARBHEAT, ONOFF_STATE[switchesData^.AntiIceSwitch <> 0]);
-//  else
-//    Consumer.SetStateByFunction(FUNCTION_FSX_CARBHEAT, lsOff);
 
   if switchesData^.AutoPilotAvailable <> 0 then
   begin
@@ -640,6 +656,47 @@ begin
     Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_ALTITUDE, lsOff);
     Consumer.SetStateByFunction(FUNCTION_FSX_AUTOPILOT_NAV, lsOff);
   end;
+end;
+
+
+procedure TFSXLEDStateProvider.HandleAntiIceData(AData: Pointer);
+
+  function EngineHasBoolean(AArray: array of Integer; ANumberOfEngines: Integer): Boolean;
+  var
+    engineIndex: Integer;
+
+  begin
+    Result := False;
+
+    for engineIndex := 1 to Max(ANumberOfEngines, MAX_ENGINES) do
+      if AArray[engineIndex] <> 0 then
+      begin
+        Result := True;
+        break;
+      end;
+  end;
+
+const
+  ONOFF_STATE: array[Boolean] of TLEDState = (lsRed, lsGreen);
+
+type
+  PAntiIceData = ^TAntiIceData;
+  TAntiIceData = packed record
+    NumberOfEngines: Integer;
+//    GeneralEngineAntiIce: array[1..MAX_ENGINES] of Integer;
+//    PropDeIce: array[1..MAX_ENGINES] of Integer;
+    EngineAntiIce: array[1..MAX_ENGINES] of Integer;
+    StructuralAntiIce: Integer;
+  end;
+
+var
+  antiIceData: PAntiIceData;
+
+begin
+  antiIceData := AData;
+
+  Consumer.SetStateByFunction(FUNCTION_FSX_DEICE, ONOFF_STATE[antiIceData^.StructuralAntiIce <> 0]);
+  Consumer.SetStateByFunction(FUNCTION_FSX_ENGINEANTIICE, ONOFF_STATE[EngineHasBoolean(antiIceData^.EngineAntiIce, antiIceData^.NumberOfEngines)]);
 end;
 
 
