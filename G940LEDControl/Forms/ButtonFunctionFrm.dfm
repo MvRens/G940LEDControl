@@ -72,10 +72,13 @@ object ButtonFunctionForm: TButtonFunctionForm
     Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
     TabOrder = 1
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoSort, toAutoTristateTracking, toAutoDeleteMovedNodes]
+    TreeOptions.MiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toWheelPanning, toEditOnClick]
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
     TreeOptions.SelectionOptions = [toFullRowSelect]
+    OnFocusChanged = vstFunctionsFocusChanged
     OnGetText = vstFunctionsGetText
     OnPaintText = vstFunctionsPaintText
+    ExplicitTop = 5
     Columns = <
       item
         Position = 0
@@ -98,9 +101,9 @@ object ButtonFunctionForm: TButtonFunctionForm
     TabOrder = 2
     object vstStates: TVirtualStringTree
       Left = 0
-      Top = 113
+      Top = 81
       Width = 411
-      Height = 239
+      Height = 271
       Align = alClient
       Header.AutoSizeIndex = 0
       Header.Font.Charset = DEFAULT_CHARSET
@@ -108,8 +111,16 @@ object ButtonFunctionForm: TButtonFunctionForm
       Header.Font.Height = -11
       Header.Font.Name = 'Tahoma'
       Header.Font.Style = []
+      Header.MainColumn = 1
       Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
       TabOrder = 0
+      TreeOptions.MiscOptions = [toAcceptOLEDrop, toEditable, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
+      TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
+      TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect]
+      OnChange = vstStatesChange
+      OnCreateEditor = vstStatesCreateEditor
+      OnEditing = vstStatesEditing
+      OnGetText = vstStatesGetText
       Columns = <
         item
           Position = 0
@@ -119,20 +130,20 @@ object ButtonFunctionForm: TButtonFunctionForm
         item
           Position = 1
           Width = 200
-          WideText = 'Color'
+          WideText = 'Colour'
         end>
     end
     object pnlName: TPanel
       Left = 0
       Top = 0
       Width = 411
-      Height = 113
+      Height = 81
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 1
       DesignSize = (
         411
-        113)
+        81)
       object lblFunctionName: TLabel
         Left = 0
         Top = 19
@@ -157,11 +168,17 @@ object ButtonFunctionForm: TButtonFunctionForm
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = 'runtime: category'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGrayText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
         ExplicitWidth = 401
       end
       object lblHasStates: TLabel
         Left = 0
-        Top = 74
+        Top = 47
         Width = 401
         Height = 31
         AutoSize = False
@@ -173,7 +190,7 @@ object ButtonFunctionForm: TButtonFunctionForm
       end
       object lblNoStates: TLabel
         Left = 0
-        Top = 55
+        Top = 47
         Width = 195
         Height = 13
         Caption = 'This function has no configurable states.'

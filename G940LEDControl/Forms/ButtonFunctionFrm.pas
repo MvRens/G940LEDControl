@@ -8,10 +8,16 @@ uses
   Vcl.Forms,
   Vcl.Graphics,
   Vcl.StdCtrls,
+  Winapi.Messages,
 
   VirtualTrees,
 
+  LEDFunctionIntf,
   Profile;
+
+
+const
+  WM_STARTEDITING = WM_USER + 1;
 
 
 type
@@ -32,11 +38,22 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure vstFunctionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure vstFunctionsPaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType);
+    procedure vstFunctionsFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
+    procedure vstStatesGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
+    procedure vstStatesChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vstStatesCreateEditor(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; out EditLink: IVTEditLink);
+    procedure vstStatesEditing(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
   private
     FButtonIndex: Integer;
     FProfile: TProfile;
   protected
+    procedure WMStartEditing(var Msg: TMessage); message WM_STARTEDITING;
+  protected
     procedure LoadFunctions;
+    procedure SetFunction(AProvider: ILEDFunctionProvider; AFunction: ILEDFunction);
+
+    procedure LoadStates(AFunction: ILEDMultiStateFunction);
 
     property ButtonIndex: Integer read FButtonIndex write FButtonIndex;
     property Profile: TProfile read FProfile write FProfile;
@@ -47,22 +64,36 @@ type
 
 implementation
 uses
-  System.SysUtils,
   Generics.Collections,
+  System.SysUtils,
+  Winapi.Windows,
 
-  LEDFunctionIntf,
-  LEDFunctionRegistry;
+  ColourEditor,
+  LEDFunctionRegistry,
+  LEDStateIntf;
 
 
 type
-  TNodeType = (ntCategory, ntFunction);
-  TNodeData = record
-    NodeType: TNodeType;
+  TFunctionNodeType = (ntCategory, ntFunction);
+  TFunctionNodeData = record
+    NodeType: TFunctionNodeType;
     Provider: ILEDFunctionProvider;
     LEDFunction: ILEDFunction;
   end;
 
-  PNodeData = ^TNodeData;
+  PFunctionNodeData = ^TFunctionNodeData;
+
+
+  TStateNodeData = record
+    State: ILEDState;
+  end;
+
+  PStateNodeData = ^TStateNodeData;
+
+
+const
+  ColumnState = 0;
+  ColumnColour = 1;
 
 
 {$R *.dfm}
@@ -84,9 +115,8 @@ end;
 
 procedure TButtonFunctionForm.FormCreate(Sender: TObject);
 begin
-  vstFunctions.NodeDataSize := SizeOf(TNodeData);
-
-  lblNoStates.Top := lblHasStates.Top;
+  vstFunctions.NodeDataSize := SizeOf(TFunctionNodeData);
+  vstStates.NodeDataSize := SizeOf(TStateNodeData);
 
   lblCategoryName.Caption := '';
   lblFunctionName.Caption := '';
@@ -108,7 +138,7 @@ var
   function GetCategoryNode(AProvider: ILEDFunctionProvider; AFunction: ILEDFunction): PVirtualNode;
   var
     category: string;
-    nodeData: PNodeData;
+    nodeData: PFunctionNodeData;
 
   begin
     category := AFunction.GetCategoryName;
@@ -130,7 +160,7 @@ var
 
 var
   node: PVirtualNode;
-  nodeData: PNodeData;
+  nodeData: PFunctionNodeData;
   provider: ILEDFunctionProvider;
   ledFunction: ILEDFunction;
 
@@ -162,10 +192,88 @@ begin
 end;
 
 
+procedure TButtonFunctionForm.SetFunction(AProvider: ILEDFunctionProvider; AFunction: ILEDFunction);
+var
+  multiStateFunction: ILEDMultiStateFunction;
+
+begin
+  lblCategoryName.Caption := AFunction.GetCategoryName;
+  lblFunctionName.Caption := AFunction.GetDisplayName;
+
+  if Supports(AFunction, ILEDMultiStateFunction, multiStateFunction) then
+  begin
+    lblNoStates.Visible := False;
+    lblHasStates.Visible := True;
+
+    LoadStates(multiStateFunction);
+    vstStates.Visible := True;
+  end else
+  begin
+    lblNoStates.Visible := True;
+    lblHasStates.Visible := False;
+
+    vstStates.Visible := False;
+    vstStates.Clear;
+  end;
+end;
+
+
+procedure TButtonFunctionForm.LoadStates(AFunction: ILEDMultiStateFunction);
+var
+  node: PVirtualNode;
+  nodeData: PStateNodeData;
+  state: ILEDState;
+
+begin
+  vstStates.BeginUpdate;
+  try
+    vstStates.Clear;
+
+    for state in AFunction do
+    begin
+      node := vstStates.AddChild(nil);
+      nodeData := vstStates.GetNodeData(node);
+      nodeData^.State := state;
+    end;
+  finally
+    vstStates.EndUpdate;
+  end;
+end;
+
+
+procedure TButtonFunctionForm.vstFunctionsFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
+var
+  nodeData: PFunctionNodeData;
+  functionNode: PVirtualNode;
+
+begin
+  if Assigned(Node) then
+  begin
+    nodeData := Sender.GetNodeData(Node);
+
+    case nodeData^.NodeType of
+      ntCategory:
+        begin
+          { Select first child (function) node instead }
+          functionNode := Sender.GetFirstChild(Node);
+          if not Assigned(functionNode) then
+            exit;
+
+          Sender.FocusedNode := functionNode;
+          Sender.Selected[functionNode] := True;
+        end;
+
+      ntFunction:
+        SetFunction(nodeData^.Provider, nodeData^.LEDFunction);
+    end;
+  end;
+end;
+
+
 procedure TButtonFunctionForm.vstFunctionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
                                                   TextType: TVSTTextType; var CellText: string);
 var
-  nodeData: PNodeData;
+  nodeData: PFunctionNodeData;
 
 begin
   nodeData := Sender.GetNodeData(Node);
@@ -180,7 +288,7 @@ end;
 procedure TButtonFunctionForm.vstFunctionsPaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas;
                                                     Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType);
 var
-  nodeData: PNodeData;
+  nodeData: PFunctionNodeData;
 
 begin
   nodeData := Sender.GetNodeData(Node);
@@ -189,6 +297,51 @@ begin
     TargetCanvas.Font.Style := [fsBold]
   else
     TargetCanvas.Font.Style := [];
+end;
+
+
+procedure TButtonFunctionForm.vstStatesGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
+                                               TextType: TVSTTextType; var CellText: string);
+var
+  nodeData: PStateNodeData;
+
+begin
+  nodeData := Sender.GetNodeData(Node);
+
+  case Column of
+    ColumnState:    CellText := nodeData^.State.GetDisplayName;
+    ColumnColour:   CellText := 'Red';
+  end;
+end;
+
+
+procedure TButtonFunctionForm.vstStatesChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+begin
+  if Assigned(Node) and not (tsIncrementalSearching in Sender.TreeStates) then
+    PostMessage(Self.Handle, WM_STARTEDITING, WPARAM(Node), 0);
+end;
+
+
+procedure TButtonFunctionForm.vstStatesCreateEditor(Sender: TBaseVirtualTree; Node: PVirtualNode;
+                                                    Column: TColumnIndex; out EditLink: IVTEditLink);
+begin
+  EditLink := TVTColourEditor.Create;
+end;
+
+
+procedure TButtonFunctionForm.vstStatesEditing(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
+begin
+  Allowed := True;
+end;
+
+procedure TButtonFunctionForm.WMStartEditing(var Msg: TMessage);
+var
+  node: PVirtualNode;
+
+begin
+  node := Pointer(Msg.WParam);
+  vstStates.EditNode(Node, 1);
 end;
 
 end.
