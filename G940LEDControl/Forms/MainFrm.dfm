@@ -326,7 +326,7 @@ object MainForm: TMainForm
       object cmbProfiles: TComboBox
         Left = 64
         Top = 16
-        Width = 213
+        Width = 234
         Height = 21
         Style = csDropDownList
         Anchors = [akLeft, akTop, akRight]
@@ -335,12 +335,12 @@ object MainForm: TMainForm
         OnClick = cmbProfilesClick
       end
       object btnSaveProfile: TButton
-        Left = 283
+        Left = 304
         Top = 16
-        Width = 75
+        Width = 54
         Height = 21
         Anchors = [akTop, akRight]
-        Caption = 'Save as...'
+        Caption = 'New'
         TabOrder = 9
       end
       object btnDeleteProfile: TButton
@@ -356,10 +356,6 @@ object MainForm: TMainForm
     object tsAbout: TTabSheet
       Caption = 'About'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 382
-      ExplicitHeight = 482
       object lblVersionCaption: TLabel
         Left = 16
         Top = 67

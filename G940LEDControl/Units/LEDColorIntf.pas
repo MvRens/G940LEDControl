@@ -2,7 +2,13 @@ unit LEDColorIntf;
 
 interface
 type
-  TLEDColor = (lcOff, lcGreen, lcAmber, lcRed);
+  TLEDColor = (lcOff, lcGreen, lcAmber, lcRed,
+               lcFlashingGreenFast, lcFlashingGreenNormal,
+               lcFlashingAmberFast, lcFlashingAmberNormal,
+               lcFlashingRedFast, lcFlashingRedNormal);
+
+  TStaticLEDColor = lcOff..lcRed;
+
 
 
   ILEDColor = interface

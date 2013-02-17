@@ -242,7 +242,7 @@ end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  SaveProfiles;
+//  SaveProfiles;
 //  if Assigned(StateConsumerTask) then
 //  begin
 //    SaveDefaultProfile;
@@ -547,7 +547,10 @@ begin
 
   buttonIndex := (Sender as TComponent).Tag;
   if TButtonFunctionForm.Execute(ActiveProfile, buttonIndex) then
+  begin
     UpdateButton(ActiveProfile, buttonIndex);
+    SaveProfiles;
+  end;
 end;
 
 

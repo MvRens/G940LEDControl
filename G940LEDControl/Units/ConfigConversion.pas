@@ -62,6 +62,8 @@ const
   V0_FUNCTIONFSX_TAXILIGHTS = V0_FUNCTIONPROVIDER_OFFSET + 25;
   V0_FUNCTIONFSX_RECOGNITIONLIGHTS = V0_FUNCTIONPROVIDER_OFFSET + 26;
 
+  // TODO 27 (de-ice)
+
 
 
 procedure ConvertProfileFunction0To1(AOldFunction: Integer; AButton: TProfileButton);

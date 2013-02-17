@@ -2,6 +2,7 @@ unit ButtonFunctionFrm;
 
 interface
 uses
+  Generics.Collections,
   System.Classes,
   Vcl.Controls,
   Vcl.ExtCtrls,
@@ -12,65 +13,95 @@ uses
 
   VirtualTrees,
 
+  LEDColorIntf,
   LEDFunctionIntf,
+  LEDStateIntf,
   Profile;
 
 
-const
-  WM_STARTEDITING = WM_USER + 1;
-
-
 type
+  TStateControlInfo = class;
+  TStateControlInfoList = TObjectList<TStateControlInfo>;
+
+
   TButtonFunctionForm = class(TForm)
     pnlButtons: TPanel;
     btnOK: TButton;
     btnCancel: TButton;
     vstFunctions: TVirtualStringTree;
-    vstStates: TVirtualStringTree;
     pnlFunction: TPanel;
     pnlName: TPanel;
     lblFunctionName: TLabel;
     lblCategoryName: TLabel;
     lblHasStates: TLabel;
     lblNoStates: TLabel;
+    sbStates: TScrollBox;
+    pnlHeader: TPanel;
+    bvlHeader: TBevel;
+    lblButton: TLabel;
+    lblCurrentAssignment: TLabel;
+    lblCurrentFunction: TLabel;
+    lblCurrentCategory: TLabel;
+    bvlFooter: TBevel;
 
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure vstFunctionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure vstFunctionsPaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType);
     procedure vstFunctionsFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
-    procedure vstStatesGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
-    procedure vstStatesChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
-    procedure vstStatesCreateEditor(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; out EditLink: IVTEditLink);
-    procedure vstStatesEditing(Sender: TBaseVirtualTree;
-      Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
+    procedure btnOKClick(Sender: TObject);
   private
-    FButtonIndex: Integer;
     FProfile: TProfile;
+    FButtonIndex: Integer;
+    FButton: TProfileButton;
+    FCurrentProvider: ILEDFunctionProvider;
+    FCurrentFunction: ILEDFunction;
+    FSelectedProvider: ILEDFunctionProvider;
+    FSelectedFunction: ILEDFunction;
+    FStateControls: TStateControlInfoList;
   protected
-    procedure WMStartEditing(var Msg: TMessage); message WM_STARTEDITING;
-  protected
+    procedure Initialize(AProfile: TProfile; AButtonIndex: Integer);
+
     procedure LoadFunctions;
     procedure SetFunction(AProvider: ILEDFunctionProvider; AFunction: ILEDFunction);
 
-    procedure LoadStates(AFunction: ILEDMultiStateFunction);
+    procedure LoadStates(AProvider: ILEDFunctionProvider; AFunction: ILEDMultiStateFunction);
 
-    property ButtonIndex: Integer read FButtonIndex write FButtonIndex;
-    property Profile: TProfile read FProfile write FProfile;
+    property Button: TProfileButton read FButton;
+    property CurrentProvider: ILEDFunctionProvider read FCurrentProvider;
+    property CurrentFunction: ILEDFunction read FCurrentFunction;
+    property SelectedProvider: ILEDFunctionProvider read FSelectedProvider;
+    property SelectedFunction: ILEDFunction read FSelectedFunction;
+
+    property Profile: TProfile read FProfile;
+    property ButtonIndex: Integer read FButtonIndex;
   public
     class function Execute(AProfile: TProfile; AButtonIndex: Integer): Boolean;
   end;
 
 
+  TStateControlInfo = class(TObject)
+  private
+    FState: ILEDState;
+    FStateLabel: TLabel;
+    FComboBox: TComboBox;
+  public
+    constructor Create(AState: ILEDState; AStateLabel: TLabel; AComboBox: TComboBox);
+    destructor Destroy; override;
+
+    property State: ILEDState read FState;
+    property StateLabel: TLabel read FStateLabel;
+    property ComboBox: TComboBox read FComboBox;
+  end;
+
+
 implementation
 uses
-  Generics.Collections,
   System.SysUtils,
   Winapi.Windows,
 
-  ColourEditor,
   LEDFunctionRegistry,
-  LEDStateIntf;
+  LEDResources;
 
 
 type
@@ -86,6 +117,7 @@ type
 
   TStateNodeData = record
     State: ILEDState;
+    Color: TLEDColor;
   end;
 
   PStateNodeData = ^TStateNodeData;
@@ -93,7 +125,7 @@ type
 
 const
   ColumnState = 0;
-  ColumnColour = 1;
+  ColumnColor = 1;
 
 
 {$R *.dfm}
@@ -104,9 +136,7 @@ class function TButtonFunctionForm.Execute(AProfile: TProfile; AButtonIndex: Int
 begin
   with Self.Create(nil) do
   try
-    Profile := AProfile;
-    ButtonIndex := AButtonIndex;
-
+    Initialize(AProfile, AButtonIndex);
     Result := (ShowModal = mrOk);
   finally
     Free;
@@ -115,19 +145,21 @@ end;
 
 procedure TButtonFunctionForm.FormCreate(Sender: TObject);
 begin
-  vstFunctions.NodeDataSize := SizeOf(TFunctionNodeData);
-  vstStates.NodeDataSize := SizeOf(TStateNodeData);
+  FStateControls := TStateControlInfoList.Create(True);
 
+  vstFunctions.NodeDataSize := SizeOf(TFunctionNodeData);
+
+  lblButton.Caption := '';
+  lblCurrentCategory.Caption := '';
+  lblCurrentFunction.Caption := '';
   lblCategoryName.Caption := '';
   lblFunctionName.Caption := '';
-
-  LoadFunctions;
 end;
 
 
 procedure TButtonFunctionForm.FormDestroy(Sender: TObject);
 begin
-  //
+  FreeAndNil(FStateControls);
 end;
 
 
@@ -163,6 +195,7 @@ var
   nodeData: PFunctionNodeData;
   provider: ILEDFunctionProvider;
   ledFunction: ILEDFunction;
+  isCurrentProvider: Boolean;
 
 begin
   vstFunctions.BeginUpdate;
@@ -173,6 +206,8 @@ begin
     try
       for provider in TLEDFunctionRegistry.Providers do
       begin
+        isCurrentProvider := Assigned(CurrentProvider) and (provider.GetUID = CurrentProvider.GetUID);
+
         for ledFunction in provider do
         begin
           node := vstFunctions.AddChild(GetCategoryNode(provider, ledFunction));
@@ -181,6 +216,9 @@ begin
           nodeData^.NodeType := ntFunction;
           nodeData^.Provider := provider;
           nodeData^.LEDFunction := ledFunction;
+
+          if isCurrentProvider and Assigned(CurrentFunction) and (ledFunction.GetUID = CurrentFunction.GetUID) then
+            vstFunctions.Selected[node] := True;
         end;
       end;
     finally
@@ -197,47 +235,166 @@ var
   multiStateFunction: ILEDMultiStateFunction;
 
 begin
-  lblCategoryName.Caption := AFunction.GetCategoryName;
-  lblFunctionName.Caption := AFunction.GetDisplayName;
+  FSelectedProvider := AProvider;
+  FSelectedFunction := AFunction;
 
-  if Supports(AFunction, ILEDMultiStateFunction, multiStateFunction) then
+  lblCategoryName.Caption := SelectedFunction.GetCategoryName;
+  lblFunctionName.Caption := SelectedFunction.GetDisplayName;
+
+  if Supports(SelectedFunction, ILEDMultiStateFunction, multiStateFunction) then
   begin
     lblNoStates.Visible := False;
     lblHasStates.Visible := True;
 
-    LoadStates(multiStateFunction);
-    vstStates.Visible := True;
+    LoadStates(AProvider, multiStateFunction);
+    sbStates.Visible := True;
   end else
   begin
     lblNoStates.Visible := True;
     lblHasStates.Visible := False;
 
-    vstStates.Visible := False;
-    vstStates.Clear;
+    sbStates.Visible := False;
+    FStateControls.Clear;
   end;
 end;
 
 
-procedure TButtonFunctionForm.LoadStates(AFunction: ILEDMultiStateFunction);
+procedure TButtonFunctionForm.Initialize(AProfile: TProfile; AButtonIndex: Integer);
+begin
+  FProfile := AProfile;
+  FButtonIndex := AButtonIndex;
+  FButton := nil;
+  FCurrentProvider := nil;
+  FCurrentFunction := nil;
+
+  lblButton.Caption := 'P' + IntToStr(Succ(ButtonIndex));
+
+  if Profile.HasButton(ButtonIndex) then
+  begin
+    FButton := Profile.Buttons[ButtonIndex];
+    FCurrentProvider := TLEDFunctionRegistry.Find(Button.ProviderUID);
+
+    if Assigned(CurrentProvider) then
+      FCurrentFunction := CurrentProvider.Find(Button.FunctionUID);
+  end;
+
+  LoadFunctions;
+
+  if Assigned(CurrentFunction) then
+  begin
+    lblCurrentCategory.Caption := CurrentFunction.GetCategoryName + ': ';
+    lblCurrentFunction.Caption := CurrentFunction.GetDisplayName;
+
+    lblCurrentCategory.Left := lblCurrentFunction.Left - lblCurrentCategory.Width;
+
+    SetFunction(CurrentProvider, CurrentFunction);
+  end else
+  begin
+    lblCurrentCategory.Caption := '';
+    lblCurrentFunction.Caption := 'Unassigned';
+  end;
+end;
+
+
+procedure TButtonFunctionForm.LoadStates(AProvider: ILEDFunctionProvider; AFunction: ILEDMultiStateFunction);
+
+  procedure FillColorComboBox(AComboBox: TComboBox; ASelectedColor: TLEDColor);
+  var
+    color: TLEDColor;
+    itemIndex: Integer;
+
+  begin
+    AComboBox.Items.BeginUpdate;
+    try
+      AComboBox.Items.Clear;
+
+      for color := Low(TLEDColor) to High(TLEDColor) do
+      begin
+        itemIndex := AComboBox.Items.AddObject(LEDColorDisplayName[color], TObject(color));
+
+        if color = ASelectedColor then
+          AComboBox.ItemIndex := itemIndex;
+      end;
+    finally
+      AComboBox.Items.EndUpdate;
+    end;
+  end;
+
+
 var
-  node: PVirtualNode;
-  nodeData: PStateNodeData;
   state: ILEDState;
+  stateLabel: TLabel;
+  colorCombobox: TComboBox;
+  comboBoxWidth: Integer;
+  currentY: Integer;
+  selectedColor: TLEDColor;
+  isCurrent: Boolean;
 
 begin
-  vstStates.BeginUpdate;
-  try
-    vstStates.Clear;
+  FStateControls.Clear;
 
-    for state in AFunction do
-    begin
-      node := vstStates.AddChild(nil);
-      nodeData := vstStates.GetNodeData(node);
-      nodeData^.State := state;
-    end;
-  finally
-    vstStates.EndUpdate;
+  currentY := 0;
+  comboBoxWidth := sbStates.ClientWidth div 2;
+
+  isCurrent := Assigned(CurrentProvider) and (AProvider.GetUID = CurrentProvider.GetUID) and
+               Assigned(CurrentFunction) and (AFunction.GetUID = CurrentFunction.GetUID);
+
+  for state in AFunction do
+  begin
+    stateLabel := TLabel.Create(nil);
+    stateLabel.AutoSize := False;
+    stateLabel.Caption := state.GetDisplayName;
+    stateLabel.EllipsisPosition := epEndEllipsis;
+    stateLabel.Left := 0;
+    stateLabel.Top := currentY + 4;
+    stateLabel.Width := comboBoxWidth - 8;
+    stateLabel.Parent := sbStates;
+
+    colorCombobox := TComboBox.Create(nil);
+    colorCombobox.DropDownCount := Length(LEDColorDisplayName);
+    colorCombobox.Style := csDropDownList;
+    colorCombobox.Left := sbStates.ClientWidth - comboBoxWidth;
+    colorCombobox.Top := currentY;
+    colorCombobox.Width := comboBoxWidth;
+    colorCombobox.Parent := sbStates;
+
+    if (not isCurrent) or (not Button.GetStateColor(state.GetUID, selectedColor)) then
+      selectedColor := state.GetDefaultColor;
+
+    FillColorComboBox(colorComboBox, selectedColor);
+
+    FStateControls.Add(TStateControlInfo.Create(state, stateLabel, colorCombobox));
+    Inc(currentY, colorCombobox.Height + 8);
   end;
+end;
+
+
+procedure TButtonFunctionForm.btnOKClick(Sender: TObject);
+var
+  multiStateFunction: ILEDMultiStateFunction;
+  stateControlInfo: TStateControlInfo;
+  comboBox: TComboBox;
+  color: TLEDColor;
+
+begin
+  Button.ProviderUID := SelectedProvider.GetUID;
+  Button.FunctionUID := SelectedFunction.GetUID;
+
+  Button.ClearStateColors;
+  if Supports(SelectedFunction, ILEDMultiStateFunction, multiStateFunction) then
+  begin
+    for stateControlInfo in FStateControls do
+    begin
+      comboBox := stateControlInfo.ComboBox;
+      if comboBox.ItemIndex > -1 then
+      begin
+        color := TLEDColor(comboBox.Items.Objects[comboBox.ItemIndex]);
+        Button.SetStateColor(stateControlInfo.State.GetUID, color);
+      end;
+    end;
+  end;
+
+  ModalResult := mrOk;
 end;
 
 
@@ -251,21 +408,17 @@ begin
   begin
     nodeData := Sender.GetNodeData(Node);
 
-    case nodeData^.NodeType of
-      ntCategory:
-        begin
-          { Select first child (function) node instead }
-          functionNode := Sender.GetFirstChild(Node);
-          if not Assigned(functionNode) then
-            exit;
+    if nodeData^.NodeType = ntCategory then
+    begin
+      { Get first child (function) node instead }
+      functionNode := Sender.GetFirstChild(Node);
+      if not Assigned(functionNode) then
+        exit;
 
-          Sender.FocusedNode := functionNode;
-          Sender.Selected[functionNode] := True;
-        end;
-
-      ntFunction:
-        SetFunction(nodeData^.Provider, nodeData^.LEDFunction);
+      nodeData := Sender.GetNodeData(functionNode);
     end;
+
+    SetFunction(nodeData^.Provider, nodeData^.LEDFunction);
   end;
 end;
 
@@ -300,48 +453,23 @@ begin
 end;
 
 
-procedure TButtonFunctionForm.vstStatesGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
-                                               TextType: TVSTTextType; var CellText: string);
-var
-  nodeData: PStateNodeData;
-
+{ TStateControlInfo }
+constructor TStateControlInfo.Create(AState: ILEDState; AStateLabel: TLabel; AComboBox: TComboBox);
 begin
-  nodeData := Sender.GetNodeData(Node);
+  inherited Create;
 
-  case Column of
-    ColumnState:    CellText := nodeData^.State.GetDisplayName;
-    ColumnColour:   CellText := 'Red';
-  end;
+  FState := AState;
+  FStateLabel := AStateLabel;
+  FComboBox := AComboBox;
 end;
 
 
-procedure TButtonFunctionForm.vstStatesChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+destructor TStateControlInfo.Destroy;
 begin
-  if Assigned(Node) and not (tsIncrementalSearching in Sender.TreeStates) then
-    PostMessage(Self.Handle, WM_STARTEDITING, WPARAM(Node), 0);
-end;
+  FreeAndNil(FComboBox);
+  FreeAndNil(FStateLabel);
 
-
-procedure TButtonFunctionForm.vstStatesCreateEditor(Sender: TBaseVirtualTree; Node: PVirtualNode;
-                                                    Column: TColumnIndex; out EditLink: IVTEditLink);
-begin
-  EditLink := TVTColourEditor.Create;
-end;
-
-
-procedure TButtonFunctionForm.vstStatesEditing(Sender: TBaseVirtualTree;
-  Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
-begin
-  Allowed := True;
-end;
-
-procedure TButtonFunctionForm.WMStartEditing(var Msg: TMessage);
-var
-  node: PVirtualNode;
-
-begin
-  node := Pointer(Msg.WParam);
-  vstStates.EditNode(Node, 1);
+  inherited;
 end;
 
 end.

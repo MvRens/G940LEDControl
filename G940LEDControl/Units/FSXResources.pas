@@ -7,7 +7,7 @@ const
   FSXCategory = 'Flight Simulator X';
 
   FSXFunctionUIDGear = 'gear';
-    FSXFunctionDisplayNameGear = 'Gear';
+    FSXFunctionDisplayNameGear = 'Landing gear';
 
     FSXStateUIDGearRetracted = 'retracted';
     FSXStateUIDGearBetween = 'between';

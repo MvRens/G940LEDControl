@@ -1,10 +1,11 @@
 object ButtonFunctionForm: TButtonFunctionForm
   Left = 0
   Top = 0
+  ActiveControl = vstFunctions
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'Configure button'
-  ClientHeight = 401
+  ClientHeight = 484
   ClientWidth = 692
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,31 +19,53 @@ object ButtonFunctionForm: TButtonFunctionForm
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object pnlButtons: TPanel
+  object bvlHeader: TBevel
     Left = 0
-    Top = 360
+    Top = 50
     Width = 692
-    Height = 41
+    Height = 2
+    Align = alTop
+    Shape = bsTopLine
+    ExplicitTop = 41
+  end
+  object pnlButtons: TPanel
+    AlignWithMargins = True
+    Left = 0
+    Top = 441
+    Width = 692
+    Height = 43
+    Margins.Left = 0
+    Margins.Top = 8
+    Margins.Right = 0
+    Margins.Bottom = 0
     Align = alBottom
     BevelOuter = bvNone
-    TabOrder = 0
+    TabOrder = 2
     DesignSize = (
       692
-      41)
+      43)
+    object bvlFooter: TBevel
+      Left = 0
+      Top = 0
+      Width = 692
+      Height = 8
+      Align = alTop
+      Shape = bsTopLine
+    end
     object btnOK: TButton
       Left = 528
-      Top = 8
+      Top = 10
       Width = 75
       Height = 25
       Anchors = [akTop, akRight]
       Caption = 'OK'
       Default = True
-      ModalResult = 1
       TabOrder = 0
+      OnClick = btnOKClick
     end
     object btnCancel: TButton
       Left = 609
-      Top = 8
+      Top = 10
       Width = 75
       Height = 25
       Anchors = [akTop, akRight]
@@ -55,9 +78,9 @@ object ButtonFunctionForm: TButtonFunctionForm
   object vstFunctions: TVirtualStringTree
     AlignWithMargins = True
     Left = 8
-    Top = 8
+    Top = 60
     Width = 257
-    Height = 352
+    Height = 373
     Margins.Left = 8
     Margins.Top = 8
     Margins.Right = 0
@@ -70,7 +93,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     Header.Font.Name = 'Tahoma'
     Header.Font.Style = []
     Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
-    TabOrder = 1
+    TabOrder = 0
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoSort, toAutoTristateTracking, toAutoDeleteMovedNodes]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toWheelPanning, toEditOnClick]
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
@@ -78,7 +101,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     OnFocusChanged = vstFunctionsFocusChanged
     OnGetText = vstFunctionsGetText
     OnPaintText = vstFunctionsPaintText
-    ExplicitTop = 5
+    ExplicitHeight = 383
     Columns = <
       item
         Position = 0
@@ -89,61 +112,28 @@ object ButtonFunctionForm: TButtonFunctionForm
   object pnlFunction: TPanel
     AlignWithMargins = True
     Left = 273
-    Top = 8
+    Top = 60
     Width = 411
-    Height = 352
+    Height = 373
     Margins.Left = 8
     Margins.Top = 8
     Margins.Right = 8
     Margins.Bottom = 0
     Align = alClient
     BevelOuter = bvNone
-    TabOrder = 2
-    object vstStates: TVirtualStringTree
-      Left = 0
-      Top = 81
-      Width = 411
-      Height = 271
-      Align = alClient
-      Header.AutoSizeIndex = 0
-      Header.Font.Charset = DEFAULT_CHARSET
-      Header.Font.Color = clWindowText
-      Header.Font.Height = -11
-      Header.Font.Name = 'Tahoma'
-      Header.Font.Style = []
-      Header.MainColumn = 1
-      Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
-      TabOrder = 0
-      TreeOptions.MiscOptions = [toAcceptOLEDrop, toEditable, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
-      TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toThemeAware, toUseBlendedImages]
-      TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect]
-      OnChange = vstStatesChange
-      OnCreateEditor = vstStatesCreateEditor
-      OnEditing = vstStatesEditing
-      OnGetText = vstStatesGetText
-      Columns = <
-        item
-          Position = 0
-          Width = 207
-          WideText = 'State'
-        end
-        item
-          Position = 1
-          Width = 200
-          WideText = 'Colour'
-        end>
-    end
+    TabOrder = 1
+    ExplicitHeight = 383
     object pnlName: TPanel
       Left = 0
       Top = 0
       Width = 411
-      Height = 81
+      Height = 97
       Align = alTop
       BevelOuter = bvNone
-      TabOrder = 1
+      TabOrder = 0
       DesignSize = (
         411
-        81)
+        97)
       object lblFunctionName: TLabel
         Left = 0
         Top = 19
@@ -184,8 +174,7 @@ object ButtonFunctionForm: TButtonFunctionForm
         AutoSize = False
         Caption = 
           'This function provides the following states. Each state can be c' +
-          'ustomized by clicking on the state and changing the setting in t' +
-          'he Color column.'
+          'ustomized by changing the color below.'
         WordWrap = True
       end
       object lblNoStates: TLabel
@@ -196,6 +185,82 @@ object ButtonFunctionForm: TButtonFunctionForm
         Caption = 'This function has no configurable states.'
         Visible = False
       end
+    end
+    object sbStates: TScrollBox
+      Left = 0
+      Top = 97
+      Width = 411
+      Height = 276
+      Align = alClient
+      BorderStyle = bsNone
+      TabOrder = 1
+      ExplicitHeight = 286
+    end
+  end
+  object pnlHeader: TPanel
+    Left = 0
+    Top = 0
+    Width = 692
+    Height = 50
+    Align = alTop
+    BevelOuter = bvNone
+    Color = clWindow
+    ParentBackground = False
+    TabOrder = 3
+    DesignSize = (
+      692
+      50)
+    object lblButton: TLabel
+      Left = 8
+      Top = 13
+      Width = 24
+      Height = 23
+      Caption = 'P1'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -19
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object lblCurrentAssignment: TLabel
+      Left = 586
+      Top = 8
+      Width = 98
+      Height = 13
+      Alignment = taRightJustify
+      Anchors = [akTop, akRight]
+      Caption = 'Current assignment:'
+    end
+    object lblCurrentFunction: TLabel
+      Left = 587
+      Top = 27
+      Width = 97
+      Height = 13
+      Alignment = taRightJustify
+      Anchors = [akTop, akRight]
+      Caption = 'runtime: function'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object lblCurrentCategory: TLabel
+      Left = 478
+      Top = 27
+      Width = 86
+      Height = 13
+      Alignment = taRightJustify
+      Anchors = [akTop, akRight]
+      Caption = 'runtime: category'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clGrayText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
     end
   end
 end

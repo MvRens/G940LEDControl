@@ -3,6 +3,7 @@ unit StaticLEDFunction;
 interface
 uses
   LEDFunction,
+  LEDFunctionIntf,
   LEDColorIntf,
   LEDStateIntf;
 
@@ -19,13 +20,12 @@ type
   TStaticLEDFunction = class(TCustomLEDFunction)
   private
     FColor: TLEDColor;
-    FState: ILEDState;
   protected
     function GetCategoryName: string; override;
     function GetDisplayName: string; override;
     function GetUID: string; override;
 
-    function GetCurrentState: ILEDState; override;
+    function CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker; override;
   public
     constructor Create(AColor: TLEDColor);
   end;
@@ -39,13 +39,24 @@ uses
   StaticResources;
 
 
+type
+  TStaticLEDFunctionWorker = class(TCustomLEDFunctionWorker)
+  private
+    FState: ILEDStateWorker;
+  protected
+    function GetCurrentState: ILEDStateWorker; override;
+  public
+    constructor Create(AColor: TLEDColor);
+  end;
+
+
 { TStaticLEDFunctionProvider }
 procedure TStaticLEDFunctionProvider.RegisterFunctions;
 var
   color: TLEDColor;
 
 begin
-  for color := Low(TLEDColor) to High(TLEDColor) do
+  for color := Low(TStaticLEDColor) to High(TStaticLEDColor) do
     RegisterFunction(TStaticLEDFunction.Create(color));
 end;
 
@@ -83,14 +94,25 @@ begin
 end;
 
 
-function TStaticLEDFunction.GetCurrentState: ILEDState;
+function TStaticLEDFunction.CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker;
 begin
-  if not Assigned(FState) then
-    FState := TLEDState.Create('', '', TLEDColorPool.GetColor(FColor));
-
-  Result := FState;
+  Result := TStaticLEDFunctionWorker.Create(FColor);
 end;
 
+
+{ TStaticLEDFunctionWorker }
+constructor TStaticLEDFunctionWorker.Create(AColor: TLEDColor);
+begin
+  inherited Create;
+
+  FState := TLEDStateWorker.Create('', TLEDColorPool.GetColor(AColor));
+end;
+
+
+function TStaticLEDFunctionWorker.GetCurrentState: ILEDStateWorker;
+begin
+  Result := FState;
+end;
 
 
 initialization

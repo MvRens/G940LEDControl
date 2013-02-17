@@ -5,7 +5,6 @@ uses
   MainFrm in 'Forms\MainFrm.pas' {MainForm},
   LogiJoystickDLL in '..\Shared\LogiJoystickDLL.pas',
   SimConnect in '..\Shared\SimConnect.pas',
-  ButtonSelectFrm in 'Forms\ButtonSelectFrm.pas' {ButtonSelectForm},
   FSXLEDStateProvider in 'Units\FSXLEDStateProvider.pas',
   G940LEDStateConsumer in 'Units\G940LEDStateConsumer.pas',
   LEDFunctionMap in 'Units\LEDFunctionMap.pas',
@@ -26,11 +25,13 @@ uses
   Profile in 'Units\Profile.pas',
   LEDColorPool in 'Units\LEDColorPool.pas',
   ButtonFunctionFrm in 'Forms\ButtonFunctionFrm.pas' {ButtonFunctionForm},
-  FSXLEDFunction in 'Units\FSXLEDFunction.pas',
+  FSXLEDFunctionProvider in 'Units\FSXLEDFunctionProvider.pas',
   StaticResources in 'Units\StaticResources.pas',
   FSXResources in 'Units\FSXResources.pas',
   FSXSimConnectClient in 'Units\FSXSimConnectClient.pas',
-  ColourEditor in 'Units\ColourEditor.pas';
+  FSXSimConnectIntf in 'Units\FSXSimConnectIntf.pas',
+  FSXLEDFunction in 'Units\FSXLEDFunction.pas',
+  LEDResources in 'Units\LEDResources.pas';
 
 {$R *.res}
 

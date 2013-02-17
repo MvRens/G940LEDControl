@@ -7,7 +7,7 @@ uses
 
 const
   StaticProviderUID = 'static';
-  StaticFunctionUID: array[TLEDColor] of string =
+  StaticFunctionUID: array[TStaticLEDColor] of string =
                      (
                        'off',
                        'green',
@@ -17,7 +17,7 @@ const
 
 
   StaticCategory = 'Static';
-  StaticFunctionDisplayName: array[TLEDColor] of string =
+  StaticFunctionDisplayName: array[TStaticLEDColor] of string =
                              (
                                'Off',
                                'Green',

@@ -9,6 +9,8 @@ uses
 
 type
   ILEDFunction = interface;
+  ILEDFunctionWorker = interface;
+  ILEDFunctionWorkerSettings = interface;
   ILEDFunctionEnumerator = interface;
   ILEDStateEnumerator = interface;
 
@@ -22,19 +24,31 @@ type
   end;
 
 
-  ILEDFunction = interface(IObservable)
+  ILEDFunction = interface
     ['{7087067A-1016-4A7D-ACB1-BA1F388DAD6C}']
     function GetCategoryName: string;
     function GetDisplayName: string;
     function GetUID: string;
 
-    function GetCurrentState: ILEDState;
+    function CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker;
   end;
 
 
   ILEDMultiStateFunction = interface(ILEDFunction)
     ['{F16ADF7E-1C1C-4676-8D4F-135B68A80B52}']
     function GetEnumerator: ILEDStateEnumerator;
+  end;
+
+
+  ILEDFunctionWorker = interface(IObservable)
+    ['{5EF3230D-B52F-4BD6-8AD3-F3A035F155B1}']
+    function GetCurrentState: ILEDStateWorker;
+  end;
+
+
+  ILEDFunctionWorkerSettings = interface
+    ['{8FA287F6-9FE6-4A49-9C87-05C7F3F2B256}']
+    function GetStateColor(const AUID: string; out AColor: TLEDColor): Boolean;
   end;
 
 

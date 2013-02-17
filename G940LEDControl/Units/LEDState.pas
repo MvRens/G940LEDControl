@@ -7,33 +7,66 @@ uses
 
 
 type
-  TLEDState = class(TInterfacedObject, ILEDState)
+  TCustomLEDState = class(TInterfacedObject, ICustomLEDState)
+  private
+    FUID: string;
+  protected
+    { ICustomLEDState }
+    function GetUID: string;
+  public
+    constructor Create(const AUID: string);
+  end;
+
+
+  TLEDState = class(TCustomLEDState, ILEDState)
   private
     FDisplayName: string;
-    FUID: string;
-    FColor: ILEDColor;
+    FDefaultColor: TLEDColor;
   protected
     { ILEDState }
     function GetDisplayName: string;
-    function GetUID: string;
+    function GetDefaultColor: TLEDColor;
+  public
+    constructor Create(const AUID, ADisplayName: string; ADefaultColor: TLEDColor);
+  end;
 
+
+  TLEDStateWorker = class(TCustomLEDState, ILEDStateWorker)
+  private
+    FColor: ILEDColor;
+  protected
+    { ILEDStateWorker }
     function GetColor: ILEDColor;
   public
-    constructor Create(const AUID, ADisplayName: string; AColor: ILEDColor);
+    constructor Create(const AUID: string; AColor: ILEDColor);
   end;
 
 
 implementation
 
-{ TLEDState }
-constructor TLEDState.Create(const AUID, ADisplayName: string; AColor: ILEDColor);
+
+{ TCustomLEDState }
+constructor TCustomLEDState.Create(const AUID: string);
 begin
   inherited Create;
 
   FUID := AUID;
-  FDisplayName := ADisplayName;
+end;
 
-  FColor := AColor;
+
+function TCustomLEDState.GetUID: string;
+begin
+  Result := FUID;
+end;
+
+
+{ TLEDState }
+constructor TLEDState.Create(const AUID, ADisplayName: string; ADefaultColor: TLEDColor);
+begin
+  inherited Create(AUID);
+
+  FDisplayName := ADisplayName;
+  FDefaultColor := ADefaultColor;
 end;
 
 
@@ -43,13 +76,22 @@ begin
 end;
 
 
-function TLEDState.GetUID: string;
+function TLEDState.GetDefaultColor: TLEDColor;
 begin
-  Result := FUID;
+  Result := FDefaultColor;
 end;
 
 
-function TLEDState.GetColor: ILEDColor;
+{ TLEDStateWorker }
+constructor TLEDStateWorker.Create(const AUID: string; AColor: ILEDColor);
+begin
+  inherited Create(AUID);
+
+  FColor := AColor;
+end;
+
+
+function TLEDStateWorker.GetColor: ILEDColor;
 begin
   Result := FColor;
 end;

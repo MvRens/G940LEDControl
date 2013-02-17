@@ -28,27 +28,14 @@ type
   end;
 
 
-  TCustomLEDFunction = class(TInterfacedObject, IObservable, ILEDFunction)
-  private
-    FObservers: TInterfaceList;
+  TCustomLEDFunction = class(TInterfacedObject, ILEDFunction)
   protected
-    procedure NotifyObservers; virtual;
-
-    property Observers: TInterfaceList read FObservers;
-  protected
-    { IObservable }
-    procedure Attach(AObserver: IObserver); virtual;
-    procedure Detach(AObserver: IObserver); virtual;
-
     { ILEDFunction }
     function GetCategoryName: string; virtual; abstract;
     function GetDisplayName: string; virtual; abstract;
     function GetUID: string; virtual; abstract;
 
-    function GetCurrentState: ILEDState; virtual; abstract;
-  public
-    constructor Create;
-    destructor Destroy; override;
+    function CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker; virtual; abstract;
   end;
 
 
@@ -56,7 +43,6 @@ type
   private
     FStates: TInterfaceList;
   protected
-//    procedure SetCurrentState(AState: ILEDState); virtual;
     procedure RegisterStates; virtual; abstract;
     function RegisterState(AState: ILEDState): ILEDState; virtual;
   protected
@@ -64,6 +50,32 @@ type
     function GetEnumerator: ILEDStateEnumerator; virtual;
   public
     constructor Create;
+    destructor Destroy; override;
+  end;
+
+
+  TCustomLEDFunctionWorker = class(TInterfacedObject, ILEDFunctionWorker)
+  private
+    FObservers: TInterfaceList;
+    FStates: TInterfaceList;
+  protected
+    procedure RegisterStates(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings); virtual;
+    function FindState(const AUID: string): ILEDStateWorker; virtual;
+
+    procedure NotifyObservers; virtual;
+
+    property Observers: TInterfaceList read FObservers;
+    property States: TInterfaceList read FStates;
+  protected
+    { IObservable }
+    procedure Attach(AObserver: IObserver); virtual;
+    procedure Detach(AObserver: IObserver); virtual;
+
+    function GetCurrentState: ILEDStateWorker; virtual; abstract;
+  public
+    constructor Create; overload;
+    constructor Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings); overload;
+
     destructor Destroy; override;
   end;
 
@@ -97,36 +109,11 @@ type
 
 implementation
 uses
-  SysUtils;
+  System.SysUtils,
 
-
-{ TCustomLEDFunction }
-constructor TCustomLEDFunction.Create;
-begin
-  inherited Create;
-
-  FObservers := TInterfaceList.Create;
-end;
-
-
-destructor TCustomLEDFunction.Destroy;
-begin
-  FreeAndNil(FObservers);
-
-  inherited Destroy;
-end;
-
-
-procedure TCustomLEDFunction.Attach(AObserver: IObserver);
-begin
-  FObservers.Add(AObserver as IObserver);
-end;
-
-
-procedure TCustomLEDFunction.Detach(AObserver: IObserver);
-begin
-  FObservers.Remove(AObserver as IObserver);
-end;
+  LEDColorIntf,
+  LEDColorPool,
+  LEDState;
 
 
 { TCustomMultiStateLEDFunction }
@@ -160,14 +147,79 @@ begin
 end;
 
 
-//procedure TCustomMultiStateLEDFunction.SetCurrentState(AState: ILEDState);
-//begin
-//  FCurrentState := AState;
-//  NotifyObservers;
-//end;
+{ TCustomLEDFunctionWorker }
+constructor TCustomLEDFunctionWorker.Create;
+begin
+  inherited Create;
+
+  FObservers := TInterfaceList.Create;
+end;
 
 
-procedure TCustomLEDFunction.NotifyObservers;
+constructor TCustomLEDFunctionWorker.Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings);
+begin
+  Create;
+
+  FStates := TInterfaceList.Create;
+  RegisterStates(AStates, ASettings);
+end;
+
+
+destructor TCustomLEDFunctionWorker.Destroy;
+begin
+  FreeAndNil(FStates);
+  FreeAndNil(FObservers);
+
+  inherited Destroy;
+end;
+
+
+procedure TCustomLEDFunctionWorker.Attach(AObserver: IObserver);
+begin
+  { TInterfaceList is thread-safe }
+  Observers.Add(AObserver as IObserver);
+end;
+
+
+procedure TCustomLEDFunctionWorker.Detach(AObserver: IObserver);
+begin
+  Observers.Remove(AObserver as IObserver);
+end;
+
+
+procedure TCustomLEDFunctionWorker.RegisterStates(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings);
+var
+  state: ILEDState;
+  color: TLEDColor;
+
+begin
+  for state in AStates do
+  begin
+    if (not Assigned(ASettings)) or (not ASettings.GetStateColor(state.GetUID, color)) then
+      color := state.GetDefaultColor;
+
+    States.Add(TLEDStateWorker.Create(state.GetUID, TLEDColorPool.GetColor(color)));
+  end;
+end;
+
+
+function TCustomLEDFunctionWorker.FindState(const AUID: string): ILEDStateWorker;
+var
+  state: IInterface;
+
+begin
+  Result := nil;
+
+  for state in States do
+    if (state as ICustomLEDState).GetUID = AUID then
+    begin
+      Result := (state as ILEDStateWorker);
+      break;
+    end;
+end;
+
+
+procedure TCustomLEDFunctionWorker.NotifyObservers;
 var
   observer: IInterface;
 
