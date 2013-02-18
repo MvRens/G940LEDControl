@@ -13,7 +13,6 @@ uses
   LEDColorIntf in 'Units\LEDColorIntf.pas',
   LEDColor in 'Units\LEDColor.pas',
   LEDFunctionIntf in 'Units\LEDFunctionIntf.pas',
-  ObserverIntf in 'Units\ObserverIntf.pas',
   LEDFunction in 'Units\LEDFunction.pas',
   StaticLEDFunction in 'Units\StaticLEDFunction.pas',
   ConfigConversion in 'Units\ConfigConversion.pas',

@@ -3,8 +3,7 @@ unit LEDFunctionIntf;
 interface
 uses
   LEDColorIntf,
-  LEDStateIntf,
-  ObserverIntf;
+  LEDStateIntf;
 
 
 type
@@ -40,8 +39,17 @@ type
   end;
 
 
-  ILEDFunctionWorker = interface(IObservable)
+  ILEDFunctionObserver = interface
+    ['{B78415C9-9F64-4AF1-8983-BACE2B7225EF}']
+    procedure ObserveUpdate(Sender: ILEDFunctionWorker);
+  end;
+
+
+  ILEDFunctionWorker = interface
     ['{5EF3230D-B52F-4BD6-8AD3-F3A035F155B1}']
+    procedure Attach(AObserver: ILEDFunctionObserver);
+    procedure Detach(AObserver: ILEDFunctionObserver);
+
     function GetCurrentState: ILEDStateWorker;
   end;
 

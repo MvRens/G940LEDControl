@@ -173,7 +173,6 @@
 			<DCCReference Include="Units\LEDColorIntf.pas"/>
 			<DCCReference Include="Units\LEDColor.pas"/>
 			<DCCReference Include="Units\LEDFunctionIntf.pas"/>
-			<DCCReference Include="Units\ObserverIntf.pas"/>
 			<DCCReference Include="Units\LEDFunction.pas"/>
 			<DCCReference Include="Units\StaticLEDFunction.pas"/>
 			<DCCReference Include="Units\ConfigConversion.pas"/>

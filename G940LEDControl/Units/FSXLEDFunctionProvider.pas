@@ -8,8 +8,7 @@ uses
   FSXSimConnectIntf,
   LEDFunction,
   LEDFunctionIntf,
-  LEDStateIntf,
-  ObserverIntf;
+  LEDStateIntf;
 
 
 type
@@ -17,24 +16,21 @@ type
   TCustomFSXFunctionList = TObjectList<TCustomFSXFunction>;
 
 
-  TFSXLEDFunctionProvider = class(TCustomLEDFunctionProvider)
+  TFSXLEDFunctionProvider = class(TCustomLEDFunctionProvider, IFSXSimConnectObserver)
   private
-    FConnectedFunctions: TCustomFSXFunctionList;
-    FSimConnectHandle: THandle;
-  protected
-    procedure SimConnect;
-    procedure SimDisconnect;
-
-    procedure Connect(AFunction: TCustomFSXFunction); virtual;
-    procedure Disconnect(AFunction: TCustomFSXFunction); virtual;
-
-    property ConnectedFunctions: TCustomFSXFunctionList read FConnectedFunctions;
-    property SimConnectHandle: THandle read FSimConnectHandle;
+    FSimConnect: IFSXSimConnect;
+    FSimConnectLock: TCriticalSection;
   protected
     procedure RegisterFunctions; override;
 
     function GetUID: string; override;
+  protected
+    { IFSXSimConnectObserver }
+    procedure ObserveDestroy(Sender: IFSXSimConnect);
   public
+    constructor Create;
+    destructor Destroy; override;
+
     function GetSimConnect: IFSXSimConnect;
   end;
 
@@ -45,9 +41,6 @@ type
     FDisplayName: string;
     FUID: string;
   protected
-    procedure SimConnected; virtual;
-    procedure SimDisconnected; virtual;
-
     property Provider: TFSXLEDFunctionProvider read FProvider;
   protected
     function GetCategoryName: string; override;
@@ -58,7 +51,10 @@ type
   end;
 
 
-  TCustomFSXFunctionWorker = class(TCustomLEDFunctionWorker)
+  TCustomFSXFunctionClass = class of TCustomFSXFunction;
+
+
+  TCustomFSXFunctionWorker = class(TCustomLEDFunctionWorker, IFSXSimConnectDataHandler)
   private
     FSimConnect: IFSXSimConnect;
     FDefinition: IFSXSimConnectDefinition;
@@ -73,6 +69,9 @@ type
     property SimConnect: IFSXSimConnect read FSimConnect;
   protected
     function GetCurrentState: ILEDStateWorker; override;
+
+    { IFSXSimConnectDataHandler }
+    procedure HandleData(AData: Pointer); virtual; abstract;
   public
     constructor Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; ASimConnect: IFSXSimConnect);
     destructor Destroy; override;
@@ -85,15 +84,63 @@ uses
 
   FSXLEDFunction,
   FSXResources,
+  FSXSimConnectClient,
   LEDFunctionRegistry,
   SimConnect;
 
 
 
 { TFSXLEDFunctionProvider }
+constructor TFSXLEDFunctionProvider.Create;
+begin
+  inherited Create;
+
+  FSimConnectLock := TCriticalSection.Create;
+end;
+
+
+destructor TFSXLEDFunctionProvider.Destroy;
+begin
+  FreeAndNil(FSimConnectLock);
+
+  inherited Destroy;
+end;
+
+
 procedure TFSXLEDFunctionProvider.RegisterFunctions;
 begin
-  RegisterFunction(TFSXGearFunction.Create(Self, FSXFunctionDisplayNameGear, FSXFunctionUIDGear));
+  {
+  AConsumer.AddFunction(FUNCTION_FSX_CARBHEAT, 'Anti-ice');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT, 'Auto pilot (main)');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_AMBER, 'Auto pilot (main - off / amber)');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_ALTITUDE, 'Auto pilot - Altitude');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_APPROACH, 'Auto pilot - Approach');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_BACKCOURSE, 'Auto pilot - Backcourse');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_HEADING, 'Auto pilot - Heading');
+  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_NAV, 'Auto pilot - Nav');
+  AConsumer.AddFunction(FUNCTION_FSX_AVIONICSMASTER, 'Avionics master switch');
+  AConsumer.AddFunction(FUNCTION_FSX_BATTERYMASTER, 'Battery master switch');
+  AConsumer.AddFunction(FUNCTION_FSX_ENGINE, 'Engine');
+  AConsumer.AddFunction(FUNCTION_FSX_EXITDOOR, 'Exit door');
+  AConsumer.AddFunction(FUNCTION_FSX_FLAPS, 'Flaps');
+  AConsumer.AddFunction(FUNCTION_FSX_PARKINGBRAKE, 'Parking brake');
+  AConsumer.AddFunction(FUNCTION_FSX_PRESSURIZATIONDUMPSWITCH, 'Pressurization dump switch');
+  AConsumer.AddFunction(FUNCTION_FSX_SPOILERS, 'Spoilers (air brake)');
+  AConsumer.AddFunction(FUNCTION_FSX_TAILHOOK, 'Tail hook');
+  }
+
+  { Misc }
+  RegisterFunction(TFSXEngineFunction.Create(           Self, FSXFunctionDisplayNameEngine,             FSXFunctionUIDEngine));
+  RegisterFunction(TFSXGearFunction.Create(             Self, FSXFunctionDisplayNameGear,               FSXFunctionUIDGear));
+
+  { Lights }
+  RegisterFunction(TFSXBeaconLightsFunction.Create(     Self, FSXFunctionDisplayNameBeaconLights,       FSXFunctionUIDBeaconLights));
+  RegisterFunction(TFSXInstrumentLightsFunction.Create( Self, FSXFunctionDisplayNameInstrumentLights,   FSXFunctionUIDInstrumentLights));
+  RegisterFunction(TFSXLandingLightsFunction.Create(    Self, FSXFunctionDisplayNameLandingLights,      FSXFunctionUIDLandingLights));
+  RegisterFunction(TFSXNavLightsFunction.Create(        Self, FSXFunctionDisplayNameNavLights,          FSXFunctionUIDNavLights));
+  RegisterFunction(TFSXRecognitionLightsFunction.Create(Self, FSXFunctionDisplayNameRecognitionLights,  FSXFunctionUIDRecognitionLights));
+  RegisterFunction(TFSXStrobeLightsFunction.Create(     Self, FSXFunctionDisplayNameStrobeLights,       FSXFunctionUIDStrobeLights));
+  RegisterFunction(TFSXTaxiLightsFunction.Create(       Self, FSXFunctionDisplayNameTaxiLights,         FSXFunctionUIDTaxiLights));
 end;
 
 
@@ -103,54 +150,31 @@ begin
 end;
 
 
+procedure TFSXLEDFunctionProvider.ObserveDestroy(Sender: IFSXSimConnect);
+begin
+  FSimConnectLock.Acquire;
+  try
+    FSimConnect := nil;
+  finally
+    FSimConnectLock.Release;
+  end;
+end;
+
+
 function TFSXLEDFunctionProvider.GetSimConnect: IFSXSimConnect;
 begin
-  // TODO
-end;
+  FSimConnectLock.Acquire;
+  try
+    if not Assigned(FSimConnect) then
+    begin
+      FSimConnect := TFSXSimConnectInterface.Create;
+      FSimConnect.Attach(Self);
+    end;
 
-
-procedure TFSXLEDFunctionProvider.SimConnect;
-var
-  fsxFunction: TCustomFSXFunction;
-
-begin
-  if SimConnectHandle <> 0 then
-    exit;
-
-//  FSimConnectHandle :=
-
-  if SimConnectHandle <> 0 then
-  begin
-    for fsxFunction in ConnectedFunctions do
-      fsxFunction.SimConnected;
+    Result := FSimConnect;
+  finally
+    FSimConnectLock.Release;
   end;
-end;
-
-
-procedure TFSXLEDFunctionProvider.SimDisconnect;
-begin
-  if SimConnectHandle = 0 then
-    exit;
-end;
-
-
-procedure TFSXLEDFunctionProvider.Connect(AFunction: TCustomFSXFunction);
-begin
-  if ConnectedFunctions.IndexOf(AFunction) = -1 then
-  begin
-    ConnectedFunctions.Add(AFunction);
-
-    if ConnectedFunctions.Count > 0 then
-      SimConnect;
-  end;
-end;
-
-procedure TFSXLEDFunctionProvider.Disconnect(AFunction: TCustomFSXFunction);
-begin
-  ConnectedFunctions.Remove(AFunction);
-
-  if ConnectedFunctions.Count = 0 then
-    SimDisconnect;
 end;
 
 
@@ -183,16 +207,6 @@ begin
 end;
 
 
-procedure TCustomFSXFunction.SimConnected;
-begin
-end;
-
-
-procedure TCustomFSXFunction.SimDisconnected;
-begin
-end;
-
-
 { TCustomFSXFunctionWorker }
 constructor TCustomFSXFunctionWorker.Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; ASimConnect: IFSXSimConnect);
 begin
@@ -203,7 +217,9 @@ begin
 
   FDefinition := ASimConnect.CreateDefinition;
   RegisterVariables;
-  ASimConnect.AddDefinition(FDefinition);
+
+  // TODO pass self as callback for this definition
+  ASimConnect.AddDefinition(FDefinition, Self);
 end;
 
 

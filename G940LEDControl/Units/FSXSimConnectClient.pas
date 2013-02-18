@@ -2,20 +2,29 @@ unit FSXSimConnectClient;
 
 interface
 uses
+  Classes,
+
   OtlTaskControl,
 
   FSXSimConnectIntf;
+
 
 type
   TFSXSimConnectInterface = class(TInterfacedObject, IFSXSimConnect)
   private
     FClient: IOmniTaskControl;
+    FObservers: TInterfaceList;
   protected
     property Client: IOmniTaskControl read FClient;
+    property Observers: TInterfaceList read FObservers;
   protected
     { IFSXSimConnect }
+    procedure Attach(AObserver: IFSXSimConnectObserver);
+    procedure Detach(AObserver: IFSXSimConnectObserver);
+
     function CreateDefinition: IFSXSimConnectDefinition;
-    procedure AddDefinition(ADefinition: IFSXSimConnectDefinition);
+    procedure AddDefinition(ADefinition: IFSXSimConnectDefinition; ADataHandler: IFSXSimConnectDataHandler);
+    procedure RemoveDefinition(ADataHandler: IFSXSimConnectDataHandler);
   public
     constructor Create;
     destructor Destroy; override;
@@ -27,6 +36,11 @@ uses
   System.SysUtils,
 
   SimConnect;
+
+
+const
+  TM_ADDDEFINITION = 3001;
+  TM_REMOVEDEFINITION = 3002;
 
 
 type
@@ -58,15 +72,31 @@ var
 begin
   worker := TFSXSimConnectClient.Create;
   FClient := CreateTask(worker);
+
+  FObservers := TInterfaceList.Create;
 end;
 
 
 destructor TFSXSimConnectInterface.Destroy;
 begin
+  FreeAndNil(FObservers);
+
   FClient.Terminate;
   FClient := nil;
 
   inherited;
+end;
+
+
+procedure TFSXSimConnectInterface.Attach(AObserver: IFSXSimConnectObserver);
+begin
+  Observers.Add(AObserver as IFSXSimConnectObserver);
+end;
+
+
+procedure TFSXSimConnectInterface.Detach(AObserver: IFSXSimConnectObserver);
+begin
+  Observers.Remove(AObserver as IFSXSimConnectObserver);
 end;
 
 
@@ -76,9 +106,16 @@ begin
 end;
 
 
-procedure TFSXSimConnectInterface.AddDefinition(ADefinition: IFSXSimConnectDefinition);
+procedure TFSXSimConnectInterface.AddDefinition(ADefinition: IFSXSimConnectDefinition; ADataHandler: IFSXSimConnectDataHandler);
 begin
-  // TODO
+  Client.Comm.Send(TM_ADDDEFINITION, [ADefinition, ADataHandler]);
+  // TODO pass to thread; if definition already exists (same variables), link to existing definition to avoid too many SimConnect definition
+end;
+
+
+procedure TFSXSimConnectInterface.RemoveDefinition(ADataHandler: IFSXSimConnectDataHandler);
+begin
+  Client.Comm.Send(TM_REMOVEDEFINITION, ADataHandler);
 end;
 
 

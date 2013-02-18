@@ -5,11 +5,14 @@ uses
   Classes,
 
   LEDFunctionIntf,
-  LEDStateIntf,
-  ObserverIntf;
+  LEDStateIntf;
 
 
 type
+  TCustomLEDFunctionWorker = class;
+  TCustomLEDFunctionWorkerClass = class of TCustomLEDFunctionWorker;
+
+
   TCustomLEDFunctionProvider = class(TInterfacedObject, ILEDFunctionProvider)
   private
     FFunctions: TInterfaceList;
@@ -45,7 +48,12 @@ type
   protected
     procedure RegisterStates; virtual; abstract;
     function RegisterState(AState: ILEDState): ILEDState; virtual;
+
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; virtual; abstract;
+    function DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker; virtual;
   protected
+    function CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker; override;
+
     { ILEDMultiStateFunction }
     function GetEnumerator: ILEDStateEnumerator; virtual;
   public
@@ -67,9 +75,9 @@ type
     property Observers: TInterfaceList read FObservers;
     property States: TInterfaceList read FStates;
   protected
-    { IObservable }
-    procedure Attach(AObserver: IObserver); virtual;
-    procedure Detach(AObserver: IObserver); virtual;
+    { ILEDFunctionWorker }
+    procedure Attach(AObserver: ILEDFunctionObserver); virtual;
+    procedure Detach(AObserver: ILEDFunctionObserver); virtual;
 
     function GetCurrentState: ILEDStateWorker; virtual; abstract;
   public
@@ -147,6 +155,18 @@ begin
 end;
 
 
+function TCustomMultiStateLEDFunction.CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker;
+begin
+  Result := DoCreateWorker(ASettings);
+end;
+
+
+function TCustomMultiStateLEDFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker;
+begin
+  Result := GetWorkerClass.Create(Self, ASettings);
+end;
+
+
 { TCustomLEDFunctionWorker }
 constructor TCustomLEDFunctionWorker.Create;
 begin
@@ -174,16 +194,16 @@ begin
 end;
 
 
-procedure TCustomLEDFunctionWorker.Attach(AObserver: IObserver);
+procedure TCustomLEDFunctionWorker.Attach(AObserver: ILEDFunctionObserver);
 begin
   { TInterfaceList is thread-safe }
-  Observers.Add(AObserver as IObserver);
+  Observers.Add(AObserver as ILEDFunctionObserver);
 end;
 
 
-procedure TCustomLEDFunctionWorker.Detach(AObserver: IObserver);
+procedure TCustomLEDFunctionWorker.Detach(AObserver: ILEDFunctionObserver);
 begin
-  Observers.Remove(AObserver as IObserver);
+  Observers.Remove(AObserver as ILEDFunctionObserver);
 end;
 
 
@@ -225,7 +245,7 @@ var
 
 begin
   for observer in Observers do
-    (observer as IObserver).Update(Self);
+    (observer as ILEDFunctionObserver).ObserveUpdate(Self);
 end;
 
 
