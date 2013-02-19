@@ -8,16 +8,17 @@ uses
 
 
 type
-  TCustomLEDColor = class(TInterfacedObject, ILEDColor)
+  TCustomLEDStateColor = class(TInterfacedObject, ILEDStateColor)
   protected
     { ILEDState }
-    function GetColor: TLEDColor; virtual; abstract;
+    function GetCurrentColor: TStaticLEDColor; virtual; abstract;
   end;
 
 
-  TCustomDynamicLEDColor = class(TCustomLEDColor, IDynamicLEDColor)
+  TCustomLEDStateDynamicColor = class(TCustomLEDStateColor, ILEDStateDynamicColor)
   protected
     { ITickLEDState }
+    procedure Reset; virtual; abstract;
     procedure Tick; virtual; abstract;
   end;
 

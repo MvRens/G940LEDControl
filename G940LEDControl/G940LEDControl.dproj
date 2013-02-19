@@ -165,11 +165,8 @@
 			</DCCReference>
 			<DCCReference Include="..\Shared\LogiJoystickDLL.pas"/>
 			<DCCReference Include="..\Shared\SimConnect.pas"/>
-			<DCCReference Include="Units\FSXLEDStateProvider.pas"/>
 			<DCCReference Include="Units\G940LEDStateConsumer.pas"/>
-			<DCCReference Include="Units\LEDFunctionMap.pas"/>
 			<DCCReference Include="Units\LEDStateConsumer.pas"/>
-			<DCCReference Include="Units\LEDStateProvider.pas"/>
 			<DCCReference Include="Units\LEDColorIntf.pas"/>
 			<DCCReference Include="Units\LEDColor.pas"/>
 			<DCCReference Include="Units\LEDFunctionIntf.pas"/>

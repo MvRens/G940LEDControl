@@ -21,7 +21,7 @@ type
 
   ILEDStateWorker = interface(ICustomLEDState)
     ['{0361CBD5-E64E-4972-A8A4-D5FE0B0DFB1C}']
-    function GetColor: ILEDColor;
+    function GetColor: ILEDStateColor;
   end;
 
 

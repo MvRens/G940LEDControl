@@ -7,13 +7,13 @@ uses
 
 
 type
-  TStaticLEDColor = class(TCustomLEDColor)
+  TLEDStateStaticColor = class(TCustomLEDStateColor)
   private
-    FColor: TLEDColor;
+    FColor: TStaticLEDColor;
   protected
-    function GetColor: TLEDColor; override;
+    function GetCurrentColor: TStaticLEDColor; override;
   public
-    constructor Create(AColor: TLEDColor);
+    constructor Create(AColor: TStaticLEDColor);
   end;
 
 
@@ -21,7 +21,7 @@ implementation
 
 
 { TStaticLEDState }
-constructor TStaticLEDColor.Create(AColor: TLEDColor);
+constructor TLEDStateStaticColor.Create(AColor: TStaticLEDColor);
 begin
   inherited Create;
 
@@ -29,7 +29,7 @@ begin
 end;
 
 
-function TStaticLEDColor.GetColor: TLEDColor;
+function TLEDStateStaticColor.GetCurrentColor: TStaticLEDColor;
 begin
   Result := FColor;
 end;

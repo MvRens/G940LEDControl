@@ -3,6 +3,7 @@ unit Profile;
 interface
 uses
   Generics.Collections,
+  System.Classes,
 
   X2UtPersistIntf,
 
@@ -12,7 +13,7 @@ uses
 type
   TProfileButtonStateColors = TDictionary<string,TLEDColor>;
 
-  TProfileButton = class(TObject)
+  TProfileButton = class(TPersistent)
   private
     FProviderUID: string;
     FFunctionUID: string;
@@ -39,7 +40,7 @@ type
   TProfileButtonList = class(TObjectList<TProfileButton>);
 
 
-  TProfile = class(TObject)
+  TProfile = class(TPersistent)
   private
     FName: string;
     FButtons: TProfileButtonList;
@@ -71,8 +72,7 @@ type
 
 implementation
 uses
-  Classes,
-  SysUtils,
+  System.SysUtils,
 
   LEDResources;
 

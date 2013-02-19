@@ -12,23 +12,24 @@ const
 
 
 type
-  TLEDColorDynArray = array of TLEDColor;
+  TStaticLEDColorDynArray = array of TStaticLEDColor;
 
 
-  TDynamicLEDColor = class(TCustomDynamicLEDColor)
+  TDynamicLEDColor = class(TCustomLEDStateDynamicColor)
   private
-    FCycleColors: TLEDColorDynArray;
+    FCycleColors: TStaticLEDColorDynArray;
     FCycleIndex: Integer;
     FTickInterval: Integer;
     FTickCount: Integer;
   protected
     { ILEDState }
-    function GetColor: TLEDColor; override;
+    function GetCurrentColor: TStaticLEDColor; override;
 
     { ITickLEDState }
+    procedure Reset; override;
     procedure Tick; override;
   public
-    constructor Create(ACycleColors: TLEDColorDynArray; ATickInterval: Integer = TICKINTERVAL_NORMAL);
+    constructor Create(ACycleColors: TStaticLEDColorDynArray; ATickInterval: Integer = TICKINTERVAL_NORMAL);
   end;
 
 
@@ -39,7 +40,7 @@ uses
 
 
 { TDynamicLEDState }
-constructor TDynamicLEDColor.Create(ACycleColors: TLEDColorDynArray; ATickInterval: Integer);
+constructor TDynamicLEDColor.Create(ACycleColors: TStaticLEDColorDynArray; ATickInterval: Integer);
 begin
   inherited Create;
 
@@ -49,13 +50,19 @@ begin
   FCycleColors := ACycleColors;
   FCycleIndex := Low(FCycleColors);
   FTickInterval := ATickInterval;
-  FTickCount := 0;
+  Reset;
 end;
 
 
-function TDynamicLEDColor.GetColor: TLEDColor;
+function TDynamicLEDColor.GetCurrentColor: TStaticLEDColor;
 begin
   Result := FCycleColors[FCycleIndex];
+end;
+
+
+procedure TDynamicLEDColor.Reset;
+begin
+  FCycleIndex := 0;
 end;
 
 

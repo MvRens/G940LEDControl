@@ -8,45 +8,30 @@ uses
   OtlComm,
   OtlTaskControl,
 
-  LEDFunctionMap,
-  LEDStateConsumer,
-  LEDStateProvider;
+  LEDStateConsumer;
 
 
 const
-  MSG_FINDTHROTTLEDEVICE = MSG_CONSUMER_OFFSET + 1;
-  MSG_NOTIFY_DEVICESTATE = MSG_CONSUMER_OFFSET + 2;
-  MSG_TIMER_BLINK = MSG_CONSUMER_OFFSET + 3;
+  TM_FINDTHROTTLEDEVICE = 2001;
+  TM_NOTIFY_DEVICESTATE = 2002;
 
-  TIMER_BLINK = TIMER_CONSUMER_OFFSET + 1;
 
 type
   TG940LEDStateConsumer = class(TLEDStateConsumer)
   private
     FDirectInput: IDirectInput8;
     FThrottleDevice: IDirectInputDevice8;
-
-    FRed: Byte;
-    FGreen: Byte;
-
-    FBlinkTimerStarted: Boolean;
-    FBlinkCounter: Integer;
   protected
-    procedure MsgFindThrottleDevice(var msg: TOmniMessage); message MSG_FINDTHROTTLEDEVICE;
-    procedure MsgTimerBlink(var msg: TOmniMessage); message MSG_TIMER_BLINK;
+    procedure MsgFindThrottleDevice(var msg: TOmniMessage); message TM_FINDTHROTTLEDEVICE;
   protected
     function Initialize: Boolean; override;
-    procedure ResetLEDState; override;
-    procedure LEDStateChanged(ALEDIndex: Integer; AState: TLEDState); override;
-    procedure Changed; override;
-
-    procedure StartBlinkTimer;
-    procedure StopBlinkTimer;
 
     procedure FindThrottleDevice;
     procedure FoundThrottleDevice(ADeviceGUID: TGUID);
 
     procedure SetDeviceState(AState: Integer);
+
+    procedure Update; override;
 
     property DirectInput: IDirectInput8 read FDirectInput;
     property ThrottleDevice: IDirectInputDevice8 read FThrottleDevice;
@@ -58,8 +43,8 @@ const
   DEVICESTATE_FOUND = 1;
   DEVICESTATE_NOTFOUND = 2;
 
-  EXIT_ERROR_LOGIJOYSTICKDLL = EXIT_CONSUMER_OFFSET + 1;
-  EXIT_ERROR_DIRECTINPUT = EXIT_CONSUMER_OFFSET + 2;
+  EXIT_ERROR_LOGIJOYSTICKDLL = 9001;
+  EXIT_ERROR_DIRECTINPUT = 9002;
 
   
 implementation
@@ -68,15 +53,18 @@ uses
   Windows,
 
   OtlCommon,
+  OtlTask,
 
+  LEDColorIntf,
   LogiJoystickDLL;
 
 
-
 const
-  BLINK_INTERVAL = 500;
+  G940_BUTTONCOUNT = 8;
 
 
+
+(*
 type
   TRunInMainThreadSetLEDs = class(TOmniWaitableValue, IRunInMainThread)
   private
@@ -89,6 +77,7 @@ type
   public
     constructor Create(ADevice: IDirectInputDevice8; ARed, AGreen: Byte);
   end;
+*)
 
 
 function EnumDevicesProc(var lpddi: TDIDeviceInstanceW; pvRef: Pointer): BOOL; stdcall;
@@ -134,10 +123,11 @@ begin
   end;
 
   Result := True;
-  Task.Comm.OtherEndpoint.Send(MSG_FINDTHROTTLEDEVICE);
+  Task.Comm.OtherEndpoint.Send(TM_FINDTHROTTLEDEVICE);
 end;
 
 
+{
 procedure TG940LEDStateConsumer.ResetLEDState;
 begin
   FRed := 0;
@@ -200,36 +190,18 @@ begin
   inherited;
 end;
 
+}
 
+{
 procedure TG940LEDStateConsumer.Changed;
 begin
   inherited;
 
   if Assigned(ThrottleDevice) then
-    { Logitech SDK will not change the color outside of the main thread }
+    { Logitech SDK will not change the color outside of the main thread
     RunInMainThread(TRunInMainThreadSetLEDs.Create(ThrottleDevice, FRed, FGreen), Destroying);
 end;
-
-
-procedure TG940LEDStateConsumer.StartBlinkTimer;
-begin
-  if FBlinkTimerStarted then
-    exit;
-
-  FBlinkCounter := 0;
-  Task.SetTimer(TIMER_BLINK, BLINK_INTERVAL, MSG_TIMER_BLINK);
-  FBlinkTimerStarted := True;
-end;
-
-
-procedure TG940LEDStateConsumer.StopBlinkTimer;
-begin
-  if not FBlinkTimerStarted then
-    exit;
-
-  Task.ClearTimer(TIMER_BLINK);
-  FBlinkTimerStarted := False;
-end;
+}
 
 
 procedure TG940LEDStateConsumer.FindThrottleDevice;
@@ -243,7 +215,7 @@ begin
   if not Assigned(ThrottleDevice) then
     SetDeviceState(DEVICESTATE_NOTFOUND)
   else
-    Changed;
+    Update;
 end;
 
 
@@ -256,7 +228,54 @@ end;
 
 procedure TG940LEDStateConsumer.SetDeviceState(AState: Integer);
 begin
-  Task.Comm.Send(MSG_NOTIFY_DEVICESTATE, AState);
+  Task.Comm.Send(TM_NOTIFY_DEVICESTATE, AState);
+end;
+
+
+procedure TG940LEDStateConsumer.Update;
+
+  procedure SetBit(var AMask: Byte; ABit: Integer); inline;
+  begin
+    AMask := AMask or (1 shl ABit)
+  end;
+
+
+var
+  red: Byte;
+  green: Byte;
+  buttonIndex: Integer;
+  buttonColor: TStaticLEDColor;
+
+begin
+  if not Assigned(ThrottleDevice) then
+    exit;
+
+  red := 0;
+  green := 0;
+
+  for buttonIndex := 0 to Pred(G940_BUTTONCOUNT) do
+  begin
+    if buttonIndex >= ButtonColors.Count then
+      buttonColor := lcOff
+    else
+      buttonColor := (ButtonColors[buttonIndex] as ILEDStateColor).GetCurrentColor;
+
+    case buttonColor of
+      lcGreen:
+        SetBit(green, buttonIndex);
+
+      lcAmber:
+        begin
+          SetBit(green, buttonIndex);
+          SetBit(red, buttonIndex);
+        end;
+
+      lcRed:
+        SetBit(red, buttonIndex);
+    end;
+  end;
+
+  SetLEDs(ThrottleDevice, red, green);
 end;
 
 
@@ -266,52 +285,8 @@ begin
 end;
 
 
-procedure TG940LEDStateConsumer.MsgTimerBlink(var msg: TOmniMessage);
-var
-  warningState: TLEDState;
-  errorState: TLEDState;
-  ledIndex: Integer;
-  state: TLEDState;
-
-begin
-  Inc(FBlinkCounter);
-  if FBlinkCounter > 3 then
-    FBlinkCounter := 0;
-
-  warningState := lsOff;
-  errorState := lsOff;
-
-  { Error lights blink twice as fast }
-  if (FBlinkCounter in [0, 1]) then
-    warningState := lsAmber;
-
-  if (FBlinkCounter in [0, 2]) then
-    errorState := lsRed;
-
-  if StateMap.FindFirst([lsWarning, lsError], ledIndex, state) then
-  begin
-    BeginUpdate;
-    try
-      repeat
-        case state of
-          lsWarning:
-            if StateMap.GetState(ledIndex) <> warningState then
-              LEDStateChanged(ledIndex, warningState);
-
-          lsError:
-            if StateMap.GetState(ledIndex) <> errorState then
-              LEDStateChanged(ledIndex, errorState);
-        end;
-      until not StateMap.FindNext([lsWarning, lsError], ledIndex, state);
-    finally
-      EndUpdate;
-    end;
-  end else
-    StopBlinkTimer;
-end;
-
-
 { TRunInMainThreadSetLEDs }
+(*
 constructor TRunInMainThreadSetLEDs.Create(ADevice: IDirectInputDevice8; ARed, AGreen: Byte);
 begin
   inherited Create;
@@ -326,5 +301,6 @@ procedure TRunInMainThreadSetLEDs.Execute;
 begin
   SetLEDs(FDevice, FRed, FGreen);
 end;
+*)
 
 end.

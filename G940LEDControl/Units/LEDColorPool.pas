@@ -8,13 +8,13 @@ uses
 type
   TLEDColorPool = class(TObject)
   private
-    FStates: array[TLEDColor] of ILEDColor;
+    FStates: array[TLEDColor] of ILEDStateColor;
   protected
     class function Instance: TLEDColorPool;
 
-    function DoGetColor(AColor: TLEDColor): ILEDColor;
+    function DoGetColor(AColor: TLEDColor): ILEDStateColor;
   public
-    class function GetColor(AColor: TLEDColor): ILEDColor; overload;
+    class function GetColor(AColor: TLEDColor): ILEDStateColor; overload;
   end;
 
 
@@ -31,7 +31,7 @@ var
 
 
 { TLEDStatePool }
-class function TLEDColorPool.GetColor(AColor: TLEDColor): ILEDColor;
+class function TLEDColorPool.GetColor(AColor: TLEDColor): ILEDStateColor;
 begin
   Result := Instance.DoGetColor(AColor);
 end;
@@ -46,9 +46,9 @@ begin
 end;
 
 
-function TLEDColorPool.DoGetColor(AColor: TLEDColor): ILEDColor;
+function TLEDColorPool.DoGetColor(AColor: TLEDColor): ILEDStateColor;
 
-  function GetFlashingCycle(AColor: TLEDColor): TLEDColorDynArray;
+  function GetFlashingCycle(AColor: TLEDColor): TStaticLEDColorDynArray;
   begin
     SetLength(Result, 2);
     Result[0] := AColor;
@@ -56,16 +56,16 @@ function TLEDColorPool.DoGetColor(AColor: TLEDColor): ILEDColor;
   end;
 
 var
-  state: ILEDColor;
+  state: ILEDStateColor;
 
 begin
   if not Assigned(FStates[AColor]) then
   begin
     case AColor of
-      lcOff:                  state := TStaticLEDColor.Create(lcOff);
-      lcGreen:                state := TStaticLEDColor.Create(lcGreen);
-      lcAmber:                state := TStaticLEDColor.Create(lcAmber);
-      lcRed:                  state := TStaticLEDColor.Create(lcRed);
+      lcOff:                  state := TLEDStateStaticColor.Create(lcOff);
+      lcGreen:                state := TLEDStateStaticColor.Create(lcGreen);
+      lcAmber:                state := TLEDStateStaticColor.Create(lcAmber);
+      lcRed:                  state := TLEDStateStaticColor.Create(lcRed);
 
       lcFlashingGreenFast:    state := TDynamicLEDColor.Create(GetFlashingCycle(lcGreen), TICKINTERVAL_FAST);
       lcFlashingGreenNormal:  state := TDynamicLEDColor.Create(GetFlashingCycle(lcGreen), TICKINTERVAL_NORMAL);

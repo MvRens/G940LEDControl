@@ -19,9 +19,7 @@ uses
   pngimage,
   X2UtPersistIntf,
 
-  LEDFunctionMap,
   LEDStateConsumer,
-  LEDStateProvider,
   Profile;
 
 
@@ -95,7 +93,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure btnRetryClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure FunctionComboBoxChange(Sender: TObject);
     procedure lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
     procedure btnCheckUpdatesClick(Sender: TObject);
     procedure LEDButtonClick(Sender: TObject);
@@ -109,15 +106,8 @@ type
     FProfiles: TProfileList;
     FActiveProfile: TProfile;
     FLoadingProfiles: Boolean;
-//    FStateConsumerTask: IOmniTaskControl;
+    FStateConsumerTask: IOmniTaskControl;
   protected
-//    procedure ReadFunctions(AReader: IX2PersistReader; AComboBoxes: TComboBoxArray);
-//    procedure ReadFSXExtra(AReader: IX2PersistReader);
-//    procedure ReadAutoUpdate(AReader: IX2PersistReader);
-//    procedure WriteFunctions(AWriter: IX2PersistWriter; AComboBoxes: TComboBoxArray);
-//    procedure WriteFSXExtra(AWriter: IX2PersistWriter);
-//    procedure WriteAutoUpdate(AWriter: IX2PersistWriter);
-
     procedure FindLEDControls;
     procedure LoadProfiles;
     procedure SaveProfiles;
@@ -128,11 +118,6 @@ type
 
     procedure SetDeviceState(const AMessage: string; AFound: Boolean);
 //    procedure SetFSXToggleZoomButton(const ADeviceGUID: TGUID; AButtonIndex: Integer; const ADisplayText: string);
-
-//    procedure InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
-//    procedure FinalizeStateProvider;
-
-//    procedure UpdateMapping;
 
     procedure CheckForUpdatesThread(const ATask: IOmniTask);
     procedure CheckForUpdates(AReportNoUpdates: Boolean);
@@ -150,7 +135,7 @@ type
     property ActiveProfile: TProfile read FActiveProfile;
     property EventMonitor: TOmniEventMonitor read FEventMonitor;
     property Profiles: TProfileList read FProfiles;
-//    property StateConsumerTask: IOmniTaskControl read FStateConsumerTask;
+    property StateConsumerTask: IOmniTaskControl read FStateConsumerTask;
   end;
 
 
@@ -170,7 +155,6 @@ uses
 
   ButtonFunctionFrm,
   ConfigConversion,
-  FSXLEDStateProvider,
   G940LEDStateConsumer,
   LEDColorIntf,
   LEDFunctionIntf,
@@ -193,28 +177,13 @@ const
   TEXT_STATE_FOUND = 'Connected';
 
 
-type
-  TComboBoxFunctionConsumer = class(TInterfacedObject, IFunctionConsumer)
-  private
-    FComboBox: TComboBoxEx;
-  protected
-    { IFunctionConsumer }
-    procedure SetCategory(const ACategory: string);
-    procedure AddFunction(AFunction: Integer; const ADescription: string);
-
-    property ComboBox: TComboBoxEx read FComboBox;
-  public
-    constructor Create(AComboBox: TComboBoxEx);
-  end;
-
-
 
 
 { TMainForm }
 procedure TMainForm.FormCreate(Sender: TObject);
-//var
-//  consumer: IOmniWorker;
-//
+var
+  consumer: IOmniWorker;
+
 begin
   lblVersion.Caption := App.Version.FormatVersion(False);
 
@@ -222,12 +191,12 @@ begin
 
   FEventMonitor := TOmniEventMonitor.Create(Self);
 
-//  consumer := TG940LEDStateConsumer.Create;
-//  FStateConsumerTask := FEventMonitor.Monitor(CreateTask(consumer)).MsgWait;
+  consumer := TG940LEDStateConsumer.Create;
+  FStateConsumerTask := FEventMonitor.Monitor(CreateTask(consumer)).MsgWait;
 
   EventMonitor.OnTaskMessage := EventMonitorMessage;
   EventMonitor.OnTaskTerminated := EventMonitorTerminated;
-//  StateConsumerTask.Run;
+  StateConsumerTask.Run;
 
   FindLEDControls;
 
@@ -235,6 +204,7 @@ begin
   FProfiles := TProfileList.Create(True);
   LoadProfiles;
 
+  FStateConsumerTask.Comm.Send(TM_LOADPROFILE, ActiveProfile);
 //  LoadFunctions(TFSXLEDStateProvider, FFSXComboBoxes);
 //  LoadDefaultProfile;
 end;
@@ -549,6 +519,7 @@ begin
   if TButtonFunctionForm.Execute(ActiveProfile, buttonIndex) then
   begin
     UpdateButton(ActiveProfile, buttonIndex);
+    FStateConsumerTask.Comm.Send(TM_LOADPROFILE, ActiveProfile);
     SaveProfiles;
   end;
 end;
@@ -657,20 +628,20 @@ end;
 procedure TMainForm.EventMonitorMessage(const task: IOmniTaskControl; const msg: TOmniMessage);
 begin
   case msg.MsgID of
-    MSG_NOTIFY_DEVICESTATE:   HandleDeviceStateMessage(task, msg);
-    MSG_RUN_IN_MAINTHREAD:    HandleRunInMainThreadMessage(task, msg);
-    MSG_PROVIDER_KILLED:      HandleProviderKilled(task, msg);
+    TM_NOTIFY_DEVICESTATE:   HandleDeviceStateMessage(task, msg);
+//    MSG_RUN_IN_MAINTHREAD:    HandleRunInMainThreadMessage(task, msg);
+//    MSG_PROVIDER_KILLED:      HandleProviderKilled(task, msg);
 
     MSG_UPDATE:
       if MessageBox(Self.Handle, 'An update is available on the G940 LED Control website.'#13#10'Do you want to go there now?',
                                  'Update available', MB_YESNO or MB_ICONINFORMATION) = ID_YES then
         ShellExecute(Self.Handle, 'open', PChar('http://g940.x2software.net/#download'), nil, nil, SW_SHOWNORMAL);
 
-    MSG_NOUPDATE:
-      if msg.MsgData.AsBoolean then
-        MessageBox(Self.Handle, 'You are using the latest version.', 'No update available', MB_OK or MB_ICONINFORMATION)
-      else
-        MessageBox(Self.Handle, 'Failed to check for updates. Maybe try again later?', 'Uh-oh', MB_OK or MB_ICONWARNING);
+//    MSG_NOUPDATE:
+//      if msg.MsgData.AsBoolean then
+//        MessageBox(Self.Handle, 'You are using the latest version.', 'No update available', MB_OK or MB_ICONINFORMATION)
+//      else
+//        MessageBox(Self.Handle, 'Failed to check for updates. Maybe try again later?', 'Uh-oh', MB_OK or MB_ICONWARNING);
   end;
 end;
 
@@ -748,53 +719,9 @@ begin
 end;
 
 
-procedure TMainForm.FunctionComboBoxChange(Sender: TObject);
-var
-  comboBox: TComboBoxEx;
-
-begin
-  comboBox := TComboBoxEx(Sender);
-  if comboBox.ItemIndex > -1 then
-  begin
-    if not Assigned(comboBox.ItemsEx[comboBox.ItemIndex].Data) then
-      comboBox.ItemIndex := Succ(comboBox.ItemIndex);
-  end;
-end;
-
-
 procedure TMainForm.lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
 begin
   ShellExecute(Self.Handle, 'open', PChar(Link), nil, nil, SW_SHOWNORMAL);
-end;
-
-
-{ TComboBoxFunctionConsumer }
-constructor TComboBoxFunctionConsumer.Create(AComboBox: TComboBoxEx);
-begin
-  inherited Create;
-
-  FComboBox := AComboBox;
-end;
-
-
-procedure TComboBoxFunctionConsumer.SetCategory(const ACategory: string);
-begin
-  with ComboBox.ItemsEx.Add do
-  begin
-    Caption := ACategory;
-    Data := nil;
-  end;
-end;
-
-
-procedure TComboBoxFunctionConsumer.AddFunction(AFunction: Integer; const ADescription: string);
-begin
-  with ComboBox.ItemsEx.Add do
-  begin
-    Caption := ADescription;
-    Indent := 1;
-    Data := Pointer(AFunction);
-  end;
 end;
 
 end.

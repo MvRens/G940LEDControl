@@ -33,12 +33,12 @@ type
 
   TLEDStateWorker = class(TCustomLEDState, ILEDStateWorker)
   private
-    FColor: ILEDColor;
+    FColor: ILEDStateColor;
   protected
     { ILEDStateWorker }
-    function GetColor: ILEDColor;
+    function GetColor: ILEDStateColor;
   public
-    constructor Create(const AUID: string; AColor: ILEDColor);
+    constructor Create(const AUID: string; AColor: ILEDStateColor);
   end;
 
 
@@ -83,7 +83,7 @@ end;
 
 
 { TLEDStateWorker }
-constructor TLEDStateWorker.Create(const AUID: string; AColor: ILEDColor);
+constructor TLEDStateWorker.Create(const AUID: string; AColor: ILEDStateColor);
 begin
   inherited Create(AUID);
 
@@ -91,7 +91,7 @@ begin
 end;
 
 
-function TLEDStateWorker.GetColor: ILEDColor;
+function TLEDStateWorker.GetColor: ILEDStateColor;
 begin
   Result := FColor;
 end;
