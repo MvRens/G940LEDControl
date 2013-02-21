@@ -202,7 +202,6 @@ begin
 
   FreeAndNil(FObservers);
 
-  // TODO this doesn't get triggered yet. The connection is killed fine, but not because of us. Needs work.
   FClient.Terminate;
   FClient := nil;
 
