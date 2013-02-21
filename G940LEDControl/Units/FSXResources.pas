@@ -2,6 +2,8 @@ unit FSXResources;
 
 interface
 const
+  FSXSimConnectAppName = 'G940 LED Control';
+
   FSXProviderUID = 'fsx';
   FSXCategory = 'Flight Simulator X';
   FSXCategoryLights = FSXCategory + ' - Lights';

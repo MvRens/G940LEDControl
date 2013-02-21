@@ -114,7 +114,7 @@ destructor TLEDFunctionRegistry.Destroy;
 begin
   FreeAndNil(FProviders);
 
-  inherited;
+  inherited Destroy;
 end;
 
 
@@ -155,7 +155,7 @@ destructor TLEDFunctionProviderList.Destroy;
 begin
   FreeAndNil(FList);
 
-  inherited;
+  inherited Destroy;
 end;
 
 

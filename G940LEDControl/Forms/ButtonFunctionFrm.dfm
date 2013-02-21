@@ -101,7 +101,6 @@ object ButtonFunctionForm: TButtonFunctionForm
     OnFocusChanged = vstFunctionsFocusChanged
     OnGetText = vstFunctionsGetText
     OnPaintText = vstFunctionsPaintText
-    ExplicitHeight = 383
     Columns = <
       item
         Position = 0
@@ -122,7 +121,6 @@ object ButtonFunctionForm: TButtonFunctionForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitHeight = 383
     object pnlName: TPanel
       Left = 0
       Top = 0
@@ -194,7 +192,6 @@ object ButtonFunctionForm: TButtonFunctionForm
       Align = alClient
       BorderStyle = bsNone
       TabOrder = 1
-      ExplicitHeight = 286
     end
   end
   object pnlHeader: TPanel

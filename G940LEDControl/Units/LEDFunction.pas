@@ -81,8 +81,8 @@ type
 
     function GetCurrentState: ILEDStateWorker; virtual; abstract;
   public
-    constructor Create; overload;
-    constructor Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings); overload;
+    constructor Create; overload; virtual;
+    constructor Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings); overload; virtual;
 
     destructor Destroy; override;
   end;
@@ -138,7 +138,7 @@ destructor TCustomMultiStateLEDFunction.Destroy;
 begin
   FreeAndNil(FStates);
 
-  inherited;
+  inherited Destroy;
 end;
 
 
@@ -229,6 +229,8 @@ var
 
 begin
   Result := nil;
+  if not Assigned(States) then
+    exit;
 
   for state in States do
     if (state as ICustomLEDState).GetUID = AUID then
@@ -263,7 +265,7 @@ destructor TCustomLEDFunctionProvider.Destroy;
 begin
   FreeAndNil(FFunctions);
 
-  inherited;
+  inherited Destroy;
 end;
 
 

@@ -18,7 +18,7 @@ type
 
   TFSXLEDFunctionProvider = class(TCustomLEDFunctionProvider, IFSXSimConnectObserver)
   private
-    FSimConnect: IFSXSimConnect;
+    FSimConnect: TInterfacedObject;
     FSimConnectLock: TCriticalSection;
   protected
     procedure RegisterFunctions; override;
@@ -41,6 +41,8 @@ type
     FDisplayName: string;
     FUID: string;
   protected
+    function DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker; override;
+
     property Provider: TFSXLEDFunctionProvider read FProvider;
   protected
     function GetCategoryName: string; override;
@@ -54,26 +56,30 @@ type
   TCustomFSXFunctionClass = class of TCustomFSXFunction;
 
 
-  TCustomFSXFunctionWorker = class(TCustomLEDFunctionWorker, IFSXSimConnectDataHandler)
+  TCustomFSXFunctionWorker = class(TCustomLEDFunctionWorker)
   private
+    FDataHandler: IFSXSimConnectDataHandler;
+    FDefinitionID: Cardinal;
     FSimConnect: IFSXSimConnect;
-    FDefinition: IFSXSimConnectDefinition;
     FCurrentStateLock: TCriticalSection;
     FCurrentState: ILEDStateWorker;
   protected
-    procedure RegisterVariables; virtual; abstract;
+    procedure RegisterStates(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings); override;
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); virtual; abstract;
 
-    procedure SetCurrentState(const AUID: string);
+    procedure SetCurrentState(const AUID: string; ANotifyObservers: Boolean = True); overload; virtual;
+    procedure SetCurrentState(AState: ILEDStateWorker; ANotifyObservers: Boolean = True); overload; virtual;
+    procedure SetSimConnect(const Value: IFSXSimConnect); virtual;
 
-    property Definition: IFSXSimConnectDefinition read FDefinition;
-    property SimConnect: IFSXSimConnect read FSimConnect;
+    property DataHandler: IFSXSimConnectDataHandler read FDataHandler;
+    property DefinitionID: Cardinal read FDefinitionID;
+    property SimConnect: IFSXSimConnect read FSimConnect write SetSimConnect;
   protected
     function GetCurrentState: ILEDStateWorker; override;
 
-    { IFSXSimConnectDataHandler }
     procedure HandleData(AData: Pointer); virtual; abstract;
   public
-    constructor Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; ASimConnect: IFSXSimConnect);
+    constructor Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings); override;
     destructor Destroy; override;
   end;
 
@@ -87,6 +93,20 @@ uses
   FSXSimConnectClient,
   LEDFunctionRegistry,
   SimConnect;
+
+
+type
+  TCustomFSXFunctionWorkerDataHandler = class(TInterfacedObject, IFSXSimConnectDataHandler)
+  private
+    FWorker: TCustomFSXFunctionWorker;
+  protected
+    { IFSXSimConnectDataHandler }
+    procedure HandleData(AData: Pointer);
+
+    property Worker: TCustomFSXFunctionWorker read FWorker;
+  public
+    constructor Create(AWorker: TCustomFSXFunctionWorker);
+  end;
 
 
 
@@ -167,11 +187,13 @@ begin
   try
     if not Assigned(FSimConnect) then
     begin
+      { Keep an object reference so we don't increment the reference count.
+        We'll know when it's gone through the ObserveDestroy. }
       FSimConnect := TFSXSimConnectInterface.Create;
-      FSimConnect.Attach(Self);
+      (FSimConnect as IFSXSimConnect).Attach(Self);
     end;
 
-    Result := FSimConnect;
+    Result := (FSimConnect as IFSXSimConnect);
   finally
     FSimConnectLock.Release;
   end;
@@ -186,6 +208,14 @@ begin
   FProvider := AProvider;
   FDisplayName := ADisplayName;
   FUID := AUID;
+end;
+
+
+function TCustomFSXFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker;
+begin
+  Result := inherited DoCreateWorker(ASettings);
+
+  (Result as TCustomFSXFunctionWorker).SimConnect := Provider.GetSimConnect;
 end;
 
 
@@ -208,18 +238,16 @@ end;
 
 
 { TCustomFSXFunctionWorker }
-constructor TCustomFSXFunctionWorker.Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; ASimConnect: IFSXSimConnect);
+constructor TCustomFSXFunctionWorker.Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings);
 begin
-  inherited Create(AStates, ASettings);
-
   FCurrentStateLock := TCriticalSection.Create;
-  FSimConnect := ASimConnect;
 
-  FDefinition := ASimConnect.CreateDefinition;
-  RegisterVariables;
+  { We can't pass ourselves as the Data Handler, as it would keep a reference to
+    this worker from the SimConnect interface. That'd mean the worker never
+    gets destroyed, and SimConnect never shuts down. Hence this proxy class. }
+  FDataHandler := TCustomFSXFunctionWorkerDataHandler.Create(Self);
 
-  // TODO pass self as callback for this definition
-  ASimConnect.AddDefinition(FDefinition, Self);
+  inherited Create(AStates, ASettings);
 end;
 
 
@@ -227,7 +255,20 @@ destructor TCustomFSXFunctionWorker.Destroy;
 begin
   FreeAndNil(FCurrentStateLock);
 
-  inherited;
+  if DefinitionID <> 0 then
+    SimConnect.RemoveDefinition(DefinitionID, DataHandler);
+
+  inherited Destroy;
+end;
+
+
+procedure TCustomFSXFunctionWorker.RegisterStates(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings);
+begin
+  inherited RegisterStates(AStates, ASettings);
+
+  { Make sure we have a default state }
+  if States.Count > 0 then
+    SetCurrentState((States[0] as ILEDStateWorker), False);
 end;
 
 
@@ -242,22 +283,58 @@ begin
 end;
 
 
-procedure TCustomFSXFunctionWorker.SetCurrentState(const AUID: string);
-var
-  newState: ILEDStateWorker;
+procedure TCustomFSXFunctionWorker.SetCurrentState(const AUID: string; ANotifyObservers: Boolean);
+begin
+  SetCurrentState(FindState(AUID), ANotifyObservers);
+end;
 
+
+procedure TCustomFSXFunctionWorker.SetCurrentState(AState: ILEDStateWorker; ANotifyObservers: Boolean);
 begin
   FCurrentStateLock.Acquire;
   try
-    newState := FindState(AUID);
-    if newState <> FCurrentState then
+    if AState <> FCurrentState then
     begin
-      FCurrentState := newState;
-      NotifyObservers;
+      FCurrentState := AState;
+
+      if ANotifyObservers then
+        NotifyObservers;
     end;
   finally
     FCurrentStateLock.Release;
   end;
+end;
+
+
+procedure TCustomFSXFunctionWorker.SetSimConnect(const Value: IFSXSimConnect);
+var
+  definition: IFSXSimConnectDefinition;
+
+begin
+  FSimConnect := Value;
+
+  if Assigned(SimConnect) then
+  begin
+    definition := SimConnect.CreateDefinition;
+    RegisterVariables(definition);
+
+    FDefinitionID := SimConnect.AddDefinition(definition, DataHandler);
+  end;
+end;
+
+
+{ TCustomFSXFunctionWorkerDataHandler }
+constructor TCustomFSXFunctionWorkerDataHandler.Create(AWorker: TCustomFSXFunctionWorker);
+begin
+  inherited Create;
+
+  FWorker := AWorker;
+end;
+
+
+procedure TCustomFSXFunctionWorkerDataHandler.HandleData(AData: Pointer);
+begin
+  Worker.HandleData(AData);
 end;
 
 

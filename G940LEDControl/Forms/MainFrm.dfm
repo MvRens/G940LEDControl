@@ -356,6 +356,10 @@ object MainForm: TMainForm
     object tsAbout: TTabSheet
       Caption = 'About'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object lblVersionCaption: TLabel
         Left = 16
         Top = 67
@@ -841,17 +845,6 @@ object MainForm: TMainForm
       Font.Style = []
       ParentFont = False
       ExplicitWidth = 401
-    end
-    object btnRetry: TButton
-      Left = 374
-      Top = 20
-      Width = 75
-      Height = 25
-      Anchors = [akTop, akRight]
-      Caption = '&Retry'
-      TabOrder = 0
-      Visible = False
-      OnClick = btnRetryClick
     end
   end
 end

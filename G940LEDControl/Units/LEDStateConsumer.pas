@@ -21,13 +21,7 @@ const
 
   
 type
-  IRunInMainThread = interface(IOmniWaitableValue)
-    ['{68B8F2F7-ED40-4078-9D99-503D7AFA068B}']
-    procedure Execute;
-  end;
-
-
-  TLEDStateConsumer = class(TOmniWorker)
+  TLEDStateConsumer = class(TOmniWorker, ILEDFunctionObserver)
   private
     FButtonWorkers: TInterfaceList;
     FButtonColors: TInterfaceList;
@@ -42,6 +36,9 @@ type
     property ButtonColors: TInterfaceList read FButtonColors;
     property HasTickTimer: Boolean read FHasTickTimer;
   protected
+    { ILEDFunctionObserver }
+    procedure ObserveUpdate(Sender: ILEDFunctionWorker);
+
     procedure Changed; virtual;
     procedure Update; virtual; abstract;
   protected
@@ -171,21 +168,49 @@ begin
 end;
 
 
+procedure TLEDStateConsumer.ObserveUpdate(Sender: ILEDFunctionWorker);
+begin
+  Changed;
+end;
+
+
 procedure TLEDStateConsumer.TMLoadProfile(var Msg: TOmniMessage);
 var
+  oldWorkers: TInterfaceList;
+  oldWorker: IInterface;
   profile: TProfile;
   buttonIndex: Integer;
+  worker: ILEDFunctionWorker;
 
 begin
   profile := Msg.MsgData;
-  ButtonWorkers.Clear;
 
-  for buttonIndex := 0 to Pred(profile.ButtonCount) do
-  begin
-    if profile.HasButton(buttonIndex) then
-      ButtonWorkers.Add(CreateWorker(profile.Buttons[buttonIndex]) as ILEDFunctionWorker)
-    else
-      ButtonWorkers.Add(nil);
+  { Keep a copy of the old workers until all the new ones are initialized,
+    so we don't get unneccessary SimConnect reconnects. }
+  oldWorkers := TInterfaceList.Create;
+  try
+    for oldWorker in ButtonWorkers do
+    begin
+      if Assigned(oldWorker) then
+        oldWorkers.Add(oldWorker);
+    end;
+
+    ButtonWorkers.Clear;
+
+    for buttonIndex := 0 to Pred(profile.ButtonCount) do
+    begin
+      if profile.HasButton(buttonIndex) then
+      begin
+        worker := CreateWorker(profile.Buttons[buttonIndex]) as ILEDFunctionWorker;
+        ButtonWorkers.Add(worker);
+
+        if Assigned(worker) then
+          worker.Attach(Self);
+      end else
+        ButtonWorkers.Add(nil);
+    end;
+  finally
+    FreeAndNil(oldWorkers);
   end;
 
   Changed;

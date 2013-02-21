@@ -13,7 +13,9 @@ uses
 
 const
   TM_FINDTHROTTLEDEVICE = 2001;
-  TM_NOTIFY_DEVICESTATE = 2002;
+  TM_TESTTHROTTLEDEVICE = 2002;
+
+  TM_NOTIFY_DEVICESTATE = 2003;
 
 
 type
@@ -21,10 +23,13 @@ type
   private
     FDirectInput: IDirectInput8;
     FThrottleDevice: IDirectInputDevice8;
+    FTHrottleDeviceGUID: TGUID;
   protected
-    procedure MsgFindThrottleDevice(var msg: TOmniMessage); message TM_FINDTHROTTLEDEVICE;
+    procedure TMFindThrottleDevice(var Msg: TOmniMessage); message TM_FINDTHROTTLEDEVICE;
+    procedure TMTestThrottleDevice(var Msg: TOmniMessage); message TM_TESTTHROTTLEDEVICE;
   protected
     function Initialize: Boolean; override;
+    procedure Cleanup; override;
 
     procedure FindThrottleDevice;
     procedure FoundThrottleDevice(ADeviceGUID: TGUID);
@@ -35,6 +40,7 @@ type
 
     property DirectInput: IDirectInput8 read FDirectInput;
     property ThrottleDevice: IDirectInputDevice8 read FThrottleDevice;
+    property ThrottleDeviceGUID: TGUID read FTHrottleDeviceGUID;
   end;
 
 
@@ -61,23 +67,6 @@ uses
 
 const
   G940_BUTTONCOUNT = 8;
-
-
-
-(*
-type
-  TRunInMainThreadSetLEDs = class(TOmniWaitableValue, IRunInMainThread)
-  private
-    FDevice: IDirectInputDevice8;
-    FRed: Byte;
-    FGreen: Byte;
-  protected
-    { IRunInMainThread }
-    procedure Execute;
-  public
-    constructor Create(ADevice: IDirectInputDevice8; ARed, AGreen: Byte);
-  end;
-*)
 
 
 function EnumDevicesProc(var lpddi: TDIDeviceInstanceW; pvRef: Pointer): BOOL; stdcall;
@@ -127,81 +116,13 @@ begin
 end;
 
 
-{
-procedure TG940LEDStateConsumer.ResetLEDState;
+procedure TG940LEDStateConsumer.Cleanup;
 begin
-  FRed := 0;
-  FGreen := $FF;
-
-  inherited;
-end;
-
-
-procedure TG940LEDStateConsumer.LEDStateChanged(ALEDIndex: Integer; AState: TLEDState);
-
-  procedure SetBit(var AMask: Byte; ABit: Integer; ASet: Boolean); inline;
-  begin
-    if ASet then
-      AMask := AMask or (1 shl ABit)
-    else
-      AMask := AMask and not (1 shl ABit);
-  end;
-
-var
-  red: Boolean;
-  green: Boolean;
-
-begin
-  red := False;
-  green := False;
-
-  case AState of
-    lsGreen:
-      green := True;
-
-    lsAmber:
-      begin
-        red := True;
-        green := True;
-      end;
-
-    lsRed:
-      red := True;
-
-    lsWarning:
-      begin
-        red := True;
-        green := True;
-
-        StartBlinkTimer;
-      end;
-
-    lsError:
-      begin
-        red := True;
-
-        StartBlinkTimer;
-      end;
-  end;
-
-  SetBit(FRed, ALEDIndex, red);
-  SetBit(FGreen, ALEDIndex, green);
-
-  inherited;
-end;
-
-}
-
-{
-procedure TG940LEDStateConsumer.Changed;
-begin
-  inherited;
+  inherited Cleanup;
 
   if Assigned(ThrottleDevice) then
-    { Logitech SDK will not change the color outside of the main thread
-    RunInMainThread(TRunInMainThreadSetLEDs.Create(ThrottleDevice, FRed, FGreen), Destroying);
+    SetLEDs(ThrottleDevice, 0, $FF);
 end;
-}
 
 
 procedure TG940LEDStateConsumer.FindThrottleDevice;
@@ -222,7 +143,10 @@ end;
 procedure TG940LEDStateConsumer.FoundThrottleDevice(ADeviceGUID: TGUID);
 begin
   if DirectInput.CreateDevice(ADeviceGUID, FThrottleDevice, nil) = S_OK then
+  begin
+    FTHrottleDeviceGUID := ADeviceGUID;
     SetDeviceState(DEVICESTATE_FOUND);
+  end;
 end;
 
 
@@ -279,28 +203,22 @@ begin
 end;
 
 
-procedure TG940LEDStateConsumer.MsgFindThrottleDevice(var msg: TOmniMessage);
+procedure TG940LEDStateConsumer.TMFindThrottleDevice(var Msg: TOmniMessage);
 begin
   FindThrottleDevice;
 end;
 
 
-{ TRunInMainThreadSetLEDs }
-(*
-constructor TRunInMainThreadSetLEDs.Create(ADevice: IDirectInputDevice8; ARed, AGreen: Byte);
+procedure TG940LEDStateConsumer.TMTestThrottleDevice(var Msg: TOmniMessage);
 begin
-  inherited Create;
-
-  FDevice := ADevice;
-  FRed := ARed;
-  FGreen := AGreen;
+  if Assigned(ThrottleDevice) then
+  begin
+    if DirectInput.GetDeviceStatus(ThrottleDeviceGUID) = DI_NOTATTACHED then
+    begin
+      FThrottleDevice := nil;
+      SetDeviceState(DEVICESTATE_NOTFOUND);
+    end;
+  end;
 end;
-
-
-procedure TRunInMainThreadSetLEDs.Execute;
-begin
-  SetLEDs(FDevice, FRed, FGreen);
-end;
-*)
 
 end.

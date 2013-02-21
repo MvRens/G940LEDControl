@@ -92,13 +92,13 @@ type
   { Worker implementations }
   TFSXEngineFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
-    procedure RegisterVariables; override;
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
   end;
 
   TFSXGearFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
-    procedure RegisterVariables; override;
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
   end;
 
@@ -106,7 +106,7 @@ type
   private
     FStateMask: Integer;
   protected
-    procedure RegisterVariables; override;
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
   public
     property StateMask: Integer read FStateMask write FStateMask;
@@ -140,21 +140,21 @@ end;
 
 
 { TFSXEngineFunctionWorker }
-procedure TFSXEngineFunctionWorker.RegisterVariables;
+procedure TFSXEngineFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 var
   engineIndex: Integer;
 
 begin
-  Definition.AddVariable('NUMBER OF ENGINES', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('NUMBER OF ENGINES', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_INT32);
 
   for engineIndex := 1 to FSX_MAX_ENGINES do
-    Definition.AddVariable(Format('GENERAL ENG COMBUSTION:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    ADefinition.AddVariable(Format('GENERAL ENG COMBUSTION:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
 
   for engineIndex := 1 to FSX_MAX_ENGINES do
-    Definition.AddVariable(Format('ENG FAILED:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    ADefinition.AddVariable(Format('ENG FAILED:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
 
   for engineIndex := 1 to FSX_MAX_ENGINES do
-    Definition.AddVariable(Format('ENG ON FIRE:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+    ADefinition.AddVariable(Format('ENG ON FIRE:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
 end;
 
 
@@ -236,12 +236,12 @@ end;
 
 
 { TFSXGearFunctionWorker }
-procedure TFSXGearFunctionWorker.RegisterVariables;
+procedure TFSXGearFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
-  Definition.AddVariable('IS GEAR RETRACTABLE',     FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
-  Definition.AddVariable('GEAR TOTAL PCT EXTENDED', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
-  Definition.AddVariable('GEAR DAMAGE BY SPEED',    FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
-  Definition.AddVariable('GEAR SPEED EXCEEDED',     FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('IS GEAR RETRACTABLE',     FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('GEAR TOTAL PCT EXTENDED', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+  ADefinition.AddVariable('GEAR DAMAGE BY SPEED',    FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('GEAR SPEED EXCEEDED',     FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
 end;
 
 
@@ -349,9 +349,9 @@ end;
 
 
 { TFSXLightStatesFunctionWorker }
-procedure TFSXLightStatesFunctionWorker.RegisterVariables;
+procedure TFSXLightStatesFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
-  Definition.AddVariable('LIGHT ON STATES', FSX_UNIT_MASK, SIMCONNECT_DATATYPE_INT32);
+  ADefinition.AddVariable('LIGHT ON STATES', FSX_UNIT_MASK, SIMCONNECT_DATATYPE_INT32);
 end;
 
 

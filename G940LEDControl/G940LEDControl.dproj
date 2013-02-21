@@ -98,7 +98,6 @@
 			<DCC_UNIT_PLATFORM>False</DCC_UNIT_PLATFORM>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-			<DCC_DebugDCUs>true</DCC_DebugDCUs>
 			<VerInfo_IncludeVerInfo>false</VerInfo_IncludeVerInfo>
 			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=0.2.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=0.2;Comments=</VerInfo_Keys>
 			<Manifest_File>F:\Components\X2Utils\Resources\VistaManAsInvoker.manifest</Manifest_File>

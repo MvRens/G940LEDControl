@@ -469,7 +469,7 @@ begin
   FreeAndNil(FComboBox);
   FreeAndNil(FStateLabel);
 
-  inherited;
+  inherited Destroy;
 end;
 
 end.

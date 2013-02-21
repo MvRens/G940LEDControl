@@ -188,7 +188,7 @@ destructor TProfile.Destroy;
 begin
   FreeAndNil(FButtons);
 
-  inherited;
+  inherited Destroy;
 end;
 
 

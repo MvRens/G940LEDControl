@@ -2,15 +2,15 @@ unit MainFrm;
 
 interface
 uses
-  Classes,
-  Contnrs,
-  Controls,
-  ComCtrls,
-  ExtCtrls,
-  Forms,
-  Messages,
-  StdCtrls,
-  Windows,
+  System.Classes,
+  System.Contnrs,
+  Vcl.ComCtrls,
+  Vcl.Controls,
+  Vcl.ExtCtrls,
+  Vcl.Forms,
+  Vcl.StdCtrls,
+  Winapi.Messages,
+  Winapi.Windows,
 
   OtlComm,
   OtlEventMonitor,
@@ -20,7 +20,7 @@ uses
   X2UtPersistIntf,
 
   LEDStateConsumer,
-  Profile;
+  Profile, Vcl.AppEvnts;
 
 
 const
@@ -30,6 +30,12 @@ const
   MSG_NOUPDATE = 2;
 
   LED_COUNT = 8;
+
+  DBT_DEVICEARRIVAL = $8000;
+  DBT_DEVICEREMOVECOMPLETE = $8004;
+  DBT_DEVTYP_DEVICEINTERFACE = $0005;
+  DEVICE_NOTIFY_ALL_INTERFACE_CLASSES = $0004;
+
 
 type
   TLEDControls = record
@@ -44,7 +50,6 @@ type
     lblG940Throttle: TLabel;
     imgStateFound: TImage;
     lblG940ThrottleState: TLabel;
-    btnRetry: TButton;
     PageControl: TPageControl;
     pnlG940: TPanel;
     tsAbout: TTabSheet;
@@ -91,7 +96,6 @@ type
     bvlProfiles: TBevel;
 
     procedure FormCreate(Sender: TObject);
-    procedure btnRetryClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
     procedure btnCheckUpdatesClick(Sender: TObject);
@@ -107,6 +111,14 @@ type
     FActiveProfile: TProfile;
     FLoadingProfiles: Boolean;
     FStateConsumerTask: IOmniTaskControl;
+
+    FDeviceNotification: Pointer;
+    FG940Found: Boolean;
+  protected
+    procedure RegisterDeviceArrival;
+    procedure UnregisterDeviceArrival;
+
+    procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
   protected
     procedure FindLEDControls;
     procedure LoadProfiles;
@@ -126,9 +138,6 @@ type
     procedure EventMonitorTerminated(const task: IOmniTaskControl);
 
     procedure HandleDeviceStateMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
-    procedure HandleRunInMainThreadMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
-    procedure HandleProviderKilled(ATask: IOmniTaskControl; AMessage: TOmniMessage);
-    procedure HandleProviderKilledFSX(ATask: IOmniTaskControl; AMessage: TOmniMessage);
 
     procedure CMAskAutoUpdate(var Msg: TMessage); message CM_ASKAUTOUPDATE;
 
@@ -204,9 +213,10 @@ begin
   FProfiles := TProfileList.Create(True);
   LoadProfiles;
 
+  // TODO implement profile changing properly
   FStateConsumerTask.Comm.Send(TM_LOADPROFILE, ActiveProfile);
-//  LoadFunctions(TFSXLEDStateProvider, FFSXComboBoxes);
-//  LoadDefaultProfile;
+
+  RegisterDeviceArrival;
 end;
 
 
@@ -225,7 +235,60 @@ end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
+  UnregisterDeviceArrival;
+
   FreeAndNil(FProfiles);
+end;
+
+
+procedure TMainForm.RegisterDeviceArrival;
+type
+  TDevBroadcastDeviceInterface = packed record
+    dbcc_size: DWORD;
+    dbcc_devicetype: DWORD;
+    dbcc_reserved: DWORD;
+    dbcc_classguid: TGUID;
+    dbcc_name: PChar;
+  end;
+
+var
+  request: TDevBroadcastDeviceInterface;
+
+begin
+  ZeroMemory(@request, SizeOf(request));
+  request.dbcc_size := SizeOf(request);
+  request.dbcc_devicetype := DBT_DEVTYP_DEVICEINTERFACE;
+
+  FDeviceNotification := RegisterDeviceNotification(Self.Handle, @request,
+                                                    DEVICE_NOTIFY_WINDOW_HANDLE or
+                                                    DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
+end;
+
+
+procedure TMainForm.UnregisterDeviceArrival;
+begin
+  if Assigned(FDeviceNotification) then
+  begin
+    UnregisterDeviceNotification(FDeviceNotification);
+    FDeviceNotification := nil;
+  end;
+end;
+
+
+procedure TMainForm.WMDeviceChange(var Msg: TMessage);
+begin
+  if not Assigned(StateConsumerTask) then
+    exit;
+
+  case Msg.WParam of
+    DBT_DEVICEARRIVAL:
+      if (not FG940Found) then
+        StateConsumerTask.Comm.Send(TM_FINDTHROTTLEDEVICE);
+
+    DBT_DEVICEREMOVECOMPLETE:
+      if FG940Found then
+        StateConsumerTask.Comm.Send(TM_TESTTHROTTLEDEVICE);
+  end;
 end;
 
 
@@ -417,34 +480,9 @@ begin
 
   imgStateFound.Visible := AFound;
   imgStateNotFound.Visible := not AFound;
+
+  FG940Found := AFound;
 end;
-
-
-//procedure TMainForm.ReadFunctions(AReader: IX2PersistReader; AComboBoxes: TComboBoxArray);
-//var
-//  comboBox: TComboBoxEx;
-//  value: Integer;
-//  itemIndex: Integer;
-//
-//begin
-//  if AReader.BeginSection(SECTION_FSX) then
-//  try
-//    for comboBox in AComboBoxes do
-//    begin
-//      if AReader.ReadInteger('Function' + IntToStr(comboBox.Tag), value) then
-//      begin
-//        for itemIndex := 0 to Pred(comboBox.ItemsEx.Count) do
-//          if Integer(comboBox.ItemsEx[itemIndex].Data) = value then
-//          begin
-//            comboBox.ItemIndex := itemIndex;
-//            break;
-//          end;
-//      end;
-//    end;
-//  finally
-//    AReader.EndSection;
-//  end;
-//end;
 
 
 //procedure TMainForm.ReadAutoUpdate(AReader: IX2PersistReader);
@@ -481,29 +519,6 @@ end;
 //  finally
 //    AWriter.EndSection;
 //  end;
-//end;
-
-
-//procedure TMainForm.InitializeStateProvider(AProviderClass: TLEDStateProviderClass);
-//begin
-//  UpdateMapping;
-//  LEDStateConsumer.InitializeStateProvider(StateConsumerTask, AProviderClass);
-//end;
-//
-//
-//procedure TMainForm.FinalizeStateProvider;
-//begin
-//  LEDStateConsumer.FinalizeStateProvider(StateConsumerTask);
-//end;
-
-
-//procedure TMainForm.UpdateMapping;
-//begin
-//  if not Assigned(StateConsumerTask) then
-//    Exit;
-//
-//  LEDStateConsumer.ClearFunctions(StateConsumerTask);
-//  SetFunctions(FFSXComboBoxes);
 //end;
 
 
@@ -628,32 +643,31 @@ end;
 procedure TMainForm.EventMonitorMessage(const task: IOmniTaskControl; const msg: TOmniMessage);
 begin
   case msg.MsgID of
-    TM_NOTIFY_DEVICESTATE:   HandleDeviceStateMessage(task, msg);
-//    MSG_RUN_IN_MAINTHREAD:    HandleRunInMainThreadMessage(task, msg);
-//    MSG_PROVIDER_KILLED:      HandleProviderKilled(task, msg);
+    TM_NOTIFY_DEVICESTATE:
+      HandleDeviceStateMessage(task, msg);
 
     MSG_UPDATE:
       if MessageBox(Self.Handle, 'An update is available on the G940 LED Control website.'#13#10'Do you want to go there now?',
                                  'Update available', MB_YESNO or MB_ICONINFORMATION) = ID_YES then
         ShellExecute(Self.Handle, 'open', PChar('http://g940.x2software.net/#download'), nil, nil, SW_SHOWNORMAL);
 
-//    MSG_NOUPDATE:
-//      if msg.MsgData.AsBoolean then
-//        MessageBox(Self.Handle, 'You are using the latest version.', 'No update available', MB_OK or MB_ICONINFORMATION)
-//      else
-//        MessageBox(Self.Handle, 'Failed to check for updates. Maybe try again later?', 'Uh-oh', MB_OK or MB_ICONWARNING);
+    MSG_NOUPDATE:
+      if msg.MsgData.AsBoolean then
+        MessageBox(Self.Handle, 'You are using the latest version.', 'No update available', MB_OK or MB_ICONINFORMATION)
+      else
+        MessageBox(Self.Handle, 'Failed to check for updates. Maybe try again later?', 'Uh-oh', MB_OK or MB_ICONWARNING);
   end;
 end;
 
 
 procedure TMainForm.EventMonitorTerminated(const task: IOmniTaskControl);
 begin
-//  if task = StateConsumerTask then
-//  begin
-//    FStateConsumerTask := nil;
-//    Close;
-//  end else if task.Name = 'CheckForUpdatesThread' then
-//    btnCheckUpdates.Enabled := True;
+  if task = StateConsumerTask then
+  begin
+    FStateConsumerTask := nil;
+    Close;
+  end else if task.Name = 'CheckForUpdatesThread' then
+    btnCheckUpdates.Enabled := True;
 end;
 
 
@@ -667,55 +681,14 @@ begin
       SetDeviceState(TEXT_STATE_FOUND, True);
 
     DEVICESTATE_NOTFOUND:
-      begin
-        SetDeviceState(TEXT_STATE_NOTFOUND, False);
-        btnRetry.Visible := True;
-      end;
+      SetDeviceState(TEXT_STATE_NOTFOUND, False);
   end;
-end;
-
-
-procedure TMainForm.HandleRunInMainThreadMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
-var
-  executor: IRunInMainThread;
-
-begin
-  executor := (AMessage.MsgData.AsInterface as IRunInMainThread);
-  executor.Execute;
-  executor.Signal;
-end;
-
-
-procedure TMainForm.HandleProviderKilled(ATask: IOmniTaskControl; AMessage: TOmniMessage);
-begin
-  HandleProviderKilledFSX(ATask, AMessage);
-end;
-
-
-procedure TMainForm.HandleProviderKilledFSX(ATask: IOmniTaskControl; AMessage: TOmniMessage);
-var
-  msg: string;
-
-begin
-//  btnFSXDisconnect.Enabled := False;
-//  btnFSXConnect.Enabled := True;
-
-  msg := AMessage.MsgData;
-  if Length(msg) > 0 then
-    ShowMessage(msg);
 end;
 
 
 procedure TMainForm.btnCheckUpdatesClick(Sender: TObject);
 begin
   CheckForUpdates(True);
-end;
-
-
-procedure TMainForm.btnRetryClick(Sender: TObject);
-begin
-  btnRetry.Visible := False;
-//  StateConsumerTask.Comm.Send(MSG_FINDTHROTTLEDEVICE);
 end;
 
 
