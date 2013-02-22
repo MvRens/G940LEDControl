@@ -27,7 +27,9 @@ uses
   FSXSimConnectClient in 'Units\FSXSimConnectClient.pas',
   FSXSimConnectIntf in 'Units\FSXSimConnectIntf.pas',
   FSXLEDFunction in 'Units\FSXLEDFunction.pas',
-  LEDResources in 'Units\LEDResources.pas';
+  LEDResources in 'Units\LEDResources.pas',
+  Settings in 'Units\Settings.pas',
+  FSXLEDFunctionWorker in 'Units\FSXLEDFunctionWorker.pas';
 
 {$R *.res}
 

@@ -14,7 +14,6 @@ object MainForm: TMainForm
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
-  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
@@ -450,6 +449,7 @@ object MainForm: TMainForm
         Height = 17
         Caption = ' Automatically check for &updates'
         TabOrder = 2
+        OnClick = cbCheckUpdatesClick
       end
       object btnCheckUpdates: TButton
         Left = 344

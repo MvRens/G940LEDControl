@@ -8,14 +8,13 @@ uses
 
 
 type
-  { Base classes }
-  TFSXOnOffFunction = class(TCustomFSXFunction)
+  TCustomFSXOnOffFunction = class(TCustomFSXFunction)
   protected
     procedure RegisterStates; override;
   end;
 
 
-  { Function implementations }
+  { Misc }
   TFSXEngineFunction = class(TCustomFSXFunction)
   protected
     procedure RegisterStates; override;
@@ -28,8 +27,74 @@ type
     function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
   end;
 
+  TFSXParkingBrakeFunction = class(TCustomFSXOnOffFunction)
+  protected
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
 
-  TFSXLightFunction = class(TFSXOnOffFunction)
+  TFSXExitDoorFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXTailHookFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXFlapsFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXSpoilersFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXBatteryMasterFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXAvionicsMasterFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXPressDumpSwitchFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXEngineAntiIceFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXFuelPumpFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXDeIceFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+
+  { Lights }
+  TCustomFSXLightFunction = class(TCustomFSXOnOffFunction)
   protected
     function GetCategoryName: string; override;
 
@@ -39,82 +104,96 @@ type
     function GetLightMask: Integer; virtual; abstract;
   end;
 
-  TFSXLandingLightsFunction = class(TFSXLightFunction)
+  TFSXLandingLightsFunction = class(TCustomFSXLightFunction)
   protected
     function GetLightMask: Integer; override;
   end;
 
-  TFSXInstrumentLightsFunction = class(TFSXLightFunction)
+  TFSXInstrumentLightsFunction = class(TCustomFSXLightFunction)
   protected
     function GetLightMask: Integer; override;
   end;
 
-  TFSXBeaconLightsFunction = class(TFSXLightFunction)
+  TFSXBeaconLightsFunction = class(TCustomFSXLightFunction)
   protected
     function GetLightMask: Integer; override;
   end;
 
-  TFSXNavLightsFunction = class(TFSXLightFunction)
+  TFSXNavLightsFunction = class(TCustomFSXLightFunction)
   protected
     function GetLightMask: Integer; override;
   end;
 
-  TFSXStrobeLightsFunction = class(TFSXLightFunction)
+  TFSXStrobeLightsFunction = class(TCustomFSXLightFunction)
   protected
     function GetLightMask: Integer; override;
   end;
 
-  TFSXTaxiLightsFunction = class(TFSXLightFunction)
+  TFSXTaxiLightsFunction = class(TCustomFSXLightFunction)
   protected
     function GetLightMask: Integer; override;
   end;
 
-  TFSXRecognitionLightsFunction = class(TFSXLightFunction)
+  TFSXRecognitionLightsFunction = class(TCustomFSXLightFunction)
   protected
     function GetLightMask: Integer; override;
+  end;
+
+
+  { Autopilot }
+  TCustomFSXAutoPilotFunction = class(TCustomFSXFunction)
+  protected
+    function GetCategoryName: string; override;
+  end;
+
+  TFSXAutoPilotFunction = class(TCustomFSXAutoPilotFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXAutoPilotHeadingFunction = class(TCustomFSXAutoPilotFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXAutoPilotApproachFunction = class(TCustomFSXAutoPilotFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXAutoPilotBackcourseFunction = class(TCustomFSXAutoPilotFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXAutoPilotAltitudeFunction = class(TCustomFSXAutoPilotFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+  end;
+
+  TFSXAutoPilotNavFunction = class(TCustomFSXAutoPilotFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
   end;
 
 
 implementation
 uses
-  System.Math,
-  System.SysUtils,
-
-  FSXSimConnectIntf,
+  FSXLEDFunctionWorker,
   FSXResources,
+  FSXSimConnectIntf,
   LEDColorIntf,
-  LEDState,
-  LEDStateIntf,
-  SimConnect;
-
-
-type
-  { Worker implementations }
-  TFSXEngineFunctionWorker = class(TCustomFSXFunctionWorker)
-  protected
-    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
-    procedure HandleData(AData: Pointer); override;
-  end;
-
-  TFSXGearFunctionWorker = class(TCustomFSXFunctionWorker)
-  protected
-    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
-    procedure HandleData(AData: Pointer); override;
-  end;
-
-  TFSXLightStatesFunctionWorker = class(TCustomFSXFunctionWorker)
-  private
-    FStateMask: Integer;
-  protected
-    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
-    procedure HandleData(AData: Pointer); override;
-  public
-    property StateMask: Integer read FStateMask write FStateMask;
-  end;
+  LEDState;
 
 
 { TFSXOnOffFunction }
-procedure TFSXOnOffFunction.RegisterStates;
+procedure TCustomFSXOnOffFunction.RegisterStates;
 begin
   RegisterState(TLEDState.Create(FSXStateUIDOn,   FSXStateDisplayNameOn,    lcGreen));
   RegisterState(TLEDState.Create(FSXStateUIDOff,  FSXStateDisplayNameOff,   lcRed));
@@ -139,84 +218,6 @@ begin
 end;
 
 
-{ TFSXEngineFunctionWorker }
-procedure TFSXEngineFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
-var
-  engineIndex: Integer;
-
-begin
-  ADefinition.AddVariable('NUMBER OF ENGINES', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_INT32);
-
-  for engineIndex := 1 to FSX_MAX_ENGINES do
-    ADefinition.AddVariable(Format('GENERAL ENG COMBUSTION:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
-
-  for engineIndex := 1 to FSX_MAX_ENGINES do
-    ADefinition.AddVariable(Format('ENG FAILED:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
-
-  for engineIndex := 1 to FSX_MAX_ENGINES do
-    ADefinition.AddVariable(Format('ENG ON FIRE:%d', [engineIndex]), FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
-end;
-
-
-procedure TFSXEngineFunctionWorker.HandleData(AData: Pointer);
-type
-  PEngineData = ^TEngineData;
-  TEngineData = packed record
-    NumberOfEngines: Integer;
-    Combustion: array[1..FSX_MAX_ENGINES] of Integer;
-    Failed: array[1..FSX_MAX_ENGINES] of Integer;
-    OnFire: array[1..FSX_MAX_ENGINES] of Integer;
-  end;
-
-var
-  engineData: PEngineData;
-  engineCount: Integer;
-  engineIndex: Integer;
-  hasFire: Boolean;
-  hasFailure: Boolean;
-  runningCount: Integer;
-
-begin
-  engineData := AData;
-
-  if engineData^.NumberOfEngines > 0 then
-  begin
-    engineCount := Min(engineData^.NumberOfEngines, FSX_MAX_ENGINES);
-    hasFire := False;
-    hasFailure := False;
-    runningCount := 0;
-
-    for engineIndex := 1 to engineCount do
-    begin
-      if engineData^.OnFire[engineIndex] <> 0 then
-        hasFire := True;
-
-      if engineData^.Failed[engineIndex] <> 0 then
-        hasFailure := True;
-
-      if engineData^.Combustion[engineIndex] <> 0 then
-        Inc(runningCount);
-    end;
-
-    if hasFire then
-      SetCurrentState(FSXStateUIDEngineOnFire)
-
-    else if hasFailure then
-      SetCurrentState(FSXStateUIDEngineFailed)
-
-    else if runningCount = 0 then
-      SetCurrentState(FSXStateUIDEngineAllOff)
-
-    else if runningCount = engineCount then
-      SetCurrentState(FSXStateUIDEngineAllRunning)
-
-    else
-      SetCurrentState(FSXStateUIDEnginePartiallyRunning);
-  end else
-    SetCurrentState(FSXStateUIDEngineNoEngines);
-end;
-
-
 { TFSXGearFunction }
 procedure TFSXGearFunction.RegisterStates;
 begin
@@ -235,64 +236,161 @@ begin
 end;
 
 
-{ TFSXGearFunctionWorker }
-procedure TFSXGearFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+{ TFSXParkingBrakeFunction }
+function TFSXParkingBrakeFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
 begin
-  ADefinition.AddVariable('IS GEAR RETRACTABLE',     FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
-  ADefinition.AddVariable('GEAR TOTAL PCT EXTENDED', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
-  ADefinition.AddVariable('GEAR DAMAGE BY SPEED',    FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
-  ADefinition.AddVariable('GEAR SPEED EXCEEDED',     FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
+  Result := TFSXParkingBrakeFunctionWorker;
 end;
 
 
-procedure TFSXGearFunctionWorker.HandleData(AData: Pointer);
-type
-  PGearData = ^TGearData;
-  TGearData = packed record
-    IsGearRetractable: Cardinal;
-    TotalPctExtended: Double;
-    DamageBySpeed: Integer;
-    SpeedExceeded: Integer;
-  end;
-
-var
-  gearData: PGearData;
-
+{ TFSXExitDoorFunction }
+procedure TFSXExitDoorFunction.RegisterStates;
 begin
-  gearData := AData;
+  RegisterState(TLEDState.Create(FSXStateUIDExitDoorClosed,   FSXStateDisplayNameExitDoorClosed,  lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDExitDoorBetween,  FSXStateDisplayNameExitDoorBetween, lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDExitDoorOpen,     FSXStateDisplayNameExitDoorOpen,    lcRed));
+end;
 
-  if gearData^.DamageBySpeed <> 0 then
-    SetCurrentState(FSXStateUIDGearDamageBySpeed)
 
-  else if gearData^.SpeedExceeded <> 0 then
-    SetCurrentState(FSXStateUIDGearSpeedExceeded)
+function TFSXExitDoorFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXExitDoorFunctionWorker;
+end;
 
-  else if gearData^.IsGearRetractable <> 0 then
-  begin
-    case Trunc(gearData ^.TotalPctExtended * 100) of
-      0:        SetCurrentState(FSXStateUIDGearRetracted);
-      95..100:  SetCurrentState(FSXStateUIDGearExtended);
-    else        SetCurrentState(FSXStateUIDGearBetween);
-    end;
-  end else
-    SetCurrentState(FSXStateUIDGearNotRetractable);
+
+{ TFSXTailHookFunction }
+procedure TFSXTailHookFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDTailHookRetracted,  FSXStateDisplayNameTailHookRetracted, lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDTailHookBetween,    FSXStateDisplayNameTailHookBetween,   lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDTailHookExtended,   FSXStateDisplayNameTailHookExtended,  lcRed));
+end;
+
+
+function TFSXTailHookFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXTailHookFunctionWorker;
+end;
+
+
+{ TFSXFlapsFunction }
+procedure TFSXFlapsFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXFlapsFunction.RegisterStates
+end;
+
+
+function TFSXFlapsFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXFlapsFunctionWorker;
+end;
+
+
+{ TFSXSpoilersFunction }
+procedure TFSXSpoilersFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXSpoilersFunction.RegisterStates
+end;
+
+
+function TFSXSpoilersFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXSpoilersFunctionWorker;
+end;
+
+
+{ TFSXBatteryMasterFunction }
+procedure TFSXBatteryMasterFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXBatteryMasterFunction.RegisterStates
+end;
+
+
+function TFSXBatteryMasterFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXBatteryMasterFunctionWorker;
+end;
+
+
+{ TFSXAvionicsMasterFunction }
+procedure TFSXAvionicsMasterFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAvionicsMasterFunction.RegisterStates
+end;
+
+
+function TFSXAvionicsMasterFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXAvionicsMasterFunctionWorker;
+end;
+
+
+{ TFSXPressDumpSwitchFunction }
+procedure TFSXPressDumpSwitchFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXPressDumpSwitchFunction.RegisterStates
+end;
+
+
+function TFSXPressDumpSwitchFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXPressDumpSwitchFunctionWorker;
+end;
+
+
+{ TFSXEngineAntiIceFunction }
+procedure TFSXEngineAntiIceFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXEngineAntiIceFunction.RegisterStates
+end;
+
+
+function TFSXEngineAntiIceFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXEngineAntiIceFunctionWorker;
+end;
+
+
+{ TFSXFuelPumpFunction }
+procedure TFSXFuelPumpFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXFuelPumpFunction.RegisterStates
+end;
+
+
+function TFSXFuelPumpFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXFuelPumpFunctionWorker;
+end;
+
+
+{ TFSXDeIceFunction }
+procedure TFSXDeIceFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXDeIceFunction.RegisterStates
+end;
+
+
+function TFSXDeIceFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXDeIceFunctionWorker;
 end;
 
 
 { TFSXLightFunction }
-function TFSXLightFunction.GetCategoryName: string;
+function TCustomFSXLightFunction.GetCategoryName: string;
 begin
   Result := FSXCategoryLights;
 end;
 
 
-function TFSXLightFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+function TCustomFSXLightFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
 begin
   Result := TFSXLightStatesFunctionWorker;
 end;
 
 
-function TFSXLightFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker;
+function TCustomFSXLightFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker;
 begin
   Result := inherited DoCreateWorker(ASettings);
   (Result as TFSXLightStatesFunctionWorker).StateMask := GetLightMask;
@@ -348,19 +446,88 @@ begin
 end;
 
 
-{ TFSXLightStatesFunctionWorker }
-procedure TFSXLightStatesFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+{ TCustomFSXAutoPilotFunction }
+function TCustomFSXAutoPilotFunction.GetCategoryName: string;
 begin
-  ADefinition.AddVariable('LIGHT ON STATES', FSX_UNIT_MASK, SIMCONNECT_DATATYPE_INT32);
+  Result := FSXCategoryAutoPilot;
 end;
 
 
-procedure TFSXLightStatesFunctionWorker.HandleData(AData: Pointer);
+{ TFSXAutoPilotFunction }
+procedure TFSXAutoPilotFunction.RegisterStates;
 begin
-  if (PCardinal(AData)^ and StateMask) <> 0 then
-    SetCurrentState(FSXStateUIDOn)
-  else
-    SetCurrentState(FSXStateUIDOff);
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotFunction.RegisterStates
+end;
+
+
+function TFSXAutoPilotFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXAutoPilotFunctionWorker;
+end;
+
+
+{ TFSXAutoPilotHeadingFunction }
+procedure TFSXAutoPilotHeadingFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotHeadingFunction.RegisterState
+end;
+
+
+function TFSXAutoPilotHeadingFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXAutoPilotHeadingFunctionWorker;
+end;
+
+
+{ TFSXAutoPilotApproachFunction }
+procedure TFSXAutoPilotApproachFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotApproachFunction.RegisterStates
+end;
+
+
+function TFSXAutoPilotApproachFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXAutoPilotApproachFunctionWorker;
+end;
+
+
+{ TFSXAutoPilotBackcourseFunction }
+procedure TFSXAutoPilotBackcourseFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotBackcourseFunction.RegisterStates
+end;
+
+
+function TFSXAutoPilotBackcourseFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXAutoPilotBackcourseFunctionWorker;
+end;
+
+
+{ TFSXAutoPilotAltitudeFunction }
+procedure TFSXAutoPilotAltitudeFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotAltitudeFunction.RegisterStates
+end;
+
+
+function TFSXAutoPilotAltitudeFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXAutoPilotAltitudeFunctionWorker;
+end;
+
+
+{ TFSXAutoPilotNavFunction }
+procedure TFSXAutoPilotNavFunction.RegisterStates;
+begin
+  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotNavFunction.RegisterStates
+end;
+
+
+function TFSXAutoPilotNavFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+begin
+  Result := TFSXAutoPilotNavFunctionWorker;
 end;
 
 end.

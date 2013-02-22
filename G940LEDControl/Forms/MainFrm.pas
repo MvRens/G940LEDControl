@@ -20,7 +20,8 @@ uses
   X2UtPersistIntf,
 
   LEDStateConsumer,
-  Profile, Vcl.AppEvnts;
+  Profile,
+  Settings;
 
 
 const
@@ -96,12 +97,12 @@ type
     bvlProfiles: TBevel;
 
     procedure FormCreate(Sender: TObject);
-    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
     procedure btnCheckUpdatesClick(Sender: TObject);
     procedure LEDButtonClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure cmbProfilesClick(Sender: TObject);
+    procedure cbCheckUpdatesClick(Sender: TObject);
   private
     FLEDControls: array[0..LED_COUNT - 1] of TLEDControls;
     FEventMonitor: TOmniEventMonitor;
@@ -114,6 +115,9 @@ type
 
     FDeviceNotification: Pointer;
     FG940Found: Boolean;
+
+    FSettingsFileName: string;
+    FSettings: TSettings;
   protected
     procedure RegisterDeviceArrival;
     procedure UnregisterDeviceArrival;
@@ -123,6 +127,9 @@ type
     procedure FindLEDControls;
     procedure LoadProfiles;
     procedure SaveProfiles;
+
+    procedure LoadSettings;
+    procedure SaveSettings;
 
     function CreateDefaultProfile: TProfile;
     procedure LoadActiveProfile;
@@ -144,6 +151,7 @@ type
     property ActiveProfile: TProfile read FActiveProfile;
     property EventMonitor: TOmniEventMonitor read FEventMonitor;
     property Profiles: TProfileList read FProfiles;
+    property Settings: TSettings read FSettings;
     property StateConsumerTask: IOmniTaskControl read FStateConsumerTask;
   end;
 
@@ -178,6 +186,7 @@ const
   DefaultProfileName = 'Default';
 
   FILENAME_PROFILES = 'G940LEDControl\Profiles.xml';
+  FILENAME_SETTINGS = 'G940LEDControl\Settings.xml';
 
   SPECIAL_CATEGORY = -1;
 
@@ -213,23 +222,13 @@ begin
   FProfiles := TProfileList.Create(True);
   LoadProfiles;
 
-  // TODO implement profile changing properly
+  FSettingsFileName := App.UserPath + FILENAME_SETTINGS;
+  LoadSettings;
+
+  // #ToDo1 -oMvR: 22-2-2013: implement profile changing properly
   FStateConsumerTask.Comm.Send(TM_LOADPROFILE, ActiveProfile);
 
   RegisterDeviceArrival;
-end;
-
-
-procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-begin
-//  SaveProfiles;
-//  if Assigned(StateConsumerTask) then
-//  begin
-//    SaveDefaultProfile;
-//
-//    LEDStateConsumer.Finalize(StateConsumerTask);
-//    CanClose := False;
-//  end;
 end;
 
 
@@ -395,6 +394,55 @@ begin
 end;
 
 
+procedure TMainForm.LoadSettings;
+var
+  persistXML: TX2UtPersistXML;
+
+begin
+  if not FileExists(FSettingsFileName) then
+  begin
+    { Check if version 0.x settings are in the registry }
+    FSettings := ConfigConversion.ConvertSettings0To1;
+
+    if not Assigned(FSettings) then
+      FSettings := TSettings.Create;
+  end else
+  begin
+    FSettings := TSettings.Create;
+
+    persistXML := TX2UtPersistXML.Create;
+    try
+      persistXML.FileName := FSettingsFileName;
+      Settings.Load(persistXML.CreateReader);
+    finally
+      FreeAndNil(persistXML);
+    end;
+  end;
+
+  cbCheckUpdates.Checked := Settings.CheckUpdates;
+
+  if not Settings.HasCheckUpdates then
+    PostMessage(Self.Handle, CM_ASKAUTOUPDATE, 0, 0)
+  else if Settings.CheckUpdates then
+    CheckForUpdates(False);
+end;
+
+
+procedure TMainForm.SaveSettings;
+var
+  persistXML: TX2UtPersistXML;
+
+begin
+  persistXML := TX2UtPersistXML.Create;
+  try
+    persistXML.FileName := FSettingsFileName;
+    Settings.Save(persistXML.CreateWriter);
+  finally
+    FreeAndNil(persistXML);
+  end;
+end;
+
+
 function TMainForm.CreateDefaultProfile: TProfile;
 begin
   { Default button functions are assigned during UpdateButton }
@@ -468,8 +516,12 @@ begin
                              'Do you want to automatically check for updates?', 'Check for updates', MB_YESNO or MB_ICONQUESTION) = ID_YES then
   begin
     cbCheckUpdates.Checked := True;
+    Settings.CheckUpdates := True;
+
     CheckForUpdates(False);
   end;
+
+  SaveSettings;
 end;
 
 
@@ -483,43 +535,6 @@ begin
 
   FG940Found := AFound;
 end;
-
-
-//procedure TMainForm.ReadAutoUpdate(AReader: IX2PersistReader);
-//var
-//  checkUpdates: Boolean;
-//  askAutoUpdate: Boolean;
-//
-//begin
-//  askAutoUpdate := True;
-//
-//  if AReader.BeginSection(SECTION_SETTINGS) then
-//  try
-//    if AReader.ReadBoolean('CheckUpdates', checkUpdates) then
-//    begin
-//      cbCheckUpdates.Checked := checkUpdates;
-//      askAutoUpdate := False;
-//    end;
-//  finally
-//    AReader.EndSection;
-//  end;
-//
-//  if askAutoUpdate then
-//    PostMessage(Self.Handle, CM_ASKAUTOUPDATE, 0, 0)
-//  else if cbCheckUpdates.Checked then
-//    CheckForUpdates(False);
-//end;
-
-
-//procedure TMainForm.WriteAutoUpdate(AWriter: IX2PersistWriter);
-//begin
-//  if AWriter.BeginSection(SECTION_SETTINGS) then
-//  try
-//    AWriter.WriteBoolean('CheckUpdates', cbCheckUpdates.Checked);
-//  finally
-//    AWriter.EndSection;
-//  end;
-//end;
 
 
 procedure TMainForm.LEDButtonClick(Sender: TObject);
@@ -607,7 +622,7 @@ begin
     try
       latestVersion := httpClient.Get('http://g940.x2software.net/version');
       if VersionIsNewer(Format('%d.%d.%d', [App.Version.Major, App.Version.Minor, App.Version.Release]), latestVersion) then
-        ATask.Comm.Send(MSG_UPDATE)
+        ATask.Comm.Send(MSG_UPDATE, latestVersion)
       else
       begin
         if ATask.Param.ByName('ReportNoUpdates').AsBoolean then
@@ -629,6 +644,13 @@ begin
 end;
 
 
+procedure TMainForm.cbCheckUpdatesClick(Sender: TObject);
+begin
+  Settings.CheckUpdates := cbCheckUpdates.Checked;
+  SaveSettings;
+end;
+
+
 procedure TMainForm.CheckForUpdates(AReportNoUpdates: Boolean);
 begin
   btnCheckUpdates.Enabled := False;
@@ -647,9 +669,10 @@ begin
       HandleDeviceStateMessage(task, msg);
 
     MSG_UPDATE:
-      if MessageBox(Self.Handle, 'An update is available on the G940 LED Control website.'#13#10'Do you want to go there now?',
-                                 'Update available', MB_YESNO or MB_ICONINFORMATION) = ID_YES then
-        ShellExecute(Self.Handle, 'open', PChar('http://g940.x2software.net/#download'), nil, nil, SW_SHOWNORMAL);
+      if MessageBox(Self.Handle, PChar('Version ' + msg.MsgData + ' is available on the G940 LED Control website.'#13#10 +
+                                       'Do you want to open the website now?'), 'Update available',
+                                       MB_YESNO or MB_ICONINFORMATION) = ID_YES then
+        ShellExecute(Self.Handle, 'open', PChar('http://g940.x2software.net/category/releases/'), nil, nil, SW_SHOWNORMAL);
 
     MSG_NOUPDATE:
       if msg.MsgData.AsBoolean then

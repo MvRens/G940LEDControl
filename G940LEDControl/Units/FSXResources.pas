@@ -7,6 +7,7 @@ const
   FSXProviderUID = 'fsx';
   FSXCategory = 'Flight Simulator X';
   FSXCategoryLights = FSXCategory + ' - Lights';
+  FSXCategoryAutoPilot = FSXCategory + ' - Autopilot';
 
   FSXStateUIDOn = 'on';
   FSXStateUIDOff = 'off';
@@ -71,6 +72,76 @@ const
 
   FSXFunctionUIDRecognitionLights = 'recognitionLights';
     FSXFunctionDisplayNameRecognitionLights = 'Recognition lights';
+
+  FSXFunctionUIDParkingBrake = 'parkingBrake';
+    FSXFunctionDisplayNameParkingBrake = 'Parking brake';
+
+  FSXFunctionUIDExitDoor = 'exitDoor';
+    FSXFunctionDisplayNameExitDoor = 'Exit door';
+
+    FSXStateUIDExitDoorClosed = 'closed';
+    FSXStateUIDExitDoorBetween = 'between';
+    FSXStateUIDExitDoorOpen = 'open';
+
+    FSXStateDisplayNameExitDoorClosed = 'Closed';
+    FSXStateDisplayNameExitDoorBetween = 'Opening / closing';
+    FSXStateDisplayNameExitDoorOpen = 'Open';
+
+  FSXFunctionUIDTailHook = 'tailHook';
+    FSXFunctionDisplayNameTailHook = 'Tail hook';
+
+    FSXStateUIDTailHookRetracted = 'retracted';
+    FSXStateUIDTailHookBetween = 'between';
+    FSXStateUIDTailHookExtended = 'extended';
+
+    FSXStateDisplayNameTailHookRetracted = 'Retracted';
+    FSXStateDisplayNameTailHookBetween = 'Extending / retracting';
+    FSXStateDisplayNameTailHookExtended = 'Extended';
+
+
+  FSXFunctionUIDFlaps = 'flaps';
+    FSXFunctionDisplayNameFlaps = 'Flaps';
+
+  FSXFunctionUIDSpoilers = 'spoilers';
+    FSXFunctionDisplayNameSpoilers = 'Spoilers';
+
+  FSXFunctionUIDBatteryMaster = 'batteryMaster';
+    FSXFunctionDisplayNameBatteryMaster = 'Battery master';
+
+  FSXFunctionUIDAvionicsMaster = 'avionicsMaster';
+    FSXFunctionDisplayNameAvionicsMaster = 'Avionics master';
+
+  FSXFunctionUIDPressDumpSwitch = 'pressurizationDumpSwitch';
+    FSXFunctionDisplayNamePressDumpSwitch = 'Pressurization dump switch';
+
+  FSXFunctionUIDEngineAntiIce = 'engineAntiIce';
+    FSXFunctionDisplayNameEngineAntiIce = 'Engine anti-ice';
+
+  FSXFunctionUIDFuelPump = 'fuelPump';
+    FSXFunctionDisplayNameFuelPump = 'Fuel pump';
+
+  FSXFunctionUIDDeIce = 'structuralDeIce';
+    FSXFunctionDisplayNameDeIce = 'De-ice';
+
+  FSXFunctionUIDAutoPilot = 'autoPilotMaster';
+    FSXFunctionDisplayNameAutoPilot = 'Autopilot master';
+
+  FSXFunctionUIDAutoPilotHeading = 'autoPilotHeading';
+    FSXFunctionDisplayNameAutoPilotHeading = 'Autopilot heading';
+
+  FSXFunctionUIDAutoPilotApproach = 'autoPilotApproach';
+    FSXFunctionDisplayNameAutoPilotApproach = 'Autopilot approach';
+
+  FSXFunctionUIDAutoPilotBackcourse = 'autoPilotBackcourse';
+    FSXFunctionDisplayNameAutoPilotBackcourse = 'Autopilot backcourse';
+
+  FSXFunctionUIDAutoPilotAltitude = 'autoPilotAltitude';
+    FSXFunctionDisplayNameAutoPilotAltitude = 'Autopilot altitude';
+
+  FSXFunctionUIDAutoPilotNav = 'autoPilotNav';
+    FSXFunctionDisplayNameAutoPilotNav = 'Autopilot nav';
+
+
 
 
 implementation

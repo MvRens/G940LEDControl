@@ -2,10 +2,12 @@ unit ConfigConversion;
 
 interface
 uses
-  Profile;
+  Profile,
+  Settings;
 
   { Version 0.x: registry -> 1.x: XML }
   function ConvertProfile0To1: TProfile;
+  function ConvertSettings0To1: TSettings;
 
 
 implementation
@@ -16,6 +18,7 @@ uses
   X2UtPersistIntf,
   X2UtPersistRegistry,
 
+  FSXResources,
   LEDColorIntf,
   StaticResources;
 
@@ -46,7 +49,7 @@ const
   V0_FUNCTIONFSX_SPOILERS = V0_FUNCTIONPROVIDER_OFFSET + 13;
 
   V0_FUNCTIONFSX_PRESSURIZATIONDUMPSWITCH = V0_FUNCTIONPROVIDER_OFFSET + 14;
-  V0_FUNCTIONFSX_CARBHEAT = V0_FUNCTIONPROVIDER_OFFSET + 15;
+  V0_FUNCTIONFSX_ENGINEANTIICE = V0_FUNCTIONPROVIDER_OFFSET + 15;
   V0_FUNCTIONFSX_AUTOPILOT = V0_FUNCTIONPROVIDER_OFFSET + 16;
   V0_FUNCTIONFSX_FUELPUMP = V0_FUNCTIONPROVIDER_OFFSET + 17;
 
@@ -62,7 +65,7 @@ const
   V0_FUNCTIONFSX_TAXILIGHTS = V0_FUNCTIONPROVIDER_OFFSET + 25;
   V0_FUNCTIONFSX_RECOGNITIONLIGHTS = V0_FUNCTIONPROVIDER_OFFSET + 26;
 
-  // TODO 27 (de-ice)
+  V0_FUNCTIONFSX_DEICE = V0_FUNCTIONPROVIDER_OFFSET + 27;
 
 
 
@@ -76,45 +79,50 @@ procedure ConvertProfileFunction0To1(AOldFunction: Integer; AButton: TProfileBut
 
 
 begin
+  { Default states are handled by the specific functions }
   case AOldFunction of
     { Static }
-    V0_FUNCTION_OFF:    SetButton(StaticProviderUID, StaticFunctionUID[lcOff]);
-    V0_FUNCTION_RED:    SetButton(StaticProviderUID, StaticFunctionUID[lcRed]);
-    V0_FUNCTION_AMBER:  SetButton(StaticProviderUID, StaticFunctionUID[lcAmber]);
-    V0_FUNCTION_GREEN:  SetButton(StaticProviderUID, StaticFunctionUID[lcGreen]);
+    V0_FUNCTION_OFF:                            SetButton(StaticProviderUID, StaticFunctionUID[lcOff]);
+    V0_FUNCTION_RED:                            SetButton(StaticProviderUID, StaticFunctionUID[lcRed]);
+    V0_FUNCTION_AMBER:                          SetButton(StaticProviderUID, StaticFunctionUID[lcAmber]);
+    V0_FUNCTION_GREEN:                          SetButton(StaticProviderUID, StaticFunctionUID[lcGreen]);
 
     { FSX }
-    {
-    V0_FUNCTIONFSX_GEAR:
-    V0_FUNCTIONFSX_LANDINGLIGHTS:
-    V0_FUNCTIONFSX_INSTRUMENTLIGHTS:
-    V0_FUNCTIONFSX_PARKINGBRAKE:
-    V0_FUNCTIONFSX_ENGINE:
+    V0_FUNCTIONFSX_GEAR:                        SetButton(FSXProviderUID, FSXFunctionUIDGear);
+    V0_FUNCTIONFSX_LANDINGLIGHTS:               SetButton(FSXProviderUID, FSXFunctionUIDLandingLights);
+    V0_FUNCTIONFSX_INSTRUMENTLIGHTS:            SetButton(FSXProviderUID, FSXFunctionUIDInstrumentLights);
+    V0_FUNCTIONFSX_PARKINGBRAKE:                SetButton(FSXProviderUID, FSXFunctionUIDParkingBrake);
+    V0_FUNCTIONFSX_ENGINE:                      SetButton(FSXProviderUID, FSXFunctionUIDEngine);
 
-    V0_FUNCTIONFSX_EXITDOOR:
-    V0_FUNCTIONFSX_STROBELIGHTS:
-    V0_FUNCTIONFSX_NAVLIGHTS:
-    V0_FUNCTIONFSX_BEACONLIGHTS:
-    V0_FUNCTIONFSX_FLAPS:
-    V0_FUNCTIONFSX_BATTERYMASTER:
-    V0_FUNCTIONFSX_AVIONICSMASTER:
-    V0_FUNCTIONFSX_SPOILERS:
-    V0_FUNCTIONFSX_PRESSURIZATIONDUMPSWITCH:
-    V0_FUNCTIONFSX_CARBHEAT:
+    V0_FUNCTIONFSX_EXITDOOR:                    SetButton(FSXProviderUID, FSXFunctionUIDExitDoor);
+    V0_FUNCTIONFSX_STROBELIGHTS:                SetButton(FSXProviderUID, FSXFunctionUIDStrobeLights);
+    V0_FUNCTIONFSX_NAVLIGHTS:                   SetButton(FSXProviderUID, FSXFunctionUIDNavLights);
+    V0_FUNCTIONFSX_BEACONLIGHTS:                SetButton(FSXProviderUID, FSXFunctionUIDBeaconLights);
+    V0_FUNCTIONFSX_FLAPS:                       SetButton(FSXProviderUID, FSXFunctionUIDFlaps);
+    V0_FUNCTIONFSX_BATTERYMASTER:               SetButton(FSXProviderUID, FSXFunctionUIDBatteryMaster);
+    V0_FUNCTIONFSX_AVIONICSMASTER:              SetButton(FSXProviderUID, FSXFunctionUIDAvionicsMaster);
+    V0_FUNCTIONFSX_SPOILERS:                    SetButton(FSXProviderUID, FSXFunctionUIDSpoilers);
+    V0_FUNCTIONFSX_PRESSURIZATIONDUMPSWITCH:    SetButton(FSXProviderUID, FSXFunctionUIDPressDumpSwitch);
+    V0_FUNCTIONFSX_ENGINEANTIICE:               SetButton(FSXProviderUID, FSXFunctionUIDEngineAntiIce);
     V0_FUNCTIONFSX_AUTOPILOT:
-    V0_FUNCTIONFSX_FUELPUMP:
-    V0_FUNCTIONFSX_TAILHOOK:
-    V0_FUNCTIONFSX_AUTOPILOT_AMBER:
-    V0_FUNCTIONFSX_AUTOPILOT_HEADING:
-    V0_FUNCTIONFSX_AUTOPILOT_APPROACH:
-    V0_FUNCTIONFSX_AUTOPILOT_BACKCOURSE:
-    V0_FUNCTIONFSX_AUTOPILOT_ALTITUDE:
-    V0_FUNCTIONFSX_AUTOPILOT_NAV:
-    V0_FUNCTIONFSX_TAXILIGHTS:
-    V0_FUNCTIONFSX_RECOGNITIONLIGHTS:
-    }
-  else
-    SetButton(StaticProviderUID, StaticFunctionUID[lcGreen]);
+      begin
+        { The only exception regarding states; the new default is Amber / Off }
+        SetButton(FSXProviderUID, FSXFunctionUIDAutoPilot);
+        AButton.SetStateColor(FSXStateUIDOn, lcGreen);
+        AButton.SetStateColor(FSXStateUIDOff, lcRed);
+      end;
+
+    V0_FUNCTIONFSX_FUELPUMP:                    SetButton(FSXProviderUID, FSXFunctionUIDFuelPump);
+    V0_FUNCTIONFSX_TAILHOOK:                    SetButton(FSXProviderUID, FSXFunctionUIDTailHook);
+    V0_FUNCTIONFSX_AUTOPILOT_AMBER:             SetButton(FSXProviderUID, FSXFunctionUIDAutoPilot);
+    V0_FUNCTIONFSX_AUTOPILOT_HEADING:           SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotHeading);
+    V0_FUNCTIONFSX_AUTOPILOT_APPROACH:          SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotApproach);
+    V0_FUNCTIONFSX_AUTOPILOT_BACKCOURSE:        SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotBackcourse);
+    V0_FUNCTIONFSX_AUTOPILOT_ALTITUDE:          SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotAltitude);
+    V0_FUNCTIONFSX_AUTOPILOT_NAV:               SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotNav);
+    V0_FUNCTIONFSX_TAXILIGHTS:                  SetButton(FSXProviderUID, FSXFunctionUIDTaxiLights);
+    V0_FUNCTIONFSX_RECOGNITIONLIGHTS:           SetButton(FSXProviderUID, FSXFunctionUIDRecognitionLights);
+    V0_FUNCTIONFSX_DEICE:                       SetButton(FSXProviderUID, FSXFunctionUIDDeIce);
   end;
 end;
 
@@ -124,7 +132,6 @@ const
   KEY_SETTINGS = '\Software\X2Software\G940LEDControl\';
   SECTION_DEFAULTPROFILE = 'DefaultProfile';
   SECTION_FSX = 'FSX';
-  SECTION_SETTINGS = 'Settings';
 
 var
   registryReader: TX2UtPersistRegistry;
@@ -162,9 +169,42 @@ begin
     finally
       reader.EndSection;
     end;
+  finally
+    FreeAndNil(registryReader);
+  end;
+end;
 
-    // TODO auto update settings
-    //ReadAutoUpdate(reader);
+
+function ConvertSettings0To1: TSettings;
+const
+  KEY_SETTINGS = '\Software\X2Software\G940LEDControl\';
+  SECTION_SETTINGS = 'Settings';
+
+var
+  registryReader: TX2UtPersistRegistry;
+  reader: IX2PersistReader;
+  value: Boolean;
+
+begin
+  Result := nil;
+
+  registryReader := TX2UtPersistRegistry.Create;
+  try
+    registryReader.RootKey := HKEY_CURRENT_USER;
+    registryReader.Key := KEY_SETTINGS;
+
+    reader := registryReader.CreateReader;
+
+    if reader.BeginSection(SECTION_SETTINGS) then
+    try
+      if reader.ReadBoolean('CheckUpdates', value) then
+      begin
+        Result := TSettings.Create;
+        Result.CheckUpdates := value;
+      end;
+    finally
+      reader.EndSection;
+    end;
   finally
     FreeAndNil(registryReader);
   end;

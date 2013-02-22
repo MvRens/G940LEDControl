@@ -192,7 +192,10 @@ begin
     for oldWorker in ButtonWorkers do
     begin
       if Assigned(oldWorker) then
+      begin
+        (oldWorker as ILEDFunctionWorker).Detach(Self);
         oldWorkers.Add(oldWorker);
+      end;
     end;
 
     ButtonWorkers.Clear;

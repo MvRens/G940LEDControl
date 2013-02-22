@@ -306,7 +306,8 @@ end;
 
 procedure TFSXSimConnectClient.Cleanup;
 begin
-  // TODO unregister definitions ?
+  // #ToDo1 -oMvR: 22-2-2013: unregister definitions
+
   if SimConnectHandle <> 0 then
     SimConnect_Close(SimConnectHandle);
 
@@ -491,7 +492,7 @@ var
 begin
   removeDefinition := Msg.MsgData;
 
-  // TODO actually remove the definition
+  // #ToDo1 -oMvR: 22-2-2013: actually remove the definition
 
   removeDefinition.Signal;
 end;

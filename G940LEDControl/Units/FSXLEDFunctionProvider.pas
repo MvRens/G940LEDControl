@@ -129,38 +129,37 @@ end;
 
 procedure TFSXLEDFunctionProvider.RegisterFunctions;
 begin
-  {
-  AConsumer.AddFunction(FUNCTION_FSX_CARBHEAT, 'Anti-ice');
-  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT, 'Auto pilot (main)');
-  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_AMBER, 'Auto pilot (main - off / amber)');
-  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_ALTITUDE, 'Auto pilot - Altitude');
-  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_APPROACH, 'Auto pilot - Approach');
-  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_BACKCOURSE, 'Auto pilot - Backcourse');
-  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_HEADING, 'Auto pilot - Heading');
-  AConsumer.AddFunction(FUNCTION_FSX_AUTOPILOT_NAV, 'Auto pilot - Nav');
-  AConsumer.AddFunction(FUNCTION_FSX_AVIONICSMASTER, 'Avionics master switch');
-  AConsumer.AddFunction(FUNCTION_FSX_BATTERYMASTER, 'Battery master switch');
-  AConsumer.AddFunction(FUNCTION_FSX_ENGINE, 'Engine');
-  AConsumer.AddFunction(FUNCTION_FSX_EXITDOOR, 'Exit door');
-  AConsumer.AddFunction(FUNCTION_FSX_FLAPS, 'Flaps');
-  AConsumer.AddFunction(FUNCTION_FSX_PARKINGBRAKE, 'Parking brake');
-  AConsumer.AddFunction(FUNCTION_FSX_PRESSURIZATIONDUMPSWITCH, 'Pressurization dump switch');
-  AConsumer.AddFunction(FUNCTION_FSX_SPOILERS, 'Spoilers (air brake)');
-  AConsumer.AddFunction(FUNCTION_FSX_TAILHOOK, 'Tail hook');
-  }
-
   { Misc }
-  RegisterFunction(TFSXEngineFunction.Create(           Self, FSXFunctionDisplayNameEngine,             FSXFunctionUIDEngine));
-  RegisterFunction(TFSXGearFunction.Create(             Self, FSXFunctionDisplayNameGear,               FSXFunctionUIDGear));
+  RegisterFunction(TFSXAvionicsMasterFunction.Create(     Self, FSXFunctionDisplayNameAvionicsMaster,       FSXFunctionUIDAvionicsMaster));
+  RegisterFunction(TFSXBatteryMasterFunction.Create(      Self, FSXFunctionDisplayNameBatteryMaster,        FSXFunctionUIDBatteryMaster));
+  RegisterFunction(TFSXDeIceFunction.Create(              Self, FSXFunctionDisplayNameDeIce,                FSXFunctionUIDDeIce));
+  RegisterFunction(TFSXEngineAntiIceFunction.Create(      Self, FSXFunctionDisplayNameEngineAntiIce,        FSXFunctionUIDEngineAntiIce));
+  RegisterFunction(TFSXEngineFunction.Create(             Self, FSXFunctionDisplayNameEngine,               FSXFunctionUIDEngine));
+  RegisterFunction(TFSXExitDoorFunction.Create(           Self, FSXFunctionDisplayNameExitDoor,             FSXFunctionUIDExitDoor));
+  RegisterFunction(TFSXFlapsFunction.Create(              Self, FSXFunctionDisplayNameFlaps,                FSXFunctionUIDFlaps));
+  RegisterFunction(TFSXFuelPumpFunction.Create(           Self, FSXFunctionDisplayNameFuelPump,             FSXFunctionUIDFuelPump));
+  RegisterFunction(TFSXGearFunction.Create(               Self, FSXFunctionDisplayNameGear,                 FSXFunctionUIDGear));
+  RegisterFunction(TFSXParkingBrakeFunction.Create(       Self, FSXFunctionDisplayNameParkingBrake,         FSXFunctionUIDParkingBrake));
+  RegisterFunction(TFSXPressDumpSwitchFunction.Create(    Self, FSXFunctionDisplayNamePressDumpSwitch,      FSXFunctionUIDPressDumpSwitch));
+  RegisterFunction(TFSXSpoilersFunction.Create(           Self, FSXFunctionDisplayNameSpoilers,             FSXFunctionUIDSpoilers));
+  RegisterFunction(TFSXTailHookFunction.Create(           Self, FSXFunctionDisplayNameTailHook,             FSXFunctionUIDTailHook));
 
   { Lights }
-  RegisterFunction(TFSXBeaconLightsFunction.Create(     Self, FSXFunctionDisplayNameBeaconLights,       FSXFunctionUIDBeaconLights));
-  RegisterFunction(TFSXInstrumentLightsFunction.Create( Self, FSXFunctionDisplayNameInstrumentLights,   FSXFunctionUIDInstrumentLights));
-  RegisterFunction(TFSXLandingLightsFunction.Create(    Self, FSXFunctionDisplayNameLandingLights,      FSXFunctionUIDLandingLights));
-  RegisterFunction(TFSXNavLightsFunction.Create(        Self, FSXFunctionDisplayNameNavLights,          FSXFunctionUIDNavLights));
-  RegisterFunction(TFSXRecognitionLightsFunction.Create(Self, FSXFunctionDisplayNameRecognitionLights,  FSXFunctionUIDRecognitionLights));
-  RegisterFunction(TFSXStrobeLightsFunction.Create(     Self, FSXFunctionDisplayNameStrobeLights,       FSXFunctionUIDStrobeLights));
-  RegisterFunction(TFSXTaxiLightsFunction.Create(       Self, FSXFunctionDisplayNameTaxiLights,         FSXFunctionUIDTaxiLights));
+  RegisterFunction(TFSXBeaconLightsFunction.Create(       Self, FSXFunctionDisplayNameBeaconLights,         FSXFunctionUIDBeaconLights));
+  RegisterFunction(TFSXInstrumentLightsFunction.Create(   Self, FSXFunctionDisplayNameInstrumentLights,     FSXFunctionUIDInstrumentLights));
+  RegisterFunction(TFSXLandingLightsFunction.Create(      Self, FSXFunctionDisplayNameLandingLights,        FSXFunctionUIDLandingLights));
+  RegisterFunction(TFSXNavLightsFunction.Create(          Self, FSXFunctionDisplayNameNavLights,            FSXFunctionUIDNavLights));
+  RegisterFunction(TFSXRecognitionLightsFunction.Create(  Self, FSXFunctionDisplayNameRecognitionLights,    FSXFunctionUIDRecognitionLights));
+  RegisterFunction(TFSXStrobeLightsFunction.Create(       Self, FSXFunctionDisplayNameStrobeLights,         FSXFunctionUIDStrobeLights));
+  RegisterFunction(TFSXTaxiLightsFunction.Create(         Self, FSXFunctionDisplayNameTaxiLights,           FSXFunctionUIDTaxiLights));
+
+  { Autopilot }
+  RegisterFunction(TFSXAutoPilotFunction.Create(          Self, FSXFunctionDisplayNameAutoPilot,            FSXFunctionUIDAutoPilot));
+  RegisterFunction(TFSXAutoPilotAltitudeFunction.Create(  Self, FSXFunctionDisplayNameAutoPilotAltitude,    FSXFunctionUIDAutoPilotAltitude));
+  RegisterFunction(TFSXAutoPilotApproachFunction.Create(  Self, FSXFunctionDisplayNameAutoPilotApproach,    FSXFunctionUIDAutoPilotApproach));
+  RegisterFunction(TFSXAutoPilotBackcourseFunction.Create(Self, FSXFunctionDisplayNameAutoPilotBackcourse,  FSXFunctionUIDAutoPilotBackcourse));
+  RegisterFunction(TFSXAutoPilotHeadingFunction.Create(   Self, FSXFunctionDisplayNameAutoPilotHeading,     FSXFunctionUIDAutoPilotHeading));
+  RegisterFunction(TFSXAutoPilotNavFunction.Create(       Self, FSXFunctionDisplayNameAutoPilotNav,         FSXFunctionUIDAutoPilotNav));
 end;
 
 
