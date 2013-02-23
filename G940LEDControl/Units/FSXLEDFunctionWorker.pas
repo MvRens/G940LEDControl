@@ -316,39 +316,85 @@ end;
 { TFSXTailHookFunctionWorker }
 procedure TFSXTailHookFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXTailHookFunctionWorker.RegisterVariables
+  ADefinition.AddVariable('TAILHOOK POSITION', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
 end;
 
 
 procedure TFSXTailHookFunctionWorker.HandleData(AData: Pointer);
 begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXTailHookFunctionWorker.HandleData
+  case Trunc(PDouble(AData)^) of
+    0..5:     SetCurrentState(FSXStateUIDTailHookRetracted);
+    95..100:  SetCurrentState(FSXStateUIDTailHookBetween);
+  else        SetCurrentState(FSXStateUIDTailHookExtended);
+  end;
 end;
 
 
 { TFSXFlapsFunctionWorker }
 procedure TFSXFlapsFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXFlapsFunctionWorker.RegisterVariables
+  ADefinition.AddVariable('FLAPS AVAILABLE', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('FLAPS HANDLE PERCENT', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
 end;
 
 
 procedure TFSXFlapsFunctionWorker.HandleData(AData: Pointer);
+type
+  PFlapsData = ^TFlapsData;
+  TFlapsData = packed record
+    FlapsAvailable: Cardinal;
+    FlapsHandlePercent: Double;
+  end;
+
+var
+  flapsData: PFlapsData;
+
 begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXFlapsFunctionWorker.HandleData
+  flapsData := AData;
+
+  if flapsData^.FlapsAvailable <> 0 then
+  begin
+    case Trunc(flapsData^.FlapsHandlePercent) of
+      0..5:     SetCurrentState(FSXStateUIDFlapsRetracted);
+      95..100:  SetCurrentState(FSXStateUIDFlapsExtended);
+    else        SetCurrentState(FSXStateUIDFlapsBetween);
+    end;
+  end else
+    SetCurrentState(FSXStateUIDFlapsNotAvailable);
 end;
 
 
 { TFSXSpoilersFunctionWorker }
 procedure TFSXSpoilersFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXSpoilersFunctionWorker.RegisterVariables
+  ADefinition.AddVariable('SPOILER AVAILABLE', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('SPOILERS HANDLE POSITION', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
 end;
 
 
 procedure TFSXSpoilersFunctionWorker.HandleData(AData: Pointer);
+type
+  PSpoilersData = ^TSpoilersData;
+  TSpoilersData = packed record
+    SpoilersAvailable: Cardinal;
+    SpoilersHandlePercent: Double;
+  end;
+
+var
+  spoilersData: PSpoilersData;
+
 begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXSpoilersFunctionWorker.HandleData
+  SpoilersData := AData;
+
+  if SpoilersData^.SpoilersAvailable <> 0 then
+  begin
+    case Trunc(SpoilersData^.SpoilersHandlePercent) of
+      0..5:     SetCurrentState(FSXStateUIDSpoilersRetracted);
+      95..100:  SetCurrentState(FSXStateUIDSpoilersExtended);
+    else        SetCurrentState(FSXStateUIDSpoilersBetween);
+    end;
+  end else
+    SetCurrentState(FSXStateUIDSpoilersNotAvailable);
 end;
 
 

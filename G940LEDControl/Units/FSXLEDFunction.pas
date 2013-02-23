@@ -276,7 +276,10 @@ end;
 { TFSXFlapsFunction }
 procedure TFSXFlapsFunction.RegisterStates;
 begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXFlapsFunction.RegisterStates
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsNotAvailable,  FSXStateDisplayNameFlapsNotAvailable, lcOff));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsRetracted,     FSXStateDisplayNameFlapsRetracted,    lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsBetween,       FSXStateDisplayNameFlapsBetween,      lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsExtended,      FSXStateDisplayNameFlapsExtended,     lcRed));
 end;
 
 
@@ -289,7 +292,10 @@ end;
 { TFSXSpoilersFunction }
 procedure TFSXSpoilersFunction.RegisterStates;
 begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXSpoilersFunction.RegisterStates
+  RegisterState(TLEDState.Create(FSXStateUIDSpoilersNotAvailable, FSXStateDisplayNameSpoilersNotAvailable,  lcOff));
+  RegisterState(TLEDState.Create(FSXStateUIDSpoilersRetracted,    FSXStateDisplayNameSpoilersRetracted,     lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDSpoilersBetween,      FSXStateDisplayNameSpoilersBetween,       lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDSpoilersExtended,     FSXStateDisplayNameSpoilersExtended,      lcRed));
 end;
 
 

@@ -102,8 +102,30 @@ const
   FSXFunctionUIDFlaps = 'flaps';
     FSXFunctionDisplayNameFlaps = 'Flaps';
 
+    FSXStateUIDFlapsNotAvailable = 'notAvailable';
+    FSXStateUIDFlapsRetracted = 'retracted';
+    FSXStateUIDFlapsBetween = 'between';
+    FSXStateUIDFlapsExtended = 'extended';
+
+    FSXStateDisplayNameFlapsNotAvailable = 'No flaps';
+    FSXStateDisplayNameFlapsRetracted = 'Retracted';
+    FSXStateDisplayNameFlapsBetween = 'Extending / retracting';
+    FSXStateDisplayNameFlapsExtended = 'Extended';
+
+
   FSXFunctionUIDSpoilers = 'spoilers';
     FSXFunctionDisplayNameSpoilers = 'Spoilers';
+
+    FSXStateUIDSpoilersNotAvailable = 'notAvailable';
+    FSXStateUIDSpoilersRetracted = 'retracted';
+    FSXStateUIDSpoilersBetween = 'between';
+    FSXStateUIDSpoilersExtended = 'extended';
+
+    FSXStateDisplayNameSpoilersNotAvailable = 'No spoilers';
+    FSXStateDisplayNameSpoilersRetracted = 'Retracted';
+    FSXStateDisplayNameSpoilersBetween = 'Extending / retracting';
+    FSXStateDisplayNameSpoilersExtended = 'Extended';
+
 
   FSXFunctionUIDBatteryMaster = 'batteryMaster';
     FSXFunctionDisplayNameBatteryMaster = 'Battery master';
