@@ -8,7 +8,7 @@
 			<FrameworkType>VCL</FrameworkType>
 			<ProjectVersion>13.4</ProjectVersion>
 			<Base>True</Base>
-			<Config Condition="'$(Config)'==''">Release</Config>
+			<Config Condition="'$(Config)'==''">Debug</Config>
 			<Platform Condition="'$(Platform)'==''">Win32</Platform>
 			<TargetedPlatforms>1</TargetedPlatforms>
 			<AppType>Application</AppType>
@@ -49,6 +49,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_UsePackage>rtl;dbrtl;$(DCC_UsePackage)</DCC_UsePackage>
 			<DCC_DcuOutput>Lib</DCC_DcuOutput>
 			<VerInfo_MajorVer>0</VerInfo_MajorVer>
 			<DCC_ExeOutput>Bin</DCC_ExeOutput>
@@ -81,9 +82,9 @@
 			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-			<VerInfo_Release>1</VerInfo_Release>
-			<VerInfo_MinorVer>6</VerInfo_MinorVer>
-			<VerInfo_Keys>CompanyName=X²Software;FileDescription=G940 LED Control;FileVersion=0.6.1.0;InternalName=;LegalCopyright=© 2011 X²Software;LegalTrademarks=;OriginalFilename=G940LEDControl.exe;ProductName=G940 LED Control;ProductVersion=0.6.1;Comments=</VerInfo_Keys>
+			<VerInfo_MajorVer>1</VerInfo_MajorVer>
+			<VerInfo_MinorVer>0</VerInfo_MinorVer>
+			<VerInfo_Keys>CompanyName=X²Software;FileDescription=G940 LED Control;FileVersion=1.0.0.0;InternalName=;LegalCopyright=© 2011 X²Software;LegalTrademarks=;OriginalFilename=G940LEDControl.exe;ProductName=G940 LED Control;ProductVersion=1.0;Comments=</VerInfo_Keys>
 			<VerInfo_Locale>1033</VerInfo_Locale>
 			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
 		</PropertyGroup>
@@ -145,6 +146,110 @@
 						<Source Name="MainSource">G940LEDControl.dpr</Source>
 					</Source>
 					<Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxCoreD16.bpl">ExpressCoreLibrary by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxLibraryD16.bpl">Express Cross Platform Library by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxPageControlD16.bpl">ExpressPageControl by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxEditorsD16.bpl">ExpressEditors Library by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxBarD16.bpl">ExpressBars by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxRibbonD16.bpl">ExpressBars Ribbon controls by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxSchedulerD16.bpl">ExpressScheduler by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxSkinsCoreD16.bpl">ExpressSkins Library by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPSCoreD16.bpl">ExpressPrinting System by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxPivotGridD16.bpl">ExpressPivotGrid by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxorgcD16.bpl">ExpressOrgChart by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxSkinsDesignHelperD16.bpl">ExpressSkins Library Uses Clause Auto Fill Helper by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinscxPCPainterD16.bpl">ExpressSkins Library Painter for PageControl by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinscxSchedulerPainterD16.bpl">ExpressSkins Library Painter for Scheduler by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinsdxBarPainterD16.bpl">ExpressSkins Library Painter for Bars by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinsdxNavBarPainterD16.bpl">ExpressSkins Library Painter for NavBar by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinsdxRibbonPainterD16.bpl">ExpressSkins Library Painter for Ribbon by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinsdxDLPainterD16.bpl">ExpressSkins Library Painter for Docking Library by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPSdxLCLnkD16.bpl">ExpressPrinting System ReportLink for ExpressLayoutControl by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxEditorFieldLinkD16.bpl">ExpressEditors FieldLink by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxBarDBNavD16.bpl">ExpressBars DBNavigator by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxBarExtDBItemsD16.bpl">ExpressBars extended DB items by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxBarExtItemsD16.bpl">ExpressBars extended items by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxTabbedMDID16.bpl">ExpressBars Tabbed MDI by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxLayoutControlD16.bpl">ExpressLayout Control by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxTreeListD16.bpl">ExpressQuantumTreeList 5 by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxGridD16.bpl">ExpressQuantumGrid by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxVerticalGridD16.bpl">ExpressVerticalGrid by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxmdsD16.bpl">ExpressMemData by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxSpellCheckerD16.bpl">ExpressSpellChecker 2 by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxSpreadSheetD16.bpl">ExpressSpreadSheet by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxDockingD16.bpl">ExpressDocking Library by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxNavBarD16.bpl">ExpressNavBar by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinBlackD16.bpl">ExpressSkins - Black Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinBlueD16.bpl">ExpressSkins - Blue Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinBlueprintD16.bpl">ExpressSkins - Blueprint Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinCaramelD16.bpl">ExpressSkins - Caramel Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinCoffeeD16.bpl">ExpressSkins - Coffee Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinDarkRoomD16.bpl">ExpressSkins - Darkroom Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinDarkSideD16.bpl">ExpressSkins - DarkSide Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinDevExpressDarkStyleD16.bpl">ExpressSkins - DevExpressDarkStyle Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinDevExpressStyleD16.bpl">ExpressSkins - DevExpressStyle Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinFoggyD16.bpl">ExpressSkins - Foggy Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinGlassOceansD16.bpl">ExpressSkins - GlassOceans Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinHighContrastD16.bpl">ExpressSkins - HighContrast Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkiniMaginaryD16.bpl">ExpressSkins - iMaginary Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinLilianD16.bpl">ExpressSkins - Lilian Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinLiquidSkyD16.bpl">ExpressSkins - LiquidSky Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinLondonLiquidSkyD16.bpl">ExpressSkins - LondonLiquidSky Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinMcSkinD16.bpl">ExpressSkins - McSkin Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinMoneyTwinsD16.bpl">ExpressSkins - MoneyTwins Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinOffice2007BlackD16.bpl">ExpressSkins - Office2007Black Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinOffice2007BlueD16.bpl">ExpressSkins - Office2007Blue Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinOffice2007GreenD16.bpl">ExpressSkins - Office2007Green Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinOffice2007PinkD16.bpl">ExpressSkins - Office2007Pink Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinOffice2007SilverD16.bpl">ExpressSkins - Office2007Silver Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinOffice2010BlackD16.bpl">ExpressSkins - Office2010Black Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinOffice2010BlueD16.bpl">ExpressSkins - Office2010Blue Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinOffice2010SilverD16.bpl">ExpressSkins - Office2010Silver Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinPumpkinD16.bpl">ExpressSkins - Pumpkin Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinSevenClassicD16.bpl">ExpressSkins - SevenClassic Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinSevenD16.bpl">ExpressSkins - Seven Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinSharpD16.bpl">ExpressSkins - Sharp Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinSharpPlusD16.bpl">ExpressSkins - SharpPlus Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinSilverD16.bpl">ExpressSkins - Silver Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinSpringTimeD16.bpl">ExpressSkins - Springtime Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinStardustD16.bpl">ExpressSkins - Stardust Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinSummer2008D16.bpl">ExpressSkins - Summer2008 Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinTheAsphaltWorldD16.bpl">ExpressSkins - TheAsphaltWorld Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinValentineD16.bpl">ExpressSkins - Valentine Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinVS2010D16.bpl">ExpressSkins - VS2010 Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinWhiteprintD16.bpl">ExpressSkins - Whiteprint Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinXmas2008BlueD16.bpl">ExpressSkins - Xmas2008Blue Skin by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPSLnksD16.bpl">ExpressPrinting System ReportLinks (Standard) by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxPScxPCProdD16.bpl">ExpressPrinting System ContainerProducer for ExpressPageControl by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxdbtrD16.bpl">ExpressDBTree by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxtrmdD16.bpl">ExpressTreePrintedDataSet by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxDBOrD16.bpl">ExpressDBOrgChart by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxFlowChartD16.bpl">ExpressFlowChart by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxPageControldxBarPopupMenuD16.bpl">ExpressPageControl dxBar Popup Menu by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxBarEditItemD16.bpl">ExpressBars cxEditor item by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxSchedulerGridD16.bpl">ExpressScheduler connection to ExpressQuantumGrid by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxTreeListdxBarPopupMenuD16.bpl">ExpressQuantumTreeList 5 dxBar Built-In Menu by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxSkinscxEditorsHelperD16.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for ExpressEditors by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxSkinscxPCPainterD16.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for PageControl Painter by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxSkinscxSchedulerPainterD16.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for Scheduler Painter by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxSkinsdxBarsPaintersD16.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for Bars Painters by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxSkinsdxNavBarPainterD16.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for NavBar Painter by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxSkinsdxRibbonPaintersD16.bpl">ExpressSkins Library Uses Clause Auto Fill Helper for Ribbon Painters by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPScxCommonD16.bpl">ExpressPrinting System Cross Platform Library by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPScxExtCommonD16.bpl">ExpressPrinting System Extended Cross Platform Library by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPScxPivotGridLnkD16.bpl">ExpressPrinting System ReportLink for ExpressPivotGrid by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPScxSchedulerLnkD16.bpl">ExpressPrinting System ReportLink for ExpressScheduler by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPScxSSLnkD16.bpl">ExpressPrinting System ReportLink for ExpressSpreadSheet by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPScxTLLnkD16.bpl">ExpressPrinting System ReportLink for ExpressQuantumTreeList by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPScxVGridLnkD16.bpl">ExpressPrinting System ReportLink for ExpressVerticalGrid by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPSdxDBOCLnkD16.bpl">ExpressPrinting System ReportLinks for ExpressDBOrgChart by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPSdxDBTVLnkD16.bpl">ExpressPrinting System ReportLink for ExpressDBTree by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPSdxFCLnkD16.bpl">ExpressPrinting System ReportLinks for ExpressFlowChart by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPScxGridLnkD16.bpl">ExpressPrinting System ReportLink for ExpressQuantumGrid by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPSdxOCLnkD16.bpl">ExpressPrinting System ReportLinks for ExpressOrgChart by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPSPrVwAdvD16.bpl">ExpressPrinting System Advanced Preview Window by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPSPrVwRibbonD16.bpl">ExpressPrinting System Ribbon Preview Window by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxPivotGridChartD16.bpl">ExpressPivotGrid 2 connection to ExpressQuantumGrid Chart View by Developer Express Inc.</Excluded_Packages>
 						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxPivotGridOLAPD16.bpl">ExpressPivotGrid 2 OLAP by Developer Express Inc.</Excluded_Packages>
 					</Excluded_Packages>
 				</Delphi.Personality>
@@ -165,15 +270,35 @@
 			</DCCReference>
 			<DCCReference Include="..\Shared\LogiJoystickDLL.pas"/>
 			<DCCReference Include="..\Shared\SimConnect.pas"/>
-			<DCCReference Include="Forms\ButtonSelectFrm.pas">
-				<Form>ButtonSelectForm</Form>
+			<DCCReference Include="Units\G940LEDStateConsumer.pas"/>
+			<DCCReference Include="Units\LEDStateConsumer.pas"/>
+			<DCCReference Include="Units\LEDColorIntf.pas"/>
+			<DCCReference Include="Units\LEDColor.pas"/>
+			<DCCReference Include="Units\LEDFunctionIntf.pas"/>
+			<DCCReference Include="Units\LEDFunction.pas"/>
+			<DCCReference Include="Units\StaticLEDFunction.pas"/>
+			<DCCReference Include="Units\ConfigConversion.pas"/>
+			<DCCReference Include="Units\LEDFunctionRegistry.pas"/>
+			<DCCReference Include="Units\StaticLEDColor.pas"/>
+			<DCCReference Include="Units\DynamicLEDColor.pas"/>
+			<DCCReference Include="Units\LEDStateIntf.pas"/>
+			<DCCReference Include="Units\LEDState.pas"/>
+			<DCCReference Include="Units\Profile.pas"/>
+			<DCCReference Include="Units\LEDColorPool.pas"/>
+			<DCCReference Include="Forms\ButtonFunctionFrm.pas">
+				<Form>ButtonFunctionForm</Form>
 				<FormType>dfm</FormType>
 			</DCCReference>
-			<DCCReference Include="Units\FSXLEDStateProvider.pas"/>
-			<DCCReference Include="Units\G940LEDStateConsumer.pas"/>
-			<DCCReference Include="Units\LEDFunctionMap.pas"/>
-			<DCCReference Include="Units\LEDStateConsumer.pas"/>
-			<DCCReference Include="Units\LEDStateProvider.pas"/>
+			<DCCReference Include="Units\FSXLEDFunctionProvider.pas"/>
+			<DCCReference Include="Units\StaticResources.pas"/>
+			<DCCReference Include="Units\FSXResources.pas"/>
+			<DCCReference Include="Units\FSXSimConnectClient.pas"/>
+			<DCCReference Include="Units\FSXSimConnectIntf.pas"/>
+			<DCCReference Include="Units\FSXLEDFunction.pas"/>
+			<DCCReference Include="Units\LEDResources.pas"/>
+			<DCCReference Include="Units\Settings.pas"/>
+			<DCCReference Include="Units\FSXLEDFunctionWorker.pas"/>
+			<DCCReference Include="Units\FSXSimConnectStateMonitor.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
