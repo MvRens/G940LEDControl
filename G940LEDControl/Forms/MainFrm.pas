@@ -851,6 +851,9 @@ begin
     if InputQuery('Save profile as', 'Save this profile as:', name) then
     begin
       existingProfile := Profiles.Find(name);
+      if existingProfile = profile then
+        existingProfile := nil;
+
       if Assigned(existingProfile) then
       begin
         case MessageBox(Self.Handle, PChar(Format('A profile named "%s" exists, do you want to overwrite it?', [name])),

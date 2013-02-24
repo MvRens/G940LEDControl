@@ -280,7 +280,7 @@ object MainForm: TMainForm
         Top = 67
         Width = 41
         Height = 41
-        Caption = 'P1'
+        Caption = 'P&1'
         TabOrder = 3
       end
       object btnP2: TButton
@@ -288,7 +288,7 @@ object MainForm: TMainForm
         Top = 114
         Width = 41
         Height = 41
-        Caption = 'P2'
+        Caption = 'P&2'
         TabOrder = 4
       end
       object btnP3: TButton
@@ -296,7 +296,7 @@ object MainForm: TMainForm
         Top = 161
         Width = 41
         Height = 41
-        Caption = 'P3'
+        Caption = 'P&3'
         TabOrder = 5
       end
       object btnP4: TButton
@@ -304,7 +304,7 @@ object MainForm: TMainForm
         Top = 208
         Width = 41
         Height = 41
-        Caption = 'P4'
+        Caption = 'P&4'
         TabOrder = 6
       end
       object btnP5: TButton
@@ -312,7 +312,7 @@ object MainForm: TMainForm
         Top = 255
         Width = 41
         Height = 41
-        Caption = 'P5'
+        Caption = 'P&5'
         TabOrder = 7
       end
       object btnP6: TButton
@@ -320,7 +320,7 @@ object MainForm: TMainForm
         Top = 302
         Width = 41
         Height = 41
-        Caption = 'P6'
+        Caption = 'P&6'
         TabOrder = 8
       end
       object btnP7: TButton
@@ -328,7 +328,7 @@ object MainForm: TMainForm
         Top = 349
         Width = 41
         Height = 41
-        Caption = 'P7'
+        Caption = 'P&7'
         TabOrder = 9
       end
       object btnP8: TButton
@@ -336,7 +336,7 @@ object MainForm: TMainForm
         Top = 396
         Width = 41
         Height = 41
-        Caption = 'P8'
+        Caption = 'P&8'
         TabOrder = 10
       end
       object cmbProfiles: TComboBox

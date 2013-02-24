@@ -261,7 +261,10 @@ begin
     begin
       FButtons.Add(button);
     end else
+    begin
+      FButtons.Add(nil);
       FreeAndNil(button);
+    end;
   finally
     AReader.EndSection;
     Inc(buttonIndex);
@@ -280,7 +283,8 @@ begin
   begin
     if AWriter.BeginSection(SectionButton + IntToStr(buttonIndex)) then
     try
-      FButtons[buttonIndex].Save(AWriter);
+      if Assigned(FButtons[buttonIndex]) then
+        FButtons[buttonIndex].Save(AWriter);
     finally
       AWriter.EndSection;
     end;
