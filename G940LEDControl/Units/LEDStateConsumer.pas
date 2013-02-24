@@ -30,7 +30,7 @@ type
     function Initialize: Boolean; override;
     procedure Cleanup; override;
 
-    function CreateWorker(AProfileButton: TProfileButton): ILEDFunctionWorker;
+    function CreateWorker(AProfileButton: TProfileButton; const APreviousState: string): ILEDFunctionWorker;
 
     property ButtonWorkers: TInterfaceList read FButtonWorkers;
     property ButtonColors: TInterfaceList read FButtonColors;
@@ -49,6 +49,7 @@ type
 
 implementation
 uses
+  Generics.Collections,
   System.SysUtils,
   Winapi.Windows,
 
@@ -95,7 +96,7 @@ begin
 end;
 
 
-function TLEDStateConsumer.CreateWorker(AProfileButton: TProfileButton): ILEDFunctionWorker;
+function TLEDStateConsumer.CreateWorker(AProfileButton: TProfileButton; const APreviousState: string): ILEDFunctionWorker;
 var
   provider: ILEDFunctionProvider;
   ledFunction: ILEDFunction;
@@ -108,7 +109,7 @@ begin
   begin
     ledFunction := provider.Find(AProfileButton.FunctionUID);
     if Assigned(ledFunction) then
-      Result := ledFunction.CreateWorker(TProfileButtonWorkerSettings.Create(AProfileButton));
+      Result := ledFunction.CreateWorker(TProfileButtonWorkerSettings.Create(AProfileButton), APreviousState);
   end;
 end;
 
@@ -175,26 +176,55 @@ end;
 
 
 procedure TLEDStateConsumer.TMLoadProfile(var Msg: TOmniMessage);
+
+  function GetFunctionKey(const AProviderUID, AFunctionUID: string): string; inline;
+  begin
+    Result := AProviderUID + '|' + AFunctionUID;
+  end;
+
+
 var
   oldWorkers: TInterfaceList;
+  oldStates: TDictionary<string, string>;
   oldWorker: IInterface;
   profile: TProfile;
   buttonIndex: Integer;
   worker: ILEDFunctionWorker;
+  state: ILEDStateWorker;
+  previousState: string;
+  button: TProfileButton;
+  functionKey: string;
 
 begin
   profile := Msg.MsgData;
 
-  { Keep a copy of the old workers until all the new ones are initialized,
-    so we don't get unneccessary SimConnect reconnects. }
-  oldWorkers := TInterfaceList.Create;
+  oldStates := nil;
+  oldWorkers := nil;
   try
+    oldStates := TDictionary<string, string>.Create;
+    oldWorkers := TInterfaceList.Create;
+
+    { Keep a copy of the old workers until all the new ones are initialized,
+      so we don't get unneccessary SimConnect reconnects. }
     for oldWorker in ButtonWorkers do
     begin
       if Assigned(oldWorker) then
       begin
-        (oldWorker as ILEDFunctionWorker).Detach(Self);
-        oldWorkers.Add(oldWorker);
+        worker := (oldWorker as ILEDFunctionWorker);
+        try
+          worker.Detach(Self);
+          oldWorkers.Add(worker);
+
+          { Keep the current state as well, to prevent the LEDs from flickering }
+          state := worker.GetCurrentState;
+          try
+            oldStates.AddOrSetValue(GetFunctionKey(worker.GetProviderUID, worker.GetFunctionUID), state.GetUID);
+          finally
+            state := nil;
+          end;
+        finally
+          worker := nil;
+        end;
       end;
     end;
 
@@ -204,7 +234,14 @@ begin
     begin
       if profile.HasButton(buttonIndex) then
       begin
-        worker := CreateWorker(profile.Buttons[buttonIndex]) as ILEDFunctionWorker;
+        button := profile.Buttons[buttonIndex];
+
+        previousState := '';
+        functionKey := GetFunctionKey(button.ProviderUID, button.FunctionUID);
+        if oldStates.ContainsKey(functionKey) then
+          previousState := oldStates[functionKey];
+
+        worker := CreateWorker(button, previousState) as ILEDFunctionWorker;
         ButtonWorkers.Add(worker);
 
         if Assigned(worker) then
@@ -214,6 +251,7 @@ begin
     end;
   finally
     FreeAndNil(oldWorkers);
+    FreeAndNil(oldStates);
   end;
 
   Changed;

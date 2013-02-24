@@ -2,7 +2,8 @@ unit LEDFunction;
 
 interface
 uses
-  Classes,
+  System.Classes,
+  System.SyncObjs,
 
   LEDFunctionIntf,
   LEDStateIntf;
@@ -10,7 +11,7 @@ uses
 
 type
   TCustomLEDFunctionWorker = class;
-  TCustomLEDFunctionWorkerClass = class of TCustomLEDFunctionWorker;
+  TCustomLEDMultiStateFunctionWorkerClass = class of TCustomLEDMultiStateFunctionWorker;
 
 
   TCustomLEDFunctionProvider = class(TInterfacedObject, ILEDFunctionProvider)
@@ -38,26 +39,27 @@ type
     function GetDisplayName: string; virtual; abstract;
     function GetUID: string; virtual; abstract;
 
-    function CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker; virtual; abstract;
+    function CreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''): ILEDFunctionWorker; virtual; abstract;
   end;
 
 
   TCustomMultiStateLEDFunction = class(TCustomLEDFunction, ILEDMultiStateFunction)
   private
     FStates: TInterfaceList;
+    FProviderUID: string;
   protected
     procedure RegisterStates; virtual; abstract;
     function RegisterState(AState: ILEDState): ILEDState; virtual;
 
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; virtual; abstract;
-    function DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker; virtual;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; virtual; abstract;
+    function DoCreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''): TCustomLEDFunctionWorker; virtual;
   protected
-    function CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker; override;
+    function CreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''): ILEDFunctionWorker; override;
 
     { ILEDMultiStateFunction }
     function GetEnumerator: ILEDStateEnumerator; virtual;
   public
-    constructor Create;
+    constructor Create(const AProviderUID: string);
     destructor Destroy; override;
   end;
 
@@ -65,25 +67,44 @@ type
   TCustomLEDFunctionWorker = class(TInterfacedObject, ILEDFunctionWorker)
   private
     FObservers: TInterfaceList;
-    FStates: TInterfaceList;
+    FProviderUID: string;
+    FFunctionUID: string;
   protected
-    procedure RegisterStates(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings); virtual;
-    function FindState(const AUID: string): ILEDStateWorker; virtual;
-
     procedure NotifyObservers; virtual;
 
     property Observers: TInterfaceList read FObservers;
-    property States: TInterfaceList read FStates;
   protected
     { ILEDFunctionWorker }
     procedure Attach(AObserver: ILEDFunctionObserver); virtual;
     procedure Detach(AObserver: ILEDFunctionObserver); virtual;
 
+    function GetProviderUID: string; virtual;
+    function GetFunctionUID: string; virtual;
+
     function GetCurrentState: ILEDStateWorker; virtual; abstract;
   public
-    constructor Create; overload; virtual;
-    constructor Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings); overload; virtual;
+    constructor Create(const AProviderUID, AFunctionUID: string);
+    destructor Destroy; override;
+  end;
 
+
+  TCustomLEDMultiStateFunctionWorker = class(TCustomLEDFunctionWorker)
+  private
+    FStates: TInterfaceList;
+    FCurrentStateLock: TCriticalSection;
+    FCurrentState: ILEDStateWorker;
+  protected
+    procedure RegisterStates(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings); virtual;
+    function FindState(const AUID: string): ILEDStateWorker; virtual;
+
+    procedure SetCurrentState(const AUID: string; ANotifyObservers: Boolean = True); overload; virtual;
+    procedure SetCurrentState(AState: ILEDStateWorker; ANotifyObservers: Boolean = True); overload; virtual;
+
+    property States: TInterfaceList read FStates;
+  protected
+    function GetCurrentState: ILEDStateWorker; override;
+  public
+    constructor Create(const AProviderUID, AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''); virtual;
     destructor Destroy; override;
   end;
 
@@ -125,11 +146,13 @@ uses
 
 
 { TCustomMultiStateLEDFunction }
-constructor TCustomMultiStateLEDFunction.Create;
+constructor TCustomMultiStateLEDFunction.Create(const AProviderUID: string);
 begin
   inherited Create;
 
   FStates := TInterfaceList.Create;
+  FProviderUID := AProviderUID;
+
   RegisterStates;
 end;
 
@@ -155,39 +178,31 @@ begin
 end;
 
 
-function TCustomMultiStateLEDFunction.CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker;
+function TCustomMultiStateLEDFunction.CreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string): ILEDFunctionWorker;
 begin
-  Result := DoCreateWorker(ASettings);
+  Result := DoCreateWorker(ASettings, APreviousState);
 end;
 
 
-function TCustomMultiStateLEDFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker;
+function TCustomMultiStateLEDFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string): TCustomLEDFunctionWorker;
 begin
-  Result := GetWorkerClass.Create(Self, ASettings);
+  Result := GetWorkerClass.Create(FProviderUID, GetUID, Self, ASettings, APreviousState);
 end;
 
 
 { TCustomLEDFunctionWorker }
-constructor TCustomLEDFunctionWorker.Create;
+constructor TCustomLEDFunctionWorker.Create(const AProviderUID, AFunctionUID: string);
 begin
   inherited Create;
 
   FObservers := TInterfaceList.Create;
-end;
-
-
-constructor TCustomLEDFunctionWorker.Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings);
-begin
-  Create;
-
-  FStates := TInterfaceList.Create;
-  RegisterStates(AStates, ASettings);
+  FProviderUID := AProviderUID;
+  FFunctionUID := AFunctionUID;
 end;
 
 
 destructor TCustomLEDFunctionWorker.Destroy;
 begin
-  FreeAndNil(FStates);
   FreeAndNil(FObservers);
 
   inherited Destroy;
@@ -207,7 +222,57 @@ begin
 end;
 
 
-procedure TCustomLEDFunctionWorker.RegisterStates(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings);
+function TCustomLEDFunctionWorker.GetProviderUID: string;
+begin
+  Result := FProviderUID;
+end;
+
+
+function TCustomLEDFunctionWorker.GetFunctionUID: string;
+begin
+  Result := FFunctionUID;
+end;
+
+
+procedure TCustomLEDFunctionWorker.NotifyObservers;
+var
+  observer: IInterface;
+
+begin
+  for observer in Observers do
+    (observer as ILEDFunctionObserver).ObserveUpdate(Self);
+end;
+
+
+{ TCustomLEDMultiStateFunctionWorker }
+constructor TCustomLEDMultiStateFunctionWorker.Create(const AProviderUID, AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string);
+begin
+  inherited Create(AProviderUID, AFunctionUID);
+
+  FCurrentStateLock := TCriticalSection.Create;
+
+  FStates := TInterfaceList.Create;
+  RegisterStates(AStates, ASettings);
+
+  if Length(APreviousState) > 0 then
+    FCurrentState := FindState(APreviousState);
+
+  { Make sure we have a default state }
+  if (not Assigned(FCurrentState)) and (States.Count > 0) then
+    SetCurrentState((States[0] as ILEDStateWorker), False);
+end;
+
+
+destructor TCustomLEDMultiStateFunctionWorker.Destroy;
+begin
+  FreeAndNil(FCurrentStateLock);
+  FreeAndNil(FStates);
+
+  inherited Destroy;
+end;
+
+
+procedure TCustomLEDMultiStateFunctionWorker.RegisterStates(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings);
 var
   state: ILEDState;
   color: TLEDColor;
@@ -223,7 +288,7 @@ begin
 end;
 
 
-function TCustomLEDFunctionWorker.FindState(const AUID: string): ILEDStateWorker;
+function TCustomLEDMultiStateFunctionWorker.FindState(const AUID: string): ILEDStateWorker;
 var
   state: IInterface;
 
@@ -241,13 +306,37 @@ begin
 end;
 
 
-procedure TCustomLEDFunctionWorker.NotifyObservers;
-var
-  observer: IInterface;
-
+procedure TCustomLEDMultiStateFunctionWorker.SetCurrentState(const AUID: string; ANotifyObservers: Boolean);
 begin
-  for observer in Observers do
-    (observer as ILEDFunctionObserver).ObserveUpdate(Self);
+  SetCurrentState(FindState(AUID), ANotifyObservers);
+end;
+
+
+procedure TCustomLEDMultiStateFunctionWorker.SetCurrentState(AState: ILEDStateWorker; ANotifyObservers: Boolean);
+begin
+  FCurrentStateLock.Acquire;
+  try
+    if AState <> FCurrentState then
+    begin
+      FCurrentState := AState;
+
+      if ANotifyObservers then
+        NotifyObservers;
+    end;
+  finally
+    FCurrentStateLock.Release;
+  end;
+end;
+
+
+function TCustomLEDMultiStateFunctionWorker.GetCurrentState: ILEDStateWorker;
+begin
+  FCurrentStateLock.Acquire;
+  try
+    Result := FCurrentState;
+  finally
+    FCurrentStateLock.Release;
+  end;
 end;
 
 

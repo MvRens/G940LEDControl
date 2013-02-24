@@ -40,7 +40,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     Margins.Bottom = 0
     Align = alBottom
     BevelOuter = bvNone
-    TabOrder = 2
+    TabOrder = 3
     DesignSize = (
       692
       43)
@@ -93,7 +93,8 @@ object ButtonFunctionForm: TButtonFunctionForm
     Header.Font.Name = 'Tahoma'
     Header.Font.Style = []
     Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
-    TabOrder = 0
+    IncrementalSearch = isAll
+    TabOrder = 1
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoSort, toAutoTristateTracking, toAutoDeleteMovedNodes]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toWheelPanning, toEditOnClick]
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
@@ -101,6 +102,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     OnFocusChanged = vstFunctionsFocusChanged
     OnGetText = vstFunctionsGetText
     OnPaintText = vstFunctionsPaintText
+    OnIncrementalSearch = vstFunctionsIncrementalSearch
     Columns = <
       item
         Position = 0
@@ -120,7 +122,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     Margins.Bottom = 0
     Align = alClient
     BevelOuter = bvNone
-    TabOrder = 1
+    TabOrder = 2
     object pnlName: TPanel
       Left = 0
       Top = 0
@@ -203,7 +205,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     BevelOuter = bvNone
     Color = clWindow
     ParentBackground = False
-    TabOrder = 3
+    TabOrder = 0
     DesignSize = (
       692
       50)

@@ -179,8 +179,8 @@ begin
 
   for buttonIndex := 0 to Pred(G940_BUTTONCOUNT) do
   begin
-    if buttonIndex >= ButtonColors.Count then
-      buttonColor := lcOff
+    if (buttonIndex >= ButtonColors.Count) or (not Assigned(ButtonColors[buttonIndex])) then
+      buttonColor := lcGreen
     else
       buttonColor := (ButtonColors[buttonIndex] as ILEDStateColor).GetCurrentColor;
 

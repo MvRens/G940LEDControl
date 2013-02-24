@@ -49,6 +49,7 @@ type
     procedure vstFunctionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure vstFunctionsPaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType);
     procedure vstFunctionsFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
+    procedure vstFunctionsIncrementalSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; const SearchText: string; var Result: Integer);
     procedure btnOKClick(Sender: TObject);
   private
     FProfile: TProfile;
@@ -97,6 +98,7 @@ type
 
 implementation
 uses
+  System.Math,
   System.SysUtils,
   Winapi.Windows,
 
@@ -377,6 +379,9 @@ var
   color: TLEDColor;
 
 begin
+  if not Assigned(Button) then
+    FButton := Profile.Buttons[ButtonIndex];
+
   Button.ProviderUID := SelectedProvider.GetUID;
   Button.FunctionUID := SelectedFunction.GetUID;
 
@@ -435,6 +440,24 @@ begin
     ntCategory: CellText := nodeData^.LEDFunction.GetCategoryName;
     ntFunction: CellText := nodeData^.LEDFunction.GetDisplayName;
   end;
+end;
+
+
+procedure TButtonFunctionForm.vstFunctionsIncrementalSearch(Sender: TBaseVirtualTree; Node: PVirtualNode;
+                                                            const SearchText: string; var Result: Integer);
+var
+  nodeData: PFunctionNodeData;
+  displayName: string;
+
+begin
+  nodeData := Sender.GetNodeData(Node);
+
+  if nodeData^.NodeType = ntFunction then
+  begin
+    displayName := nodeData^.LEDFunction.GetDisplayName;
+    Result := StrLIComp(PChar(displayName), PChar(SearchText), Min(Length(displayName), Length(searchText)));
+  end else
+    Result := -1;
 end;
 
 

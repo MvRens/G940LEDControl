@@ -28,6 +28,8 @@ type
     constructor Create;
     destructor Destroy; override;
 
+    procedure Assign(Source: TPersistent); override;
+
     procedure ClearStateColors;
     function GetStateColor(const AStateUID: string; out AValue: TLEDColor): Boolean;
     procedure SetStateColor(const AStateUID: string; const AValue: TLEDColor);
@@ -43,20 +45,24 @@ type
   TProfile = class(TPersistent)
   private
     FName: string;
+    FIsTemporary: Boolean;
     FButtons: TProfileButtonList;
 
     function GetButton(Index: Integer): TProfileButton;
     function GetButtonCount: Integer;
   protected
-    function Load(AReader: IX2PersistReader): Boolean;
+    procedure Load(AReader: IX2PersistReader);
     procedure Save(AWriter: IX2PersistWriter);
   public
     constructor Create;
     destructor Destroy; override;
 
+    procedure Assign(Source: TPersistent); override;
+
     function HasButton(AIndex: Integer): Boolean;
 
     property Name: string read FName write FName;
+    property IsTemporary: Boolean read FIsTemporary write FIsTemporary;
 
     property ButtonCount: Integer read GetButtonCount;
     property Buttons[Index: Integer]: TProfileButton read GetButton;
@@ -65,6 +71,8 @@ type
 
   TProfileList = class(TObjectList<TProfile>)
   public
+    function Find(const AName: string): TProfile;
+
     procedure Load(AReader: IX2PersistReader);
     procedure Save(AWriter: IX2PersistWriter);
   end;
@@ -84,6 +92,7 @@ const
 
   KeyProviderUID = 'ProviderUID';
   KeyFunctionUID = 'FunctionUID';
+  KeyIsTemporary = 'IsTemporary';
 
 
 { TProfileButton }
@@ -100,6 +109,27 @@ begin
   FreeAndNil(FStateColors);
 
   inherited Destroy;
+end;
+
+
+procedure TProfileButton.Assign(Source: TPersistent);
+var
+  sourceButton: TProfileButton;
+  stateUID: string;
+
+begin
+  if Source is TProfileButton then
+  begin
+    sourceButton := TProfileButton(Source);
+
+    FProviderUID := sourceButton.ProviderUID;
+    FFunctionUID := sourceButton.FunctionUID;
+
+    FStateColors.Clear;
+    for stateUID in sourceButton.StateColors.Keys do
+      SetStateColor(stateUID, sourceButton.StateColors[stateUID]);
+  end else
+    inherited Assign(Source);
 end;
 
 
@@ -192,14 +222,37 @@ begin
 end;
 
 
-function TProfile.Load(AReader: IX2PersistReader): Boolean;
+procedure TProfile.Assign(Source: TPersistent);
+var
+  sourceProfile: TProfile;
+  buttonIndex: Integer;
+
+begin
+  if Source is TProfile then
+  begin
+    sourceProfile := TProfile(Source);
+
+    FName := sourceProfile.Name;
+    FIsTemporary := sourceProfile.IsTemporary;
+
+    FButtons.Clear;
+    for buttonIndex := 0 to Pred(sourceProfile.ButtonCount) do
+      Buttons[buttonIndex].Assign(sourceProfile.Buttons[buttonIndex]);
+  end else
+    inherited Assign(Source);
+end;
+
+
+procedure TProfile.Load(AReader: IX2PersistReader);
 var
   buttonIndex: Integer;
   button: TProfileButton;
 
 begin
-  Result := False;
   buttonIndex := 0;
+
+  if not AReader.ReadBoolean(KeyIsTemporary, FIsTemporary) then
+    FIsTemporary := False;
 
   while AReader.BeginSection(SectionButton + IntToStr(buttonIndex)) do
   try
@@ -207,7 +260,6 @@ begin
     if button.Load(AReader) then
     begin
       FButtons.Add(button);
-      Result := True;
     end else
       FreeAndNil(button);
   finally
@@ -222,6 +274,8 @@ var
   buttonIndex: Integer;
 
 begin
+  AWriter.WriteBoolean(KeyIsTemporary, IsTemporary);
+
   for buttonIndex := 0 to Pred(FButtons.Count) do
   begin
     if AWriter.BeginSection(SectionButton + IntToStr(buttonIndex)) then
@@ -272,6 +326,22 @@ end;
 
 
 { TProfileList }
+function TProfileList.Find(const AName: string): TProfile;
+var
+  profile: TProfile;
+
+begin
+  Result := nil;
+
+  for profile in Self do
+    if SameText(profile.Name, AName) then
+    begin
+      Result := profile;
+      break;
+    end;
+end;
+
+
 procedure TProfileList.Load(AReader: IX2PersistReader);
 var
   profiles: TStringList;
@@ -291,11 +361,9 @@ begin
         try
           profile := TProfile.Create;
           profile.Name := profileName;
+          profile.Load(AReader);
 
-          if profile.Load(AReader) then
-            Add(profile)
-          else
-            FreeAndNil(profile);
+          Add(profile);
         finally
           AReader.EndSection;
         end;

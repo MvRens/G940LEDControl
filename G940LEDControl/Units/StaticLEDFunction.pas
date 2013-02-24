@@ -25,7 +25,7 @@ type
     function GetDisplayName: string; override;
     function GetUID: string; override;
 
-    function CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker; override;
+    function CreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''): ILEDFunctionWorker; override;
   public
     constructor Create(AColor: TLEDColor);
   end;
@@ -46,7 +46,7 @@ type
   protected
     function GetCurrentState: ILEDStateWorker; override;
   public
-    constructor Create(AColor: TLEDColor);
+    constructor Create(const AProviderUID, AFunctionUID: string; AColor: TLEDColor);
   end;
 
 
@@ -94,16 +94,16 @@ begin
 end;
 
 
-function TStaticLEDFunction.CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker;
+function TStaticLEDFunction.CreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string): ILEDFunctionWorker;
 begin
-  Result := TStaticLEDFunctionWorker.Create(FColor);
+  Result := TStaticLEDFunctionWorker.Create(StaticProviderUID, GetUID, FColor);
 end;
 
 
 { TStaticLEDFunctionWorker }
-constructor TStaticLEDFunctionWorker.Create(AColor: TLEDColor);
+constructor TStaticLEDFunctionWorker.Create(const AProviderUID, AFunctionUID: string; AColor: TLEDColor);
 begin
-  inherited Create;
+  inherited Create(AProviderUID, AFunctionUID);
 
   FState := TLEDStateWorker.Create('', TLEDColorPool.GetColor(AColor));
 end;

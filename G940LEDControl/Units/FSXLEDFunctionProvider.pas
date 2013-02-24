@@ -41,7 +41,7 @@ type
     FDisplayName: string;
     FUID: string;
   protected
-    function DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker; override;
+    function DoCreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''): TCustomLEDFunctionWorker; override;
 
     property Provider: TFSXLEDFunctionProvider read FProvider;
   protected
@@ -56,30 +56,23 @@ type
   TCustomFSXFunctionClass = class of TCustomFSXFunction;
 
 
-  TCustomFSXFunctionWorker = class(TCustomLEDFunctionWorker)
+  TCustomFSXFunctionWorker = class(TCustomLEDMultiStateFunctionWorker)
   private
     FDataHandler: IFSXSimConnectDataHandler;
     FDefinitionID: Cardinal;
     FSimConnect: IFSXSimConnect;
-    FCurrentStateLock: TCriticalSection;
-    FCurrentState: ILEDStateWorker;
   protected
-    procedure RegisterStates(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings); override;
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); virtual; abstract;
 
-    procedure SetCurrentState(const AUID: string; ANotifyObservers: Boolean = True); overload; virtual;
-    procedure SetCurrentState(AState: ILEDStateWorker; ANotifyObservers: Boolean = True); overload; virtual;
     procedure SetSimConnect(const Value: IFSXSimConnect); virtual;
 
     property DataHandler: IFSXSimConnectDataHandler read FDataHandler;
     property DefinitionID: Cardinal read FDefinitionID;
     property SimConnect: IFSXSimConnect read FSimConnect write SetSimConnect;
   protected
-    function GetCurrentState: ILEDStateWorker; override;
-
     procedure HandleData(AData: Pointer); virtual; abstract;
   public
-    constructor Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings); override;
+    constructor Create(const AProviderUID, AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''); override;
     destructor Destroy; override;
   end;
 
@@ -129,20 +122,22 @@ end;
 
 procedure TFSXLEDFunctionProvider.RegisterFunctions;
 begin
-  { Misc }
-  RegisterFunction(TFSXAvionicsMasterFunction.Create(     Self, FSXFunctionDisplayNameAvionicsMaster,       FSXFunctionUIDAvionicsMaster));
+  { Systems }
   RegisterFunction(TFSXBatteryMasterFunction.Create(      Self, FSXFunctionDisplayNameBatteryMaster,        FSXFunctionUIDBatteryMaster));
   RegisterFunction(TFSXDeIceFunction.Create(              Self, FSXFunctionDisplayNameDeIce,                FSXFunctionUIDDeIce));
-  RegisterFunction(TFSXEngineAntiIceFunction.Create(      Self, FSXFunctionDisplayNameEngineAntiIce,        FSXFunctionUIDEngineAntiIce));
-  RegisterFunction(TFSXEngineFunction.Create(             Self, FSXFunctionDisplayNameEngine,               FSXFunctionUIDEngine));
   RegisterFunction(TFSXExitDoorFunction.Create(           Self, FSXFunctionDisplayNameExitDoor,             FSXFunctionUIDExitDoor));
-  RegisterFunction(TFSXFlapsFunction.Create(              Self, FSXFunctionDisplayNameFlaps,                FSXFunctionUIDFlaps));
-  RegisterFunction(TFSXFuelPumpFunction.Create(           Self, FSXFunctionDisplayNameFuelPump,             FSXFunctionUIDFuelPump));
   RegisterFunction(TFSXGearFunction.Create(               Self, FSXFunctionDisplayNameGear,                 FSXFunctionUIDGear));
   RegisterFunction(TFSXParkingBrakeFunction.Create(       Self, FSXFunctionDisplayNameParkingBrake,         FSXFunctionUIDParkingBrake));
   RegisterFunction(TFSXPressDumpSwitchFunction.Create(    Self, FSXFunctionDisplayNamePressDumpSwitch,      FSXFunctionUIDPressDumpSwitch));
-  RegisterFunction(TFSXSpoilersFunction.Create(           Self, FSXFunctionDisplayNameSpoilers,             FSXFunctionUIDSpoilers));
   RegisterFunction(TFSXTailHookFunction.Create(           Self, FSXFunctionDisplayNameTailHook,             FSXFunctionUIDTailHook));
+
+  { Engines }
+  RegisterFunction(TFSXEngineAntiIceFunction.Create(      Self, FSXFunctionDisplayNameEngineAntiIce,        FSXFunctionUIDEngineAntiIce));
+  RegisterFunction(TFSXEngineFunction.Create(             Self, FSXFunctionDisplayNameEngine,               FSXFunctionUIDEngine));
+
+  { Control surfaces }
+  RegisterFunction(TFSXFlapsFunction.Create(              Self, FSXFunctionDisplayNameFlaps,                FSXFunctionUIDFlaps));
+  RegisterFunction(TFSXSpoilersFunction.Create(           Self, FSXFunctionDisplayNameSpoilers,             FSXFunctionUIDSpoilers));
 
   { Lights }
   RegisterFunction(TFSXBeaconLightsFunction.Create(       Self, FSXFunctionDisplayNameBeaconLights,         FSXFunctionUIDBeaconLights));
@@ -160,6 +155,9 @@ begin
   RegisterFunction(TFSXAutoPilotBackcourseFunction.Create(Self, FSXFunctionDisplayNameAutoPilotBackcourse,  FSXFunctionUIDAutoPilotBackcourse));
   RegisterFunction(TFSXAutoPilotHeadingFunction.Create(   Self, FSXFunctionDisplayNameAutoPilotHeading,     FSXFunctionUIDAutoPilotHeading));
   RegisterFunction(TFSXAutoPilotNavFunction.Create(       Self, FSXFunctionDisplayNameAutoPilotNav,         FSXFunctionUIDAutoPilotNav));
+
+  { Radios }
+  RegisterFunction(TFSXAvionicsMasterFunction.Create(     Self, FSXFunctionDisplayNameAvionicsMaster,       FSXFunctionUIDAvionicsMaster));
 end;
 
 
@@ -202,7 +200,7 @@ end;
 { TCustomFSXFunction }
 constructor TCustomFSXFunction.Create(AProvider: TFSXLEDFunctionProvider; const ADisplayName, AUID: string);
 begin
-  inherited Create;
+  inherited Create(AProvider.GetUID);
 
   FProvider := AProvider;
   FDisplayName := ADisplayName;
@@ -210,9 +208,9 @@ begin
 end;
 
 
-function TCustomFSXFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker;
+function TCustomFSXFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string): TCustomLEDFunctionWorker;
 begin
-  Result := inherited DoCreateWorker(ASettings);
+  Result := inherited DoCreateWorker(ASettings, APreviousState);
 
   (Result as TCustomFSXFunctionWorker).SimConnect := Provider.GetSimConnect;
 end;
@@ -237,71 +235,23 @@ end;
 
 
 { TCustomFSXFunctionWorker }
-constructor TCustomFSXFunctionWorker.Create(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings);
+constructor TCustomFSXFunctionWorker.Create(const AProviderUID, AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string);
 begin
-  FCurrentStateLock := TCriticalSection.Create;
-
   { We can't pass ourselves as the Data Handler, as it would keep a reference to
     this worker from the SimConnect interface. That'd mean the worker never
     gets destroyed, and SimConnect never shuts down. Hence this proxy class. }
   FDataHandler := TCustomFSXFunctionWorkerDataHandler.Create(Self);
 
-  inherited Create(AStates, ASettings);
+  inherited Create(AProviderUID, AFunctionUID, AStates, ASettings, APreviousState);
 end;
 
 
 destructor TCustomFSXFunctionWorker.Destroy;
 begin
-  FreeAndNil(FCurrentStateLock);
-
   if DefinitionID <> 0 then
     SimConnect.RemoveDefinition(DefinitionID, DataHandler);
 
   inherited Destroy;
-end;
-
-
-procedure TCustomFSXFunctionWorker.RegisterStates(AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings);
-begin
-  inherited RegisterStates(AStates, ASettings);
-
-  { Make sure we have a default state }
-  if States.Count > 0 then
-    SetCurrentState((States[0] as ILEDStateWorker), False);
-end;
-
-
-function TCustomFSXFunctionWorker.GetCurrentState: ILEDStateWorker;
-begin
-  FCurrentStateLock.Acquire;
-  try
-    Result := FCurrentState;
-  finally
-    FCurrentStateLock.Release;
-  end;
-end;
-
-
-procedure TCustomFSXFunctionWorker.SetCurrentState(const AUID: string; ANotifyObservers: Boolean);
-begin
-  SetCurrentState(FindState(AUID), ANotifyObservers);
-end;
-
-
-procedure TCustomFSXFunctionWorker.SetCurrentState(AState: ILEDStateWorker; ANotifyObservers: Boolean);
-begin
-  FCurrentStateLock.Acquire;
-  try
-    if AState <> FCurrentState then
-    begin
-      FCurrentState := AState;
-
-      if ANotifyObservers then
-        NotifyObservers;
-    end;
-  finally
-    FCurrentStateLock.Release;
-  end;
 end;
 
 

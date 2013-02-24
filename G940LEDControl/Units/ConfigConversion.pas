@@ -106,20 +106,61 @@ begin
     V0_FUNCTIONFSX_ENGINEANTIICE:               SetButton(FSXProviderUID, FSXFunctionUIDEngineAntiIce);
     V0_FUNCTIONFSX_AUTOPILOT:
       begin
-        { The only exception regarding states; the new default is Amber / Off }
+        { The new default is Green / Off }
         SetButton(FSXProviderUID, FSXFunctionUIDAutoPilot);
         AButton.SetStateColor(FSXStateUIDOn, lcGreen);
         AButton.SetStateColor(FSXStateUIDOff, lcRed);
       end;
 
-    V0_FUNCTIONFSX_FUELPUMP:                    SetButton(FSXProviderUID, FSXFunctionUIDFuelPump);
     V0_FUNCTIONFSX_TAILHOOK:                    SetButton(FSXProviderUID, FSXFunctionUIDTailHook);
-    V0_FUNCTIONFSX_AUTOPILOT_AMBER:             SetButton(FSXProviderUID, FSXFunctionUIDAutoPilot);
-    V0_FUNCTIONFSX_AUTOPILOT_HEADING:           SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotHeading);
-    V0_FUNCTIONFSX_AUTOPILOT_APPROACH:          SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotApproach);
-    V0_FUNCTIONFSX_AUTOPILOT_BACKCOURSE:        SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotBackcourse);
-    V0_FUNCTIONFSX_AUTOPILOT_ALTITUDE:          SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotAltitude);
-    V0_FUNCTIONFSX_AUTOPILOT_NAV:               SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotNav);
+    V0_FUNCTIONFSX_AUTOPILOT_AMBER:
+      begin
+        { The new default is Green / Off }
+        SetButton(FSXProviderUID, FSXFunctionUIDAutoPilot);
+        AButton.SetStateColor(FSXStateUIDOn, lcAmber);
+        AButton.SetStateColor(FSXStateUIDOff, lcOff);
+      end;
+
+    V0_FUNCTIONFSX_AUTOPILOT_HEADING:
+      begin
+        { The new default is Green / Off }
+        SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotHeading);
+        AButton.SetStateColor(FSXStateUIDOn, lcAmber);
+        AButton.SetStateColor(FSXStateUIDOff, lcOff);
+      end;
+
+    V0_FUNCTIONFSX_AUTOPILOT_APPROACH:
+      begin
+        { The new default is Green / Off }
+        SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotApproach);
+        AButton.SetStateColor(FSXStateUIDOn, lcAmber);
+        AButton.SetStateColor(FSXStateUIDOff, lcOff);
+      end;
+
+    V0_FUNCTIONFSX_AUTOPILOT_BACKCOURSE:
+      begin
+        { The new default is Green / Off }
+        SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotBackcourse);
+        AButton.SetStateColor(FSXStateUIDOn, lcAmber);
+        AButton.SetStateColor(FSXStateUIDOff, lcOff);
+      end;
+
+    V0_FUNCTIONFSX_AUTOPILOT_ALTITUDE:
+      begin
+        { The new default is Green / Off }
+        SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotAltitude);
+        AButton.SetStateColor(FSXStateUIDOn, lcAmber);
+        AButton.SetStateColor(FSXStateUIDOff, lcOff);
+      end;
+
+    V0_FUNCTIONFSX_AUTOPILOT_NAV:
+      begin
+        { The new default is Green / Off }
+        SetButton(FSXProviderUID, FSXFunctionUIDAutoPilotNav);
+        AButton.SetStateColor(FSXStateUIDOn, lcAmber);
+        AButton.SetStateColor(FSXStateUIDOff, lcOff);
+      end;
+
     V0_FUNCTIONFSX_TAXILIGHTS:                  SetButton(FSXProviderUID, FSXFunctionUIDTaxiLights);
     V0_FUNCTIONFSX_RECOGNITIONLIGHTS:           SetButton(FSXProviderUID, FSXFunctionUIDRecognitionLights);
     V0_FUNCTIONFSX_DEICE:                       SetButton(FSXProviderUID, FSXFunctionUIDDeIce);

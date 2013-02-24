@@ -29,7 +29,7 @@ type
     function GetDisplayName: string;
     function GetUID: string;
 
-    function CreateWorker(ASettings: ILEDFunctionWorkerSettings): ILEDFunctionWorker;
+    function CreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''): ILEDFunctionWorker;
   end;
 
 
@@ -49,6 +49,9 @@ type
     ['{5EF3230D-B52F-4BD6-8AD3-F3A035F155B1}']
     procedure Attach(AObserver: ILEDFunctionObserver);
     procedure Detach(AObserver: ILEDFunctionObserver);
+
+    function GetProviderUID: string;
+    function GetFunctionUID: string;
 
     function GetCurrentState: ILEDStateWorker;
   end;

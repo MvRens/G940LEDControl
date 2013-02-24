@@ -6,8 +6,12 @@ const
 
   FSXProviderUID = 'fsx';
   FSXCategory = 'Flight Simulator X';
+  FSXCategorySystems = FSXCategory + ' - Systems';
+  FSXCategoryEngines = FSXCategory + ' - Engines';
+  FSXCategoryControlSurfaces = FSXCategory + ' - Control surfaces';
   FSXCategoryLights = FSXCategory + ' - Lights';
   FSXCategoryAutoPilot = FSXCategory + ' - Autopilot';
+  FSXCategoryRadios = FSXCategory + ' - Radios';
 
   FSXStateUIDOn = 'on';
   FSXStateUIDOff = 'off';
@@ -73,8 +77,10 @@ const
   FSXFunctionUIDRecognitionLights = 'recognitionLights';
     FSXFunctionDisplayNameRecognitionLights = 'Recognition lights';
 
+
   FSXFunctionUIDParkingBrake = 'parkingBrake';
     FSXFunctionDisplayNameParkingBrake = 'Parking brake';
+
 
   FSXFunctionUIDExitDoor = 'exitDoor';
     FSXFunctionDisplayNameExitDoor = 'Exit door';
@@ -86,6 +92,7 @@ const
     FSXStateDisplayNameExitDoorClosed = 'Closed';
     FSXStateDisplayNameExitDoorBetween = 'Opening / closing';
     FSXStateDisplayNameExitDoorOpen = 'Open';
+
 
   FSXFunctionUIDTailHook = 'tailHook';
     FSXFunctionDisplayNameTailHook = 'Tail hook';
@@ -106,11 +113,15 @@ const
     FSXStateUIDFlapsRetracted = 'retracted';
     FSXStateUIDFlapsBetween = 'between';
     FSXStateUIDFlapsExtended = 'extended';
+    FSXStateUIDFlapsSpeedExceeded = 'speedExceeded';
+    FSXStateUIDFlapsDamageBySpeed = 'damageBySpeed';
 
     FSXStateDisplayNameFlapsNotAvailable = 'No flaps';
     FSXStateDisplayNameFlapsRetracted = 'Retracted';
     FSXStateDisplayNameFlapsBetween = 'Extending / retracting';
     FSXStateDisplayNameFlapsExtended = 'Extended';
+    FSXStateDisplayNameFlapsSpeedExceeded = 'Speed exceeded';
+    FSXStateDisplayNameFlapsDamageBySpeed = 'Damage by speed';
 
 
   FSXFunctionUIDSpoilers = 'spoilers';
@@ -130,8 +141,10 @@ const
   FSXFunctionUIDBatteryMaster = 'batteryMaster';
     FSXFunctionDisplayNameBatteryMaster = 'Battery master';
 
+
   FSXFunctionUIDAvionicsMaster = 'avionicsMaster';
     FSXFunctionDisplayNameAvionicsMaster = 'Avionics master';
+
 
   FSXFunctionUIDPressDumpSwitch = 'pressurizationDumpSwitch';
     FSXFunctionDisplayNamePressDumpSwitch = 'Pressurization dump switch';
@@ -139,11 +152,23 @@ const
   FSXFunctionUIDEngineAntiIce = 'engineAntiIce';
     FSXFunctionDisplayNameEngineAntiIce = 'Engine anti-ice';
 
-  FSXFunctionUIDFuelPump = 'fuelPump';
-    FSXFunctionDisplayNameFuelPump = 'Fuel pump';
+    FSXStateUIDEngineAntiIceNoEngines = 'noEngines';
+    FSXStateUIDEngineAntiIceAll = 'all';
+    FSXStateUIDEngineAntiIcePartial = 'partial';
+    FSXStateUIDEngineAntiIceNone = 'none';
+
+    FSXStateDisplayNameEngineAntiIceNoEngines = 'No engines';
+    FSXStateDisplayNameEngineAntiIceAll = 'All';
+    FSXStateDisplayNameEngineAntiIcePartial = 'Partial';
+    FSXStateDisplayNameEngineAntiIceNone = 'None';
+
 
   FSXFunctionUIDDeIce = 'structuralDeIce';
     FSXFunctionDisplayNameDeIce = 'De-ice';
+
+
+  FSXStateUIDAutoPilotNotAvailable = 'notAvailable';
+  FSXStateDisplayNameAutoPilotNotAvailable = 'Not available';
 
   FSXFunctionUIDAutoPilot = 'autoPilotMaster';
     FSXFunctionDisplayNameAutoPilot = 'Autopilot master';

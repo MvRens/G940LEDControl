@@ -55,6 +55,14 @@ type
   end;
 
 
+  TFSXSimConnectState = (scsDisconnected, scsConnected, scsFailed);
+
+  IFSXSimConnectStateObserver = interface
+    ['{0508904F-8189-479D-AF70-E98B00C9D9B2}']
+    procedure ObserverStateUpdate(ANewState: TFSXSimConnectState);
+  end;
+
+
 const
   FSX_UNIT_PERCENT = 'percent';
   FSX_UNIT_MASK = 'mask';

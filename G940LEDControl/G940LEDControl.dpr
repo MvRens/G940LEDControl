@@ -29,7 +29,8 @@ uses
   FSXLEDFunction in 'Units\FSXLEDFunction.pas',
   LEDResources in 'Units\LEDResources.pas',
   Settings in 'Units\Settings.pas',
-  FSXLEDFunctionWorker in 'Units\FSXLEDFunctionWorker.pas';
+  FSXLEDFunctionWorker in 'Units\FSXLEDFunctionWorker.pas',
+  FSXSimConnectStateMonitor in 'Units\FSXSimConnectStateMonitor.pas';
 
 {$R *.res}
 

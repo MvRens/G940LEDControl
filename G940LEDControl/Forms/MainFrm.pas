@@ -19,6 +19,7 @@ uses
   pngimage,
   X2UtPersistIntf,
 
+  FSXSimConnectIntf,
   LEDStateConsumer,
   Profile,
   Settings;
@@ -27,8 +28,9 @@ uses
 const
   CM_ASKAUTOUPDATE = WM_APP + 1;
 
-  MSG_UPDATE = 1;
-  MSG_NOUPDATE = 2;
+  TM_UPDATE = 1;
+  TM_NOUPDATE = 2;
+  TM_FSXSTATE = 3;
 
   LED_COUNT = 8;
 
@@ -95,6 +97,12 @@ type
     btnSaveProfile: TButton;
     btnDeleteProfile: TButton;
     bvlProfiles: TBevel;
+    pnlFSX: TPanel;
+    imgFSXStateNotConnected: TImage;
+    imgFSXStateConnected: TImage;
+    lblFSX: TLabel;
+    lblFSXState: TLabel;
+    pnlState: TPanel;
 
     procedure FormCreate(Sender: TObject);
     procedure lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
@@ -103,6 +111,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure cmbProfilesClick(Sender: TObject);
     procedure cbCheckUpdatesClick(Sender: TObject);
+    procedure btnSaveProfileClick(Sender: TObject);
+    procedure btnDeleteProfileClick(Sender: TObject);
   private
     FLEDControls: array[0..LED_COUNT - 1] of TLEDControls;
     FEventMonitor: TOmniEventMonitor;
@@ -110,7 +120,7 @@ type
     FProfilesFilename: string;
     FProfiles: TProfileList;
     FActiveProfile: TProfile;
-    FLoadingProfiles: Boolean;
+    FLockChangeProfile: Boolean;
     FStateConsumerTask: IOmniTaskControl;
 
     FDeviceNotification: Pointer;
@@ -118,6 +128,8 @@ type
 
     FSettingsFileName: string;
     FSettings: TSettings;
+
+    procedure SetActiveProfile(const Value: TProfile);
   protected
     procedure RegisterDeviceArrival;
     procedure UnregisterDeviceArrival;
@@ -135,7 +147,12 @@ type
     procedure LoadActiveProfile;
     procedure UpdateButton(AProfile: TProfile; AButtonIndex: Integer);
 
+    procedure AddProfile(AProfile: TProfile);
+    procedure UpdateProfile(AProfile: TProfile);
+    procedure DeleteProfile(AProfile: TProfile; ASetActiveProfile: Boolean);
+
     procedure SetDeviceState(const AMessage: string; AFound: Boolean);
+    procedure SetFSXState(const AMessage: string; AConnected: Boolean);
 //    procedure SetFSXToggleZoomButton(const ADeviceGUID: TGUID; AButtonIndex: Integer; const ADisplayText: string);
 
     procedure CheckForUpdatesThread(const ATask: IOmniTask);
@@ -144,11 +161,12 @@ type
     procedure EventMonitorMessage(const task: IOmniTaskControl; const msg: TOmniMessage);
     procedure EventMonitorTerminated(const task: IOmniTaskControl);
 
-    procedure HandleDeviceStateMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
+    procedure HandleDeviceStateMessage(AMessage: TOmniMessage);
+    procedure HandleFSXStateMessage(AMessage: TOmniMessage);
 
     procedure CMAskAutoUpdate(var Msg: TMessage); message CM_ASKAUTOUPDATE;
 
-    property ActiveProfile: TProfile read FActiveProfile;
+    property ActiveProfile: TProfile read FActiveProfile write SetActiveProfile;
     property EventMonitor: TOmniEventMonitor read FEventMonitor;
     property Profiles: TProfileList read FProfiles;
     property Settings: TSettings read FSettings;
@@ -158,11 +176,11 @@ type
 
 implementation
 uses
-  ComObj,
-  Dialogs,
-  Graphics,
-  ShellAPI,
-  SysUtils,
+  System.SysUtils,
+  System.Win.ComObj,
+  Vcl.Dialogs,
+  Vcl.Graphics,
+  Winapi.ShellAPI,
 
   IdException,
   IdHTTP,
@@ -172,6 +190,7 @@ uses
 
   ButtonFunctionFrm,
   ConfigConversion,
+  FSXSimConnectStateMonitor,
   G940LEDStateConsumer,
   LEDColorIntf,
   LEDFunctionIntf,
@@ -184,15 +203,31 @@ uses
 
 const
   DefaultProfileName = 'Default';
+  ProfilePostfixModified = ' (modified)';
 
-  FILENAME_PROFILES = 'G940LEDControl\Profiles.xml';
-  FILENAME_SETTINGS = 'G940LEDControl\Settings.xml';
+  FilenameProfiles = 'G940LEDControl\Profiles.xml';
+  FilenameSettings = 'G940LEDControl\Settings.xml';
 
-  SPECIAL_CATEGORY = -1;
+  TextStateSearching = 'Searching...';
+  TextStateNotFound = 'Not found';
+  TextStateFound = 'Connected';
 
-  TEXT_STATE_SEARCHING = 'Searching...';
-  TEXT_STATE_NOTFOUND = 'Not found';
-  TEXT_STATE_FOUND = 'Connected';
+  TextFSXConnected = 'Connected';
+  TextFSXDisconnected = 'Not connected';
+  TextFSXFailed = 'Failed to connect';
+
+
+
+
+type
+  TFSXStateMonitorWorker = class(TOmniWorker, IFSXSimConnectStateObserver)
+  protected
+    function Initialize: Boolean; override;
+    procedure Cleanup; override;
+
+    { IFSXSimConnectStateObserver }
+    procedure ObserverStateUpdate(ANewState: TFSXSimConnectState);
+  end;
 
 
 
@@ -200,7 +235,7 @@ const
 { TMainForm }
 procedure TMainForm.FormCreate(Sender: TObject);
 var
-  consumer: IOmniWorker;
+  worker: IOmniWorker;
 
 begin
   lblVersion.Caption := App.Version.FormatVersion(False);
@@ -209,24 +244,24 @@ begin
 
   FEventMonitor := TOmniEventMonitor.Create(Self);
 
-  consumer := TG940LEDStateConsumer.Create;
-  FStateConsumerTask := FEventMonitor.Monitor(CreateTask(consumer)).MsgWait;
+  worker := TG940LEDStateConsumer.Create;
+  FStateConsumerTask := EventMonitor.Monitor(CreateTask(worker)).MsgWait;
 
   EventMonitor.OnTaskMessage := EventMonitorMessage;
   EventMonitor.OnTaskTerminated := EventMonitorTerminated;
   StateConsumerTask.Run;
 
+  worker := TFSXStateMonitorWorker.Create;
+  EventMonitor.Monitor(CreateTask(worker)).Run;
+
   FindLEDControls;
 
-  FProfilesFilename := App.UserPath + FILENAME_PROFILES;
+  FProfilesFilename := App.UserPath + FilenameProfiles;
   FProfiles := TProfileList.Create(True);
   LoadProfiles;
 
-  FSettingsFileName := App.UserPath + FILENAME_SETTINGS;
+  FSettingsFileName := App.UserPath + FilenameSettings;
   LoadSettings;
-
-  // #ToDo1 -oMvR: 22-2-2013: implement profile changing properly
-  FStateConsumerTask.Comm.Send(TM_LOADPROFILE, ActiveProfile);
 
   RegisterDeviceArrival;
 end;
@@ -336,13 +371,15 @@ begin
     defaultProfile := ConfigConversion.ConvertProfile0To1;
 
     if not Assigned(defaultProfile) then
-      defaultProfile := CreateDefaultProfile;
-
-    if Assigned(defaultProfile) then
+      defaultProfile := CreateDefaultProfile
+    else
     begin
       defaultProfile.Name := DefaultProfileName;
-      Profiles.Add(defaultProfile);
+      defaultProfile.IsTemporary := True;
     end;
+
+    if Assigned(defaultProfile) then
+      Profiles.Add(defaultProfile);
   end else
   begin
     persistXML := TX2UtPersistXML.Create;
@@ -354,7 +391,11 @@ begin
     end;
   end;
 
-  FLoadingProfiles := True;
+  { Make sure we always have a profile }
+  if Profiles.Count = 0 then
+    Profiles.Add(CreateDefaultProfile);
+
+  FLockChangeProfile := True;
   try
     cmbProfiles.Items.BeginUpdate;
     try
@@ -364,17 +405,9 @@ begin
         cmbProfiles.Items.AddObject(profile.Name, profile);
     finally
       cmbProfiles.Items.EndUpdate;
-
-      if cmbProfiles.Items.Count > 0 then
-      begin
-        cmbProfiles.ItemIndex := 0;
-
-        FActiveProfile := TProfile(cmbProfiles.Items.Objects[0]);
-        LoadActiveProfile;
-      end;
     end;
   finally
-    FLoadingProfiles := False;
+    FLockChangeProfile := False;
   end;
 end;
 
@@ -397,6 +430,7 @@ end;
 procedure TMainForm.LoadSettings;
 var
   persistXML: TX2UtPersistXML;
+  profile: TProfile;
 
 begin
   if not FileExists(FSettingsFileName) then
@@ -419,6 +453,18 @@ begin
     end;
   end;
 
+  { Default profile }
+  profile := nil;
+  if Length(Settings.ActiveProfile) > 0 then
+    profile := Profiles.Find(Settings.ActiveProfile);
+
+  { LoadProfiles ensures there's always at least 1 profile }
+  if (not Assigned(profile)) and (Profiles.Count > 0) then
+    profile := Profiles[0];
+
+  SetActiveProfile(profile);
+
+  { Auto-update }
   cbCheckUpdates.Checked := Settings.CheckUpdates;
 
   if not Settings.HasCheckUpdates then
@@ -447,6 +493,8 @@ function TMainForm.CreateDefaultProfile: TProfile;
 begin
   { Default button functions are assigned during UpdateButton }
   Result := TProfile.Create;
+  Result.Name := DefaultProfileName;
+  Result.IsTemporary := True;
 end;
 
 
@@ -460,6 +508,9 @@ begin
 
   for buttonIndex := 0 to Pred(LED_COUNT) do
     UpdateButton(ActiveProfile, buttonIndex);
+
+  if Assigned(StateConsumerTask) then
+    StateConsumerTask.Comm.Send(TM_LOADPROFILE, ActiveProfile);
 end;
 
 
@@ -496,16 +547,75 @@ begin
 end;
 
 
+procedure TMainForm.AddProfile(AProfile: TProfile);
+begin
+  Profiles.Add(AProfile);
+  cmbProfiles.Items.AddObject(AProfile.Name, AProfile);
+  SetActiveProfile(AProfile);
+end;
+
+
+procedure TMainForm.UpdateProfile(AProfile: TProfile);
+var
+  itemIndex: Integer;
+  oldItemIndex: Integer;
+
+begin
+  itemIndex := cmbProfiles.Items.IndexOfObject(AProfile);
+  if itemIndex > -1 then
+  begin
+    oldItemIndex := cmbProfiles.ItemIndex;
+    FLockChangeProfile := True;
+    try
+      cmbProfiles.Items[itemIndex] := AProfile.Name;
+      cmbProfiles.ItemIndex := oldItemIndex;
+    finally
+      FLockChangeProfile := False;
+    end;
+  end;
+end;
+
+
+procedure TMainForm.DeleteProfile(AProfile: TProfile; ASetActiveProfile: Boolean);
+var
+  itemIndex: Integer;
+
+begin
+  if AProfile = ActiveProfile then
+    FActiveProfile := nil;
+
+  itemIndex := cmbProfiles.Items.IndexOfObject(AProfile);
+  if itemIndex > -1 then
+  begin
+    Profiles.Remove(AProfile);
+    cmbProfiles.Items.Delete(itemIndex);
+
+    if Profiles.Count = 0 then
+      AddProfile(CreateDefaultProfile);
+
+    if ASetActiveProfile then
+    begin
+      if itemIndex >= Profiles.Count then
+        itemIndex := Pred(Profiles.Count);
+
+      FLockChangeProfile := True;
+      try
+        cmbProfiles.ItemIndex := itemIndex;
+        SetActiveProfile(TProfile(cmbProfiles.Items.Objects[itemIndex]));
+      finally
+        FLockChangeProfile := False;
+      end;
+    end;
+  end;
+end;
+
+
 procedure TMainForm.cmbProfilesClick(Sender: TObject);
 begin
-  if not FLoadingProfiles then
+  if not FLockChangeProfile then
   begin
     if cmbProfiles.ItemIndex > -1 then
-      FActiveProfile := TProfile(cmbProfiles.Items.Objects[cmbProfiles.ItemIndex])
-    else
-      FActiveProfile := nil;
-
-    LoadActiveProfile;
+      SetActiveProfile(TProfile(cmbProfiles.Items.Objects[cmbProfiles.ItemIndex]));
   end;
 end;
 
@@ -525,6 +635,33 @@ begin
 end;
 
 
+procedure TMainForm.SetActiveProfile(const Value: TProfile);
+begin
+  if Value <> FActiveProfile then
+  begin
+    FActiveProfile := Value;
+
+    if Assigned(ActiveProfile) then
+    begin
+      if Settings.ActiveProfile <> ActiveProfile.Name then
+      begin
+        Settings.ActiveProfile := ActiveProfile.Name;
+        SaveSettings;
+      end;
+
+      FLockChangeProfile := True;
+      try
+        cmbProfiles.ItemIndex := cmbProfiles.Items.IndexOfObject(ActiveProfile);
+      finally
+        FLockChangeProfile := False;
+      end;
+
+      LoadActiveProfile;
+    end;
+  end;
+end;
+
+
 procedure TMainForm.SetDeviceState(const AMessage: string; AFound: Boolean);
 begin
   lblG940ThrottleState.Caption := AMessage;
@@ -537,20 +674,74 @@ begin
 end;
 
 
+procedure TMainForm.SetFSXState(const AMessage: string; AConnected: Boolean);
+begin
+  lblFSXState.Caption := AMessage;
+  lblFSXState.Update;
+
+  imgFSXStateConnected.Visible := AConnected;
+  imgFSXStateNotConnected.Visible := not AConnected;
+end;
+
+
 procedure TMainForm.LEDButtonClick(Sender: TObject);
+
+  function GetUniqueProfileName(const AName: string): string;
+  var
+    counter: Integer;
+
+  begin
+    Result := AName;
+    counter := 0;
+
+    while Assigned(Profiles.Find(Result)) do
+    begin
+      Inc(counter);
+      Result := Format('%s (%d)', [AName, counter]);
+    end;
+  end;
+
+
 var
   buttonIndex: NativeInt;
+  profile: TProfile;
+  newProfile: Boolean;
 
 begin
   if not Assigned(ActiveProfile) then
     exit;
 
-  buttonIndex := (Sender as TComponent).Tag;
-  if TButtonFunctionForm.Execute(ActiveProfile, buttonIndex) then
+  { Behaviour similar to the Windows System Sounds control panel;
+    when a change occurs, create a temporary profile "(modified)"
+    so the original profile can still be selected }
+  if not ActiveProfile.IsTemporary then
   begin
-    UpdateButton(ActiveProfile, buttonIndex);
-    FStateConsumerTask.Comm.Send(TM_LOADPROFILE, ActiveProfile);
+    profile := TProfile.Create;
+    profile.Assign(ActiveProfile);
+    profile.Name := GetUniqueProfileName(profile.Name + ProfilePostfixModified);
+    profile.IsTemporary := True;
+    newProfile := True;
+  end else
+  begin
+    profile := ActiveProfile;
+    newProfile := False;
+  end;
+
+  buttonIndex := (Sender as TComponent).Tag;
+  if TButtonFunctionForm.Execute(profile, buttonIndex) then
+  begin
+    if newProfile then
+      AddProfile(profile);
+
     SaveProfiles;
+    UpdateButton(profile, buttonIndex);
+
+    if Assigned(StateConsumerTask) then
+      StateConsumerTask.Comm.Send(TM_LOADPROFILE, profile);
+  end else
+  begin
+    if newProfile then
+      FreeAndNil(profile);
   end;
 end;
 
@@ -622,11 +813,11 @@ begin
     try
       latestVersion := httpClient.Get('http://g940.x2software.net/version');
       if VersionIsNewer(Format('%d.%d.%d', [App.Version.Major, App.Version.Minor, App.Version.Release]), latestVersion) then
-        ATask.Comm.Send(MSG_UPDATE, latestVersion)
+        ATask.Comm.Send(TM_UPDATE, latestVersion)
       else
       begin
         if ATask.Param.ByName('ReportNoUpdates').AsBoolean then
-          ATask.Comm.Send(MSG_NOUPDATE, True);
+          ATask.Comm.Send(TM_NOUPDATE, True);
       end;
 
       msgSent := True;
@@ -638,7 +829,82 @@ begin
     on E:Exception do
     begin
       if not msgSent then
-        ATask.Comm.Send(MSG_NOUPDATE, False);
+        ATask.Comm.Send(TM_NOUPDATE, False);
+    end;
+  end;
+end;
+
+
+procedure TMainForm.btnSaveProfileClick(Sender: TObject);
+var
+  name: string;
+  profile: TProfile;
+  existingProfile: TProfile;
+  newProfile: TProfile;
+
+begin
+  name := '';
+  profile := ActiveProfile;
+  existingProfile := nil;
+
+  repeat
+    if InputQuery('Save profile as', 'Save this profile as:', name) then
+    begin
+      existingProfile := Profiles.Find(name);
+      if Assigned(existingProfile) then
+      begin
+        case MessageBox(Self.Handle, PChar(Format('A profile named "%s" exists, do you want to overwrite it?', [name])),
+                        'Save profile as', MB_ICONQUESTION or MB_YESNOCANCEL) of
+          ID_YES:
+            break;
+
+          ID_CANCEL:
+            exit;
+        end;
+      end else
+        break;
+    end else
+      exit;
+  until False;
+
+  if Assigned(existingProfile) then
+  begin
+    existingProfile.Assign(profile);
+    existingProfile.Name := name;
+    UpdateProfile(existingProfile);
+    SetActiveProfile(existingProfile);
+
+    if profile.IsTemporary then
+      DeleteProfile(profile, False);
+  end else
+  begin
+    if profile.IsTemporary then
+    begin
+      profile.Name := name;
+      profile.IsTemporary := False;
+      UpdateProfile(profile);
+    end else
+    begin
+      newProfile := TProfile.Create;
+      newProfile.Assign(profile);
+      newProfile.Name := name;
+      AddProfile(newProfile);
+    end;
+  end;
+
+  SaveProfiles;
+end;
+
+
+procedure TMainForm.btnDeleteProfileClick(Sender: TObject);
+begin
+  if Assigned(ActiveProfile) then
+  begin
+    if MessageBox(Self.Handle, PChar(Format('Do you want to remove the profile named "%s"?', [ActiveProfile.Name])),
+                  'Remove profile', MB_ICONQUESTION or MB_YESNO) = ID_YES then
+    begin
+      DeleteProfile(ActiveProfile, True);
+      SaveProfiles;
     end;
   end;
 end;
@@ -666,15 +932,18 @@ procedure TMainForm.EventMonitorMessage(const task: IOmniTaskControl; const msg:
 begin
   case msg.MsgID of
     TM_NOTIFY_DEVICESTATE:
-      HandleDeviceStateMessage(task, msg);
+      HandleDeviceStateMessage(msg);
 
-    MSG_UPDATE:
+    TM_FSXSTATE:
+      HandleFSXStateMessage(msg);
+
+    TM_UPDATE:
       if MessageBox(Self.Handle, PChar('Version ' + msg.MsgData + ' is available on the G940 LED Control website.'#13#10 +
                                        'Do you want to open the website now?'), 'Update available',
                                        MB_YESNO or MB_ICONINFORMATION) = ID_YES then
         ShellExecute(Self.Handle, 'open', PChar('http://g940.x2software.net/category/releases/'), nil, nil, SW_SHOWNORMAL);
 
-    MSG_NOUPDATE:
+    TM_NOUPDATE:
       if msg.MsgData.AsBoolean then
         MessageBox(Self.Handle, 'You are using the latest version.', 'No update available', MB_OK or MB_ICONINFORMATION)
       else
@@ -694,17 +963,37 @@ begin
 end;
 
 
-procedure TMainForm.HandleDeviceStateMessage(ATask: IOmniTaskControl; AMessage: TOmniMessage);
+procedure TMainForm.HandleDeviceStateMessage(AMessage: TOmniMessage);
 begin
   case AMessage.MsgData.AsInteger of
     DEVICESTATE_SEARCHING:
-      SetDeviceState(TEXT_STATE_SEARCHING, False);
+      SetDeviceState(TextStateSearching, False);
 
     DEVICESTATE_FOUND:
-      SetDeviceState(TEXT_STATE_FOUND, True);
+      SetDeviceState(TextStateFound, True);
 
     DEVICESTATE_NOTFOUND:
-      SetDeviceState(TEXT_STATE_NOTFOUND, False);
+      SetDeviceState(TextStateNotFound, False);
+  end;
+end;
+
+
+procedure TMainForm.HandleFSXStateMessage(AMessage: TOmniMessage);
+var
+  state: TFSXSimConnectState;
+
+begin
+  state := TFSXSimConnectState(AMessage.MsgData.AsInteger);
+
+  case state of
+    scsDisconnected:
+      SetFSXState(TextFSXDisconnected, False);
+
+    scsConnected:
+      SetFSXState(TextFSXConnected, True);
+
+    scsFailed:
+      SetFSXState(TextFSXFailed, False);
   end;
 end;
 
@@ -718,6 +1007,29 @@ end;
 procedure TMainForm.lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
 begin
   ShellExecute(Self.Handle, 'open', PChar(Link), nil, nil, SW_SHOWNORMAL);
+end;
+
+
+{ TFSXStateMonitorWorker }
+function TFSXStateMonitorWorker.Initialize: Boolean;
+begin
+  Result := inherited Initialize;
+
+  if Result then
+    TFSXSimConnectStateMonitor.Instance.Attach(Self);
+end;
+
+
+procedure TFSXStateMonitorWorker.Cleanup;
+begin
+  TFSXSimConnectStateMonitor.Instance.Detach(Self);
+
+  inherited Cleanup;
+end;
+
+procedure TFSXStateMonitorWorker.ObserverStateUpdate(ANewState: TFSXSimConnectState);
+begin
+  Task.Comm.Send(TM_FSXSTATE, Integer(ANewState));
 end;
 
 end.

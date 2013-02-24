@@ -13,83 +13,89 @@ type
     procedure RegisterStates; override;
   end;
 
+  TCustomFSXInvertedOnOffFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+  end;
 
-  { Misc }
+  { Systems }
+  TCustomFSXSystemsFunction = class(TCustomFSXFunction)
+  protected
+    function GetCategoryName: string; override;
+  end;
+
+  TFSXBatteryMasterFunction = class(TCustomFSXOnOffFunction)
+  protected
+    function GetCategoryName: string; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXDeIceFunction = class(TCustomFSXInvertedOnOffFunction)
+  protected
+    function GetCategoryName: string; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXExitDoorFunction = class(TCustomFSXSystemsFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXGearFunction = class(TCustomFSXSystemsFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXParkingBrakeFunction = class(TCustomFSXInvertedOnOffFunction)
+  protected
+    function GetCategoryName: string; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXPressDumpSwitchFunction = class(TCustomFSXInvertedOnOffFunction)
+  protected
+    function GetCategoryName: string; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXTailHookFunction = class(TCustomFSXSystemsFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+
+  { Engines }
+  TFSXEngineAntiIceFunction = class(TCustomFSXFunction)
+  protected
+    function GetCategoryName: string; override;
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
   TFSXEngineFunction = class(TCustomFSXFunction)
   protected
+    function GetCategoryName: string; override;
     procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
-  TFSXGearFunction = class(TCustomFSXFunction)
-  protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
-  end;
 
-  TFSXParkingBrakeFunction = class(TCustomFSXOnOffFunction)
-  protected
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
-  end;
-
-  TFSXExitDoorFunction = class(TCustomFSXFunction)
-  protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
-  end;
-
-  TFSXTailHookFunction = class(TCustomFSXFunction)
-  protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
-  end;
-
+  { Control surfaces }
   TFSXFlapsFunction = class(TCustomFSXFunction)
   protected
+    function GetCategoryName: string; override;
     procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
   TFSXSpoilersFunction = class(TCustomFSXFunction)
   protected
+    function GetCategoryName: string; override;
     procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
-  end;
-
-  TFSXBatteryMasterFunction = class(TCustomFSXFunction)
-  protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
-  end;
-
-  TFSXAvionicsMasterFunction = class(TCustomFSXFunction)
-  protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
-  end;
-
-  TFSXPressDumpSwitchFunction = class(TCustomFSXFunction)
-  protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
-  end;
-
-  TFSXEngineAntiIceFunction = class(TCustomFSXFunction)
-  protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
-  end;
-
-  TFSXFuelPumpFunction = class(TCustomFSXFunction)
-  protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
-  end;
-
-  TFSXDeIceFunction = class(TCustomFSXFunction)
-  protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
 
@@ -98,8 +104,8 @@ type
   protected
     function GetCategoryName: string; override;
 
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
-    function DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+    function DoCreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''): TCustomLEDFunctionWorker; override;
   protected
     function GetLightMask: Integer; virtual; abstract;
   end;
@@ -143,43 +149,46 @@ type
   { Autopilot }
   TCustomFSXAutoPilotFunction = class(TCustomFSXFunction)
   protected
+    procedure RegisterStates; override;
     function GetCategoryName: string; override;
   end;
 
   TFSXAutoPilotFunction = class(TCustomFSXAutoPilotFunction)
   protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
   TFSXAutoPilotHeadingFunction = class(TCustomFSXAutoPilotFunction)
   protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
   TFSXAutoPilotApproachFunction = class(TCustomFSXAutoPilotFunction)
   protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
   TFSXAutoPilotBackcourseFunction = class(TCustomFSXAutoPilotFunction)
   protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
   TFSXAutoPilotAltitudeFunction = class(TCustomFSXAutoPilotFunction)
   protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
   TFSXAutoPilotNavFunction = class(TCustomFSXAutoPilotFunction)
   protected
-    procedure RegisterStates; override;
-    function GetWorkerClass: TCustomLEDFunctionWorkerClass; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+
+  { Radios }
+  TFSXAvionicsMasterFunction = class(TCustomFSXOnOffFunction)
+  protected
+    function GetCategoryName: string; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
 
@@ -200,21 +209,59 @@ begin
 end;
 
 
-{ TFSXEngineFunction }
-procedure TFSXEngineFunction.RegisterStates;
+{ TCustomFSXInvertedOnOffFunction }
+procedure TCustomFSXInvertedOnOffFunction.RegisterStates;
 begin
-  RegisterState(TLEDState.Create(FSXStateUIDEngineNoEngines,        FSXStateDisplayNameEngineNoEngines,         lcOff));
-  RegisterState(TLEDState.Create(FSXStateUIDEngineAllRunning,       FSXStateDisplayNameEngineAllRunning,        lcGreen));
-  RegisterState(TLEDState.Create(FSXStateUIDEnginePartiallyRunning, FSXStateDisplayNameEnginePartiallyRunning,  lcAmber));
-  RegisterState(TLEDState.Create(FSXStateUIDEngineAllOff,           FSXStateDisplayNameEngineAllOff,            lcRed));
-  RegisterState(TLEDState.Create(FSXStateUIDEngineFailed,           FSXStateDisplayNameEngineFailed,            lcFlashingRedNormal));
-  RegisterState(TLEDState.Create(FSXStateUIDEngineOnFire,           FSXStateDisplayNameEngineOnFire,            lcFlashingRedFast));
+  RegisterState(TLEDState.Create(FSXStateUIDOn,   FSXStateDisplayNameOn,    lcRed));
+  RegisterState(TLEDState.Create(FSXStateUIDOff,  FSXStateDisplayNameOff,   lcGreen));
 end;
 
 
-function TFSXEngineFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+{ TCustomFSXSystemsFunction }
+function TCustomFSXSystemsFunction.GetCategoryName: string;
 begin
-  Result := TFSXEngineFunctionWorker;
+  Result := FSXCategorySystems;
+end;
+
+
+{ TFSXBatteryMasterFunction }
+function TFSXBatteryMasterFunction.GetCategoryName: string;
+begin
+  Result := FSXCategorySystems;
+end;
+
+
+function TFSXBatteryMasterFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXBatteryMasterFunctionWorker;
+end;
+
+
+{ TFSXDeIceFunction }
+function TFSXDeIceFunction.GetCategoryName: string;
+begin
+  Result := FSXCategorySystems;
+end;
+
+
+function TFSXDeIceFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXDeIceFunctionWorker;
+end;
+
+
+{ TFSXExitDoorFunction }
+procedure TFSXExitDoorFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDExitDoorClosed,   FSXStateDisplayNameExitDoorClosed,  lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDExitDoorBetween,  FSXStateDisplayNameExitDoorBetween, lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDExitDoorOpen,     FSXStateDisplayNameExitDoorOpen,    lcRed));
+end;
+
+
+function TFSXExitDoorFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXExitDoorFunctionWorker;
 end;
 
 
@@ -230,31 +277,33 @@ begin
 end;
 
 
-function TFSXGearFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+function TFSXGearFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXGearFunctionWorker;
 end;
 
 
 { TFSXParkingBrakeFunction }
-function TFSXParkingBrakeFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+function TFSXParkingBrakeFunction.GetCategoryName: string;
+begin
+  Result := FSXCategorySystems;
+end;
+
+function TFSXParkingBrakeFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXParkingBrakeFunctionWorker;
 end;
 
 
-{ TFSXExitDoorFunction }
-procedure TFSXExitDoorFunction.RegisterStates;
+{ TFSXPressDumpSwitchFunction }
+function TFSXPressDumpSwitchFunction.GetCategoryName: string;
 begin
-  RegisterState(TLEDState.Create(FSXStateUIDExitDoorClosed,   FSXStateDisplayNameExitDoorClosed,  lcGreen));
-  RegisterState(TLEDState.Create(FSXStateUIDExitDoorBetween,  FSXStateDisplayNameExitDoorBetween, lcAmber));
-  RegisterState(TLEDState.Create(FSXStateUIDExitDoorOpen,     FSXStateDisplayNameExitDoorOpen,    lcRed));
+  Result := FSXCategorySystems;
 end;
 
-
-function TFSXExitDoorFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+function TFSXPressDumpSwitchFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
-  Result := TFSXExitDoorFunctionWorker;
+  Result := TFSXPressDumpSwitchFunctionWorker;
 end;
 
 
@@ -267,29 +316,89 @@ begin
 end;
 
 
-function TFSXTailHookFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+function TFSXTailHookFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXTailHookFunctionWorker;
 end;
 
 
-{ TFSXFlapsFunction }
-procedure TFSXFlapsFunction.RegisterStates;
+{ TFSXEngineAntiIceFunction }
+function TFSXEngineAntiIceFunction.GetCategoryName: string;
 begin
-  RegisterState(TLEDState.Create(FSXStateUIDFlapsNotAvailable,  FSXStateDisplayNameFlapsNotAvailable, lcOff));
-  RegisterState(TLEDState.Create(FSXStateUIDFlapsRetracted,     FSXStateDisplayNameFlapsRetracted,    lcGreen));
-  RegisterState(TLEDState.Create(FSXStateUIDFlapsBetween,       FSXStateDisplayNameFlapsBetween,      lcAmber));
-  RegisterState(TLEDState.Create(FSXStateUIDFlapsExtended,      FSXStateDisplayNameFlapsExtended,     lcRed));
+  Result := FSXCategoryEngines;
 end;
 
 
-function TFSXFlapsFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+procedure TFSXEngineAntiIceFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDEngineAntiIceNoEngines, FSXStateDisplayNameEngineAntiIceNoEngines,  lcOff));
+  RegisterState(TLEDState.Create(FSXStateUIDEngineAntiIceAll,       FSXStateDisplayNameEngineAntiIceAll,        lcRed));
+  RegisterState(TLEDState.Create(FSXStateUIDEngineAntiIcePartial,   FSXStateDisplayNameEngineAntiIcePartial,    lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDEngineAntiIceNone,      FSXStateDisplayNameEngineAntiIceNone,       lcGreen));
+end;
+
+
+function TFSXEngineAntiIceFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXEngineAntiIceFunctionWorker;
+end;
+
+
+{ TFSXEngineFunction }
+function TFSXEngineFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryEngines;
+end;
+
+
+procedure TFSXEngineFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDEngineNoEngines,        FSXStateDisplayNameEngineNoEngines,         lcOff));
+  RegisterState(TLEDState.Create(FSXStateUIDEngineAllRunning,       FSXStateDisplayNameEngineAllRunning,        lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDEnginePartiallyRunning, FSXStateDisplayNameEnginePartiallyRunning,  lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDEngineAllOff,           FSXStateDisplayNameEngineAllOff,            lcRed));
+  RegisterState(TLEDState.Create(FSXStateUIDEngineFailed,           FSXStateDisplayNameEngineFailed,            lcFlashingRedNormal));
+  RegisterState(TLEDState.Create(FSXStateUIDEngineOnFire,           FSXStateDisplayNameEngineOnFire,            lcFlashingRedFast));
+end;
+
+
+function TFSXEngineFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXEngineFunctionWorker;
+end;
+
+
+{ TFSXFlapsFunction }
+function TFSXFlapsFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryControlSurfaces;
+end;
+
+
+procedure TFSXFlapsFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsNotAvailable,  FSXStateDisplayNameFlapsNotAvailable,   lcOff));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsRetracted,     FSXStateDisplayNameFlapsRetracted,      lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsBetween,       FSXStateDisplayNameFlapsBetween,        lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsExtended,      FSXStateDisplayNameFlapsExtended,       lcRed));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsSpeedExceeded, FSXStateDisplayNameFlapsSpeedExceeded,  lcFlashingAmberNormal));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsDamageBySpeed, FSXStateDisplayNameFlapsDamageBySpeed,  lcFlashingRedFast));
+end;
+
+
+function TFSXFlapsFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXFlapsFunctionWorker;
 end;
 
 
 { TFSXSpoilersFunction }
+function TFSXSpoilersFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryControlSurfaces;
+end;
+
+
 procedure TFSXSpoilersFunction.RegisterStates;
 begin
   RegisterState(TLEDState.Create(FSXStateUIDSpoilersNotAvailable, FSXStateDisplayNameSpoilersNotAvailable,  lcOff));
@@ -299,87 +408,9 @@ begin
 end;
 
 
-function TFSXSpoilersFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+function TFSXSpoilersFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXSpoilersFunctionWorker;
-end;
-
-
-{ TFSXBatteryMasterFunction }
-procedure TFSXBatteryMasterFunction.RegisterStates;
-begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXBatteryMasterFunction.RegisterStates
-end;
-
-
-function TFSXBatteryMasterFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
-begin
-  Result := TFSXBatteryMasterFunctionWorker;
-end;
-
-
-{ TFSXAvionicsMasterFunction }
-procedure TFSXAvionicsMasterFunction.RegisterStates;
-begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAvionicsMasterFunction.RegisterStates
-end;
-
-
-function TFSXAvionicsMasterFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
-begin
-  Result := TFSXAvionicsMasterFunctionWorker;
-end;
-
-
-{ TFSXPressDumpSwitchFunction }
-procedure TFSXPressDumpSwitchFunction.RegisterStates;
-begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXPressDumpSwitchFunction.RegisterStates
-end;
-
-
-function TFSXPressDumpSwitchFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
-begin
-  Result := TFSXPressDumpSwitchFunctionWorker;
-end;
-
-
-{ TFSXEngineAntiIceFunction }
-procedure TFSXEngineAntiIceFunction.RegisterStates;
-begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXEngineAntiIceFunction.RegisterStates
-end;
-
-
-function TFSXEngineAntiIceFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
-begin
-  Result := TFSXEngineAntiIceFunctionWorker;
-end;
-
-
-{ TFSXFuelPumpFunction }
-procedure TFSXFuelPumpFunction.RegisterStates;
-begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXFuelPumpFunction.RegisterStates
-end;
-
-
-function TFSXFuelPumpFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
-begin
-  Result := TFSXFuelPumpFunctionWorker;
-end;
-
-
-{ TFSXDeIceFunction }
-procedure TFSXDeIceFunction.RegisterStates;
-begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXDeIceFunction.RegisterStates
-end;
-
-
-function TFSXDeIceFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
-begin
-  Result := TFSXDeIceFunctionWorker;
 end;
 
 
@@ -390,15 +421,15 @@ begin
 end;
 
 
-function TCustomFSXLightFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+function TCustomFSXLightFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXLightStatesFunctionWorker;
 end;
 
 
-function TCustomFSXLightFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings): TCustomLEDFunctionWorker;
+function TCustomFSXLightFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string): TCustomLEDFunctionWorker;
 begin
-  Result := inherited DoCreateWorker(ASettings);
+  Result := inherited DoCreateWorker(ASettings, APreviousState);
   (Result as TFSXLightStatesFunctionWorker).StateMask := GetLightMask;
 end;
 
@@ -459,81 +490,66 @@ begin
 end;
 
 
-{ TFSXAutoPilotFunction }
-procedure TFSXAutoPilotFunction.RegisterStates;
+procedure TCustomFSXAutoPilotFunction.RegisterStates;
 begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotFunction.RegisterStates
+  RegisterState(TLEDState.Create(FSXStateUIDAutoPilotNotAvailable,  FSXStateDisplayNameAutoPilotNotAvailable, lcOff));
+  RegisterState(TLEDState.Create(FSXStateUIDOn,                     FSXStateDisplayNameOn,                    lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDOff,                    FSXStateDisplayNameOff,                   lcOff));
 end;
 
 
-function TFSXAutoPilotFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+{ TFSXAutoPilotFunction }
+function TFSXAutoPilotFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXAutoPilotFunctionWorker;
 end;
 
 
 { TFSXAutoPilotHeadingFunction }
-procedure TFSXAutoPilotHeadingFunction.RegisterStates;
-begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotHeadingFunction.RegisterState
-end;
-
-
-function TFSXAutoPilotHeadingFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+function TFSXAutoPilotHeadingFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXAutoPilotHeadingFunctionWorker;
 end;
 
 
 { TFSXAutoPilotApproachFunction }
-procedure TFSXAutoPilotApproachFunction.RegisterStates;
-begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotApproachFunction.RegisterStates
-end;
-
-
-function TFSXAutoPilotApproachFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+function TFSXAutoPilotApproachFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXAutoPilotApproachFunctionWorker;
 end;
 
 
 { TFSXAutoPilotBackcourseFunction }
-procedure TFSXAutoPilotBackcourseFunction.RegisterStates;
-begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotBackcourseFunction.RegisterStates
-end;
-
-
-function TFSXAutoPilotBackcourseFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+function TFSXAutoPilotBackcourseFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXAutoPilotBackcourseFunctionWorker;
 end;
 
 
 { TFSXAutoPilotAltitudeFunction }
-procedure TFSXAutoPilotAltitudeFunction.RegisterStates;
-begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotAltitudeFunction.RegisterStates
-end;
-
-
-function TFSXAutoPilotAltitudeFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+function TFSXAutoPilotAltitudeFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXAutoPilotAltitudeFunctionWorker;
 end;
 
 
 { TFSXAutoPilotNavFunction }
-procedure TFSXAutoPilotNavFunction.RegisterStates;
+function TFSXAutoPilotNavFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
-  // #ToDo1 -cEmpty -oMvR: 22-2-2013: TFSXAutoPilotNavFunction.RegisterStates
+  Result := TFSXAutoPilotNavFunctionWorker;
 end;
 
 
-function TFSXAutoPilotNavFunction.GetWorkerClass: TCustomLEDFunctionWorkerClass;
+{ TFSXAvionicsMasterFunction }
+function TFSXAvionicsMasterFunction.GetCategoryName: string;
 begin
-  Result := TFSXAutoPilotNavFunctionWorker;
+  Result := FSXCategoryRadios;
+end;
+
+
+function TFSXAvionicsMasterFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXAvionicsMasterFunctionWorker;
 end;
 
 end.

@@ -43,7 +43,8 @@ uses
   OtlCommon,
   SimConnect,
 
-  FSXResources;
+  FSXResources,
+  FSXSimConnectStateMonitor;
 
 
 const
@@ -68,7 +69,7 @@ type
     destructor Destroy; override;
 
     procedure Attach(ADataHandler: IFSXSimConnectDataHandler);
-    procedure Detach(ADataHandler: IFSXSimConnectDataHandler);
+    function Detach(ADataHandler: IFSXSimConnectDataHandler): Integer;
 
     procedure HandleData(AData: Pointer);
 
@@ -76,7 +77,10 @@ type
   end;
 
 
-  TFSXSimConnectDefinitionMap = TDictionary<Cardinal, TFSXSimConnectDefinitionRef>;
+  TFSXSimConnectDefinitionMap = class(TObjectDictionary<Cardinal, TFSXSimConnectDefinitionRef>)
+  public
+    constructor Create(ACapacity: Integer = 0); reintroduce;
+  end;
 
   TFSXSimConnectClient = class(TOmniWorker)
   private
@@ -98,6 +102,8 @@ type
 
     procedure RegisterDefinitions;
     procedure RegisterDefinition(ADefinitionID: Cardinal; ADefinition: IFSXSimConnectDefinitionAccess);
+    procedure UpdateDefinition(ADefinitionID: Cardinal);
+    procedure UnregisterDefinition(ADefinitionID: Cardinal);
 
     function SameDefinition(ADefinition1, ADefinition2: IFSXSimConnectDefinitionAccess): Boolean;
 
@@ -306,13 +312,13 @@ end;
 
 procedure TFSXSimConnectClient.Cleanup;
 begin
-  // #ToDo1 -oMvR: 22-2-2013: unregister definitions
+  FreeAndNil(FSimConnectDataEvent);
+  FreeAndNil(FDefinitions);
 
   if SimConnectHandle <> 0 then
     SimConnect_Close(SimConnectHandle);
 
-  FreeAndNil(FSimConnectDataEvent);
-  FreeAndNil(FDefinitions);
+  TFSXSimConnectStateMonitor.SetCurrentState(scsDisconnected);
 
   inherited Cleanup;
 end;
@@ -327,13 +333,19 @@ begin
   begin
     if SimConnect_Open(FSimConnectHandle, FSXSimConnectAppName, 0, 0, SimConnectDataEvent.Handle, 0) = S_OK then
     begin
+      TFSXSimConnectStateMonitor.SetCurrentState(scsConnected);
+
       Task.ClearTimer(TIMER_TRYSIMCONNECT);
       RegisterDefinitions;
     end;
   end;
 
   if SimConnectHandle = 0 then
+  begin
+    TFSXSimConnectStateMonitor.SetCurrentState(scsFailed);
+
     Task.SetTimer(TIMER_TRYSIMCONNECT, INTERVAL_TRYSIMCONNECT, TM_TRYSIMCONNECT);
+  end;
 end;
 
 
@@ -364,6 +376,8 @@ begin
         begin
           FSimConnectHandle := 0;
           Task.SetTimer(TIMER_TRYSIMCONNECT, INTERVAL_TRYSIMCONNECT, TM_TRYSIMCONNECT);
+
+          TFSXSimConnectStateMonitor.SetCurrentState(scsDisconnected);
         end;
     end;
   end;
@@ -406,6 +420,25 @@ begin
                                     SIMCONNECT_OBJECT_ID_USER,
                                     SIMCONNECT_PERIOD_SIM_FRAME,
                                     SIMCONNECT_DATA_REQUEST_FLAG_CHANGED);
+end;
+
+
+procedure TFSXSimConnectClient.UpdateDefinition(ADefinitionID: Cardinal);
+begin
+  if SimConnectHandle <> 0 then
+    { One-time data update; the RequestID is counted backwards to avoid conflicts with
+      the FLAG_CHANGED request which is still active }
+    SimConnect_RequestDataOnSimObject(SimConnectHandle, High(Cardinal) - ADefinitionID, ADefinitionID,
+                                      SIMCONNECT_OBJECT_ID_USER,
+                                      SIMCONNECT_PERIOD_SIM_FRAME,
+                                      0, 0, 0, 1);
+end;
+
+
+procedure TFSXSimConnectClient.UnregisterDefinition(ADefinitionID: Cardinal);
+begin
+  if SimConnectHandle <> 0 then
+    SimConnect_ClearDataDefinition(SimConnectHandle, ADefinitionID);
 end;
 
 
@@ -463,6 +496,10 @@ begin
     begin
       definitionRef.Attach(addDefinition.DataHandler);
       addDefinition.DefinitionID := definitionID;
+
+      { Request an update on the definition to update the new worker }
+      UpdateDefinition(definitionID);
+
       hasDefinition := True;
       break;
     end;
@@ -488,11 +525,22 @@ end;
 procedure TFSXSimConnectClient.TMRemoveDefinition(var Msg: TOmniMessage);
 var
   removeDefinition: TRemoveDefinitionValue;
+  definitionRef: TFSXSimConnectDefinitionRef;
 
 begin
   removeDefinition := Msg.MsgData;
 
-  // #ToDo1 -oMvR: 22-2-2013: actually remove the definition
+  if Definitions.ContainsKey(removeDefinition.DefinitionID) then
+  begin
+    definitionRef := Definitions[removeDefinition.DefinitionID];
+    if definitionRef.Detach(removeDefinition.DataHandler) = 0 then
+    begin
+      { Unregister with SimConnect }
+      UnregisterDefinition(removeDefinition.DefinitionID);
+
+      Definitions.Remove(removeDefinition.DefinitionID);
+    end;
+  end;
 
   removeDefinition.Signal;
 end;
@@ -538,9 +586,17 @@ begin
 end;
 
 
-procedure TFSXSimConnectDefinitionRef.Detach(ADataHandler: IFSXSimConnectDataHandler);
+function TFSXSimConnectDefinitionRef.Detach(ADataHandler: IFSXSimConnectDataHandler): Integer;
 begin
   DataHandlers.Remove(ADataHandler as IFSXSimConnectDataHandler);
+  Result := DataHandlers.Count;
+end;
+
+
+{ TFSXSimConnectDefinitionMap }
+constructor TFSXSimConnectDefinitionMap.Create(ACapacity: Integer);
+begin
+  inherited Create([doOwnsValues], ACapacity);
 end;
 
 
