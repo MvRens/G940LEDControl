@@ -90,17 +90,17 @@ var
   observer: IInterface;
 
 begin
-  CurrentStateLock.Acquire;
-  try
-    if Value <> FCurrentState then
-    begin
+  if Value <> FCurrentState then
+  begin
+    CurrentStateLock.Acquire;
+    try
       FCurrentState := Value;
-
-      for observer in Observers do
-        (observer as IFSXSimConnectStateObserver).ObserverStateUpdate(CurrentState);
+    finally
+      CurrentStateLock.Release;
     end;
-  finally
-    CurrentStateLock.Release;
+
+    for observer in Observers do
+      (observer as IFSXSimConnectStateObserver).ObserverStateUpdate(CurrentState);
   end;
 end;
 

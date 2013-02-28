@@ -8,7 +8,7 @@
 			<FrameworkType>VCL</FrameworkType>
 			<ProjectVersion>13.4</ProjectVersion>
 			<Base>True</Base>
-			<Config Condition="'$(Config)'==''">Debug</Config>
+			<Config Condition="'$(Config)'==''">Release</Config>
 			<Platform Condition="'$(Platform)'==''">Win32</Platform>
 			<TargetedPlatforms>1</TargetedPlatforms>
 			<AppType>Application</AppType>
@@ -82,9 +82,10 @@
 			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+			<VerInfo_Release>1</VerInfo_Release>
 			<VerInfo_MajorVer>1</VerInfo_MajorVer>
 			<VerInfo_MinorVer>0</VerInfo_MinorVer>
-			<VerInfo_Keys>CompanyName=X²Software;FileDescription=G940 LED Control;FileVersion=1.0.0.0;InternalName=;LegalCopyright=© 2011 X²Software;LegalTrademarks=;OriginalFilename=G940LEDControl.exe;ProductName=G940 LED Control;ProductVersion=1.0;Comments=</VerInfo_Keys>
+			<VerInfo_Keys>CompanyName=X²Software;FileDescription=G940 LED Control;FileVersion=1.0.1.0;InternalName=;LegalCopyright=© 2011 X²Software;LegalTrademarks=;OriginalFilename=G940LEDControl.exe;ProductName=G940 LED Control;ProductVersion=1.0;Comments=</VerInfo_Keys>
 			<VerInfo_Locale>1033</VerInfo_Locale>
 			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
 		</PropertyGroup>
@@ -146,25 +147,6 @@
 						<Source Name="MainSource">G940LEDControl.dpr</Source>
 					</Source>
 					<Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxCoreD16.bpl">ExpressCoreLibrary by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxLibraryD16.bpl">Express Cross Platform Library by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxPageControlD16.bpl">ExpressPageControl by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxEditorsD16.bpl">ExpressEditors Library by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxBarD16.bpl">ExpressBars by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxRibbonD16.bpl">ExpressBars Ribbon controls by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxSchedulerD16.bpl">ExpressScheduler by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxSkinsCoreD16.bpl">ExpressSkins Library by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPSCoreD16.bpl">ExpressPrinting System by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxPivotGridD16.bpl">ExpressPivotGrid by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxorgcD16.bpl">ExpressOrgChart by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxSkinsDesignHelperD16.bpl">ExpressSkins Library Uses Clause Auto Fill Helper by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinscxPCPainterD16.bpl">ExpressSkins Library Painter for PageControl by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinscxSchedulerPainterD16.bpl">ExpressSkins Library Painter for Scheduler by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinsdxBarPainterD16.bpl">ExpressSkins Library Painter for Bars by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinsdxNavBarPainterD16.bpl">ExpressSkins Library Painter for NavBar by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinsdxRibbonPainterD16.bpl">ExpressSkins Library Painter for Ribbon by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dxSkinsdxDLPainterD16.bpl">ExpressSkins Library Painter for Docking Library by Developer Express Inc.</Excluded_Packages>
-						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxPSdxLCLnkD16.bpl">ExpressPrinting System ReportLink for ExpressLayoutControl by Developer Express Inc.</Excluded_Packages>
 						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dclcxEditorFieldLinkD16.bpl">ExpressEditors FieldLink by Developer Express Inc.</Excluded_Packages>
 						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxBarDBNavD16.bpl">ExpressBars DBNavigator by Developer Express Inc.</Excluded_Packages>
 						<Excluded_Packages Name="D:\Program Files\Developer Express.VCL\Library\Delphi16\dcldxBarExtDBItemsD16.bpl">ExpressBars extended DB items by Developer Express Inc.</Excluded_Packages>

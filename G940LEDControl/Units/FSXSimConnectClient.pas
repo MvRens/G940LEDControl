@@ -51,10 +51,13 @@ const
   TM_ADDDEFINITION = 3001;
   TM_REMOVEDEFINITION = 3002;
   TM_TRYSIMCONNECT = 3003;
+  TM_PROCESSMESSAGES = 3004;
 
   TIMER_TRYSIMCONNECT = 201;
+  TIMER_PROCESSMESSAGES = 202;
 
   INTERVAL_TRYSIMCONNECT = 5000;
+  INTERVAL_PROCESSMESSAGES = 50;
 
 
 type
@@ -87,11 +90,12 @@ type
     FDefinitions: TFSXSimConnectDefinitionMap;
     FLastDefinitionID: Cardinal;
     FSimConnectHandle: THandle;
-    FSimConnectDataEvent: TEvent;
+//    FSimConnectDataEvent: TEvent;
   protected
     procedure TMAddDefinition(var Msg: TOmniMessage); message TM_ADDDEFINITION;
     procedure TMRemoveDefinition(var Msg: TOmniMessage); message TM_REMOVEDEFINITION;
     procedure TMTrySimConnect(var Msg: TOmniMessage); message TM_TRYSIMCONNECT;
+    procedure TMProcessMessages(var Msg: TOmniMessage); message TM_PROCESSMESSAGES;
 
     procedure HandleSimConnectDataEvent;
   protected
@@ -110,7 +114,7 @@ type
     property Definitions: TFSXSimConnectDefinitionMap read FDefinitions;
     property LastDefinitionID: Cardinal read FLastDefinitionID;
     property SimConnectHandle: THandle read FSimConnectHandle;
-    property SimConnectDataEvent: TEvent read FSimConnectDataEvent;
+//    property SimConnectDataEvent: TEvent read FSimConnectDataEvent;
   end;
 
 
@@ -302,9 +306,9 @@ begin
     exit;
 
   FDefinitions := TFSXSimConnectDefinitionMap.Create;
-  FSimConnectDataEvent := TEvent.Create(nil, False, False, '');
 
-  Task.RegisterWaitObject(SimConnectDataEvent.Handle, HandleSimConnectDataEvent);
+//  FSimConnectDataEvent := TEvent.Create(nil, False, False, '');
+//  Task.RegisterWaitObject(SimConnectDataEvent.Handle, HandleSimConnectDataEvent);
 
   TrySimConnect;
 end;
@@ -312,7 +316,7 @@ end;
 
 procedure TFSXSimConnectClient.Cleanup;
 begin
-  FreeAndNil(FSimConnectDataEvent);
+//  FreeAndNil(FSimConnectDataEvent);
   FreeAndNil(FDefinitions);
 
   if SimConnectHandle <> 0 then
@@ -331,12 +335,14 @@ begin
 
   if InitSimConnect then
   begin
-    if SimConnect_Open(FSimConnectHandle, FSXSimConnectAppName, 0, 0, SimConnectDataEvent.Handle, 0) = S_OK then
+    if SimConnect_Open(FSimConnectHandle, FSXSimConnectAppName, 0, 0, 0 (*SimConnectDataEvent.Handle*), 0) = S_OK then
     begin
       TFSXSimConnectStateMonitor.SetCurrentState(scsConnected);
 
       Task.ClearTimer(TIMER_TRYSIMCONNECT);
       RegisterDefinitions;
+
+      Task.SetTimer(TIMER_PROCESSMESSAGES, INTERVAL_PROCESSMESSAGES, TM_PROCESSMESSAGES);
     end;
   end;
 
@@ -345,6 +351,7 @@ begin
     TFSXSimConnectStateMonitor.SetCurrentState(scsFailed);
 
     Task.SetTimer(TIMER_TRYSIMCONNECT, INTERVAL_TRYSIMCONNECT, TM_TRYSIMCONNECT);
+    Task.ClearTimer(TIMER_PROCESSMESSAGES);
   end;
 end;
 
@@ -375,6 +382,7 @@ begin
       SIMCONNECT_RECV_ID_QUIT:
         begin
           FSimConnectHandle := 0;
+          Task.ClearTimer(TIMER_PROCESSMESSAGES);
           Task.SetTimer(TIMER_TRYSIMCONNECT, INTERVAL_TRYSIMCONNECT, TM_TRYSIMCONNECT);
 
           TFSXSimConnectStateMonitor.SetCurrentState(scsDisconnected);
@@ -549,6 +557,12 @@ end;
 procedure TFSXSimConnectClient.TMTrySimConnect(var Msg: TOmniMessage);
 begin
   TrySimConnect;
+end;
+
+
+procedure TFSXSimConnectClient.TMProcessMessages(var Msg: TOmniMessage);
+begin
+  HandleSimConnectDataEvent;
 end;
 
 

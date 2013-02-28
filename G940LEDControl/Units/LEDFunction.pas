@@ -314,29 +314,24 @@ end;
 
 procedure TCustomLEDMultiStateFunctionWorker.SetCurrentState(AState: ILEDStateWorker; ANotifyObservers: Boolean);
 begin
-  FCurrentStateLock.Acquire;
-  try
-    if AState <> FCurrentState then
-    begin
+  if AState <> FCurrentState then
+  begin
+    FCurrentStateLock.Acquire;
+    try
       FCurrentState := AState;
-
-      if ANotifyObservers then
-        NotifyObservers;
+    finally
+      FCurrentStateLock.Release;
     end;
-  finally
-    FCurrentStateLock.Release;
+
+    if ANotifyObservers then
+      NotifyObservers;
   end;
 end;
 
 
 function TCustomLEDMultiStateFunctionWorker.GetCurrentState: ILEDStateWorker;
 begin
-  FCurrentStateLock.Acquire;
-  try
-    Result := FCurrentState;
-  finally
-    FCurrentStateLock.Release;
-  end;
+  Result := FCurrentState;
 end;
 
 
