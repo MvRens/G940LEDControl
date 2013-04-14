@@ -1,7 +1,7 @@
 object MainForm: TMainForm
   Left = 0
   Top = 0
-  ActiveControl = cmbProfiles
+  ActiveControl = cbProfileMenu
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'G940 LED Control'
@@ -29,11 +29,11 @@ object MainForm: TMainForm
     Margins.Top = 8
     Margins.Right = 8
     Margins.Bottom = 8
-    ActivePage = tsFSX
+    ActivePage = tsConfiguration
     Align = alClient
     TabOrder = 0
-    object tsFSX: TTabSheet
-      Caption = 'Configuration'
+    object tsButtons: TTabSheet
+      Caption = ' Button assignment '
       DesignSize = (
         442
         452)
@@ -271,7 +271,7 @@ object MainForm: TMainForm
       object bvlProfiles: TBevel
         Left = 11
         Top = 52
-        Width = 474
+        Width = 418
         Height = 13
         Shape = bsTopLine
       end
@@ -369,6 +369,50 @@ object MainForm: TMainForm
         Caption = '&Delete'
         TabOrder = 2
         OnClick = btnDeleteProfileClick
+      end
+    end
+    object tsConfiguration: TTabSheet
+      Caption = ' Configuration '
+      ImageIndex = 2
+      object lblProfileSwitching: TLabel
+        Left = 11
+        Top = 19
+        Width = 92
+        Height = 13
+        Caption = 'Profile switching'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object bvlProfileSwitching: TBevel
+        Left = 224
+        Top = 26
+        Width = 205
+        Height = 13
+        Shape = bsTopLine
+      end
+      object cbProfileMenu: TCheckBox
+        Left = 11
+        Top = 44
+        Width = 409
+        Height = 17
+        Caption = ' Add profile selection to FSX "Add-ons" menu'
+        Checked = True
+        State = cbChecked
+        TabOrder = 0
+        OnClick = cbProfileMenuClick
+      end
+      object cbProfileMenuCascaded: TCheckBox
+        Left = 31
+        Top = 67
+        Width = 389
+        Height = 17
+        Caption = ' Cascaded menu (profiles in "G940 Profile" submenu)'
+        TabOrder = 1
+        OnClick = cbProfileMenuCascadedClick
       end
     end
     object tsAbout: TTabSheet

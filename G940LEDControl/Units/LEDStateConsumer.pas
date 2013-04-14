@@ -53,6 +53,7 @@ uses
   System.SysUtils,
   Winapi.Windows,
 
+  DebugLog,
   LEDFunctionRegistry,
   LEDStateIntf;
 
@@ -123,46 +124,57 @@ var
   dynamicColor: ILEDStateDynamicColor;
 
 begin
-  hasDynamicColors := False;
-  ButtonColors.Clear;
+  Debug.Log('LED State consumer: Updating LED states');
+  Debug.Indent;
+  try
+    hasDynamicColors := False;
+    ButtonColors.Clear;
 
-  for buttonIndex := 0 to Pred(ButtonWorkers.Count) do
-  begin
-    color := nil;
-
-    if Assigned(ButtonWorkers[buttonIndex]) then
+    for buttonIndex := 0 to Pred(ButtonWorkers.Count) do
     begin
-      state := (ButtonWorkers[buttonIndex] as ILEDFunctionWorker).GetCurrentState;
-      if Assigned(state) then
+      color := nil;
+
+      if Assigned(ButtonWorkers[buttonIndex]) then
       begin
-        color := state.GetColor;
-        if Assigned(color) then
+        state := (ButtonWorkers[buttonIndex] as ILEDFunctionWorker).GetCurrentState;
+        if Assigned(state) then
         begin
-          if (hasDynamicColors = False) and Supports(color, ILEDStateDynamicColor, dynamicColor) then
+          color := state.GetColor;
+          if Assigned(color) then
           begin
-            { If the tick timer isn't currently running, there were no
-              dynamic colors before. Reset each dynamic colors now. }
-            if not HasTickTimer then
-              dynamicColor.Reset;
+            if (hasDynamicColors = False) and Supports(color, ILEDStateDynamicColor, dynamicColor) then
+            begin
+              { If the tick timer isn't currently running, there were no
+                dynamic colors before. Reset each dynamic colors now. }
+              if not HasTickTimer then
+                dynamicColor.Reset;
 
-            hasDynamicColors := True;
+              hasDynamicColors := True;
+            end;
+
+            ButtonColors.Add(color as ILEDStateColor);
           end;
-
-          ButtonColors.Add(color as ILEDStateColor);
         end;
       end;
+
+      if not Assigned(color) then
+        ButtonColors.Add(nil);
     end;
 
-    if not Assigned(color) then
-      ButtonColors.Add(nil);
-  end;
-
-  if hasDynamicColors <> HasTickTimer then
-  begin
-    if hasDynamicColors then
-      Task.SetTimer(TIMER_TICK, INTERVAL_TICK, TM_TICK)
-    else
-      Task.ClearTimer(TIMER_TICK);
+    if hasDynamicColors <> HasTickTimer then
+    begin
+      if hasDynamicColors then
+      begin
+        Debug.Log('LED State consumer: Starting tick timer');
+        Task.SetTimer(TIMER_TICK, INTERVAL_TICK, TM_TICK)
+      end else
+      begin
+        Debug.Log('LED State consumer: Stopping tick timer');
+        Task.ClearTimer(TIMER_TICK);
+      end;
+    end;
+  finally
+    Debug.UnIndent;
   end;
 
   Update;
@@ -197,6 +209,10 @@ var
 
 begin
   profile := Msg.MsgData;
+  if not Assigned(profile) then
+    exit;
+
+  Debug.Log('LED State consumer: Loading profile');
 
   oldStates := nil;
   oldWorkers := nil;
@@ -267,6 +283,8 @@ var
   dynamicColor: ILEDStateDynamicColor;
 
 begin
+  Debug.Log('LED State consumer: Tick');
+
   // (MvR) 19-2-2013: I could pass a tick count to Tick() so that they can all use modulus to blink synchronously... think about it.
 
   for buttonIndex := 0 to Pred(ButtonColors.Count) do
@@ -300,6 +318,7 @@ begin
 
   FProfileButton := AProfileButton;
 end;
+
 
 function TProfileButtonWorkerSettings.GetStateColor(const AUID: string; out AColor: TLEDColor): Boolean;
 begin

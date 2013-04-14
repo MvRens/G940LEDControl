@@ -5,6 +5,7 @@ uses
   Generics.Collections,
   System.SyncObjs,
 
+  FSXLEDFunctionProviderIntf,
   FSXSimConnectIntf,
   LEDFunction,
   LEDFunctionIntf,
@@ -16,10 +17,11 @@ type
   TCustomFSXFunctionList = TObjectList<TCustomFSXFunction>;
 
 
-  TFSXLEDFunctionProvider = class(TCustomLEDFunctionProvider, IFSXSimConnectObserver)
+  TFSXLEDFunctionProvider = class(TCustomLEDFunctionProvider, IFSXLEDFunctionProvider, IFSXSimConnectObserver)
   private
     FSimConnect: TInterfacedObject;
     FSimConnectLock: TCriticalSection;
+    FProfileMenuSimConnect: IFSXSimConnectProfileMenu;
   protected
     procedure RegisterFunctions; override;
 
@@ -27,6 +29,9 @@ type
   protected
     { IFSXSimConnectObserver }
     procedure ObserveDestroy(Sender: IFSXSimConnect);
+
+    { IFSXLEDFunctionProvider }
+    procedure SetProfileMenu(AEnabled: Boolean; ACascaded: Boolean);
   public
     constructor Create;
     destructor Destroy; override;
@@ -147,6 +152,7 @@ begin
   RegisterFunction(TFSXRecognitionLightsFunction.Create(  Self, FSXFunctionDisplayNameRecognitionLights,    FSXFunctionUIDRecognitionLights));
   RegisterFunction(TFSXStrobeLightsFunction.Create(       Self, FSXFunctionDisplayNameStrobeLights,         FSXFunctionUIDStrobeLights));
   RegisterFunction(TFSXTaxiLightsFunction.Create(         Self, FSXFunctionDisplayNameTaxiLights,           FSXFunctionUIDTaxiLights));
+  RegisterFunction(TFSXAllLightsFunction.Create(          Self, FSXFunctionDisplayNameAllLights,            FSXFunctionUIDAllLights));
 
   { Autopilot }
   RegisterFunction(TFSXAutoPilotFunction.Create(          Self, FSXFunctionDisplayNameAutoPilot,            FSXFunctionUIDAutoPilot));
@@ -195,6 +201,20 @@ begin
     FSimConnectLock.Release;
   end;
 end;
+
+
+procedure TFSXLEDFunctionProvider.SetProfileMenu(AEnabled: Boolean; ACascaded: Boolean);
+begin
+  if AEnabled and (not Assigned(FProfileMenuSimConnect)) then
+    FProfileMenuSimConnect := (GetSimConnect as IFSXSimConnectProfileMenu);
+
+  if Assigned(FProfileMenuSimConnect) then
+    FProfileMenuSimConnect.SetProfileMenu(AEnabled, ACascaded);
+
+  if not AEnabled then
+    FProfileMenuSimConnect := nil;
+end;
+
 
 
 { TCustomFSXFunction }

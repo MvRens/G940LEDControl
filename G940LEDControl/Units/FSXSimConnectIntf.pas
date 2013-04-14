@@ -33,6 +33,12 @@ type
   end;
 
 
+  IFSXSimConnectProfileMenu = interface
+    ['{362B6F7D-3E68-48A8-83BC-6078AE100334}']
+    procedure SetProfileMenu(AEnabled, ACascaded: Boolean);
+  end;
+
+
   IFSXSimConnectDefinition = interface
     ['{F1EAB3B1-0A3D-4B06-A75F-823E15C313B8}']
     procedure AddVariable(AVariableName, AUnitsName: string; ADataType: SIMCONNECT_DATAType; AEpsilon: Single = 0);
@@ -76,7 +82,15 @@ const
   FSX_LIGHTON_STROBE = $0010;
   FSX_LIGHTON_PANEL = $0020;
   FSX_LIGHTON_RECOGNITION = $0040;
+  FSX_LIGHTON_WING = $0080;
+  FSX_LIGHTON_LOGO = $0100;
   FSX_LIGHTON_CABIN = $0200;
+
+  FSX_LIGHTON_ALL = FSX_LIGHTON_NAV or FSX_LIGHTON_BEACON or FSX_LIGHTON_LANDING or
+                    FSX_LIGHTON_TAXI or FSX_LIGHTON_STROBE or FSX_LIGHTON_PANEL or
+                    FSX_LIGHTON_RECOGNITION or FSX_LIGHTON_WING or FSX_LIGHTON_LOGO or
+                    FSX_LIGHTON_CABIN;
+
 
   FSX_MAX_ENGINES = 4;
 

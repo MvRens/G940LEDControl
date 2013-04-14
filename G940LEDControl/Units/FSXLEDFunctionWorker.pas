@@ -91,6 +91,13 @@ type
   end;
 
 
+  TFSXAllLightsFunctionWorker = class(TCustomFSXFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+    procedure HandleData(AData: Pointer); override;
+  end;
+
+
   { Autopilot }
   PAutoPilotData = ^TAutoPilotData;
   TAutoPilotData = packed record
@@ -528,6 +535,24 @@ procedure TFSXLightStatesFunctionWorker.HandleData(AData: Pointer);
 begin
   if (PCardinal(AData)^ and StateMask) <> 0 then
     SetCurrentState(FSXStateUIDOn)
+  else
+    SetCurrentState(FSXStateUIDOff);
+end;
+
+
+{ TFSXAllLightsFunctionWorker }
+procedure TFSXAllLightsFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('LIGHT ON STATES', FSX_UNIT_MASK, SIMCONNECT_DATATYPE_INT32);
+end;
+
+
+procedure TFSXAllLightsFunctionWorker.HandleData(AData: Pointer);
+begin
+  if PCardinal(AData)^ = FSX_LIGHTON_ALL then
+    SetCurrentState(FSXStateUIDOn)
+  else if PCardinal(AData)^ > 0 then
+    SetCurrentState(FSXStateUIDPartial)
   else
     SetCurrentState(FSXStateUIDOff);
 end;

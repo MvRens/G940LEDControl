@@ -2,6 +2,7 @@ program G940LEDControl;
 
 uses
   Forms,
+  SysUtils,
   MainFrm in 'Forms\MainFrm.pas' {MainForm},
   LogiJoystickDLL in '..\Shared\LogiJoystickDLL.pas',
   SimConnect in '..\Shared\SimConnect.pas',
@@ -30,7 +31,12 @@ uses
   LEDResources in 'Units\LEDResources.pas',
   Settings in 'Units\Settings.pas',
   FSXLEDFunctionWorker in 'Units\FSXLEDFunctionWorker.pas',
-  FSXSimConnectStateMonitor in 'Units\FSXSimConnectStateMonitor.pas';
+  FSXSimConnectStateMonitor in 'Units\FSXSimConnectStateMonitor.pas',
+  ProfileManager in 'Units\ProfileManager.pas',
+  FSXLEDFunctionProviderIntf in 'Units\FSXLEDFunctionProviderIntf.pas',
+  GxDbugIntf in 'Units\GxDbugIntf.pas',
+  DebugLog in 'Units\DebugLog.pas',
+  DebugLogGExperts in 'Units\DebugLogGExperts.pas';
 
 {$R *.res}
 
@@ -39,6 +45,9 @@ var
   MainForm: TMainForm;
 
 begin
+  if FindCmdLineSwitch('log') then
+    SetDebugLogConsumer(TGExpertsDebugLogConsumer.Create);
+
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.Title := 'G940 LED Control';

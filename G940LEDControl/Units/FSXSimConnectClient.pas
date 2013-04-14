@@ -1,19 +1,27 @@
 unit FSXSimConnectClient;
 
+// Determines if a Win32 event will be used to wait for new
+// messages instead of the old 0.x method of polling via a timer.
+{$DEFINE SCUSEEVENT}
+
 interface
 uses
   Classes,
 
   OtlTaskControl,
 
-  FSXSimConnectIntf;
+  FSXSimConnectIntf,
+  Profile,
+  ProfileManager;
 
 
 type
-  TFSXSimConnectInterface = class(TInterfacedObject, IFSXSimConnect)
+  TFSXSimConnectInterface = class(TInterfacedObject, IFSXSimConnect, IFSXSimConnectProfileMenu, IProfileObserver)
   private
     FClient: IOmniTaskControl;
     FObservers: TInterfaceList;
+
+    FObservingProfileManager: Boolean;
   protected
     property Client: IOmniTaskControl read FClient;
     property Observers: TInterfaceList read FObservers;
@@ -25,6 +33,14 @@ type
     function CreateDefinition: IFSXSimConnectDefinition;
     function AddDefinition(ADefinition: IFSXSimConnectDefinition; ADataHandler: IFSXSimConnectDataHandler): Integer;
     procedure RemoveDefinition(ADefinitionID: Cardinal; ADataHandler: IFSXSimConnectDataHandler);
+
+    { IFSXSimConnectProfileMenu }
+    procedure SetProfileMenu(AEnabled, ACascaded: Boolean);
+
+    { IProfileObserver }
+    procedure ObserveAdd(AProfile: TProfile);
+    procedure ObserveRemove(AProfile: TProfile);
+    procedure ObserveActiveChanged(AProfile: TProfile);
   public
     constructor Create;
     destructor Destroy; override;
@@ -43,6 +59,7 @@ uses
   OtlCommon,
   SimConnect,
 
+  DebugLog,
   FSXResources,
   FSXSimConnectStateMonitor;
 
@@ -52,12 +69,16 @@ const
   TM_REMOVEDEFINITION = 3002;
   TM_TRYSIMCONNECT = 3003;
   TM_PROCESSMESSAGES = 3004;
+  TM_SETPROFILEMENU = 3005;
+  TM_UPDATEPROFILEMENU = 3006;
 
   TIMER_TRYSIMCONNECT = 201;
-  TIMER_PROCESSMESSAGES = 202;
-
   INTERVAL_TRYSIMCONNECT = 5000;
+
+  {$IFNDEF SCUSEEVENT}
+  TIMER_PROCESSMESSAGES = 202;
   INTERVAL_PROCESSMESSAGES = 50;
+  {$ENDIF}
 
 
 type
@@ -71,7 +92,7 @@ type
     constructor Create(ADefinition: IFSXSimConnectDefinitionAccess);
     destructor Destroy; override;
 
-    procedure Attach(ADataHandler: IFSXSimConnectDataHandler);
+    function Attach(ADataHandler: IFSXSimConnectDataHandler): Integer;
     function Detach(ADataHandler: IFSXSimConnectDataHandler): Integer;
 
     procedure HandleData(AData: Pointer);
@@ -90,14 +111,27 @@ type
     FDefinitions: TFSXSimConnectDefinitionMap;
     FLastDefinitionID: Cardinal;
     FSimConnectHandle: THandle;
-//    FSimConnectDataEvent: TEvent;
+    {$IFDEF SCUSEEVENT}
+    FSimConnectDataEvent: TEvent;
+    {$ENDIF}
+
+    FProfileMenu: Boolean;
+    FProfileMenuCascaded: Boolean;
+
+    FMenuProfiles: TStringList;
+    FMenuWasCascaded: Boolean;
   protected
     procedure TMAddDefinition(var Msg: TOmniMessage); message TM_ADDDEFINITION;
     procedure TMRemoveDefinition(var Msg: TOmniMessage); message TM_REMOVEDEFINITION;
     procedure TMTrySimConnect(var Msg: TOmniMessage); message TM_TRYSIMCONNECT;
+    {$IFNDEF SCUSEEVENT}
     procedure TMProcessMessages(var Msg: TOmniMessage); message TM_PROCESSMESSAGES;
+    {$ENDIF}
+    procedure TMSetProfileMenu(var Msg: TOmniMessage); message TM_SETPROFILEMENU;
+    procedure TMUpdateProfileMenu(var Msg: TOmniMessage); message TM_UPDATEPROFILEMENU;
 
     procedure HandleSimConnectDataEvent;
+    procedure HandleEvent(AEventID: Integer);
   protected
     function Initialize: Boolean; override;
     procedure Cleanup; override;
@@ -111,10 +145,17 @@ type
 
     function SameDefinition(ADefinition1, ADefinition2: IFSXSimConnectDefinitionAccess): Boolean;
 
+    procedure UpdateProfileMenu;
+
     property Definitions: TFSXSimConnectDefinitionMap read FDefinitions;
     property LastDefinitionID: Cardinal read FLastDefinitionID;
     property SimConnectHandle: THandle read FSimConnectHandle;
-//    property SimConnectDataEvent: TEvent read FSimConnectDataEvent;
+    {$IFDEF SCUSEEVENT}
+    property SimConnectDataEvent: TEvent read FSimConnectDataEvent;
+    {$ENDIF}
+
+    property ProfileMenu: Boolean read FProfileMenu;
+    property ProfileMenuCascaded: Boolean read FProfileMenuCascaded;
   end;
 
 
@@ -263,6 +304,40 @@ end;
 
 
 
+procedure TFSXSimConnectInterface.SetProfileMenu(AEnabled, ACascaded: Boolean);
+begin
+  Client.Comm.Send(TM_SETPROFILEMENU, [AEnabled, ACascaded]);
+
+  if AEnabled <> FObservingProfileManager then
+  begin
+    if AEnabled then
+      TProfileManager.Attach(Self)
+    else
+      TProfileManager.Detach(Self);
+
+    FObservingProfileManager := AEnabled;
+  end;
+end;
+
+
+procedure TFSXSimConnectInterface.ObserveAdd(AProfile: TProfile);
+begin
+  Client.Comm.Send(TM_UPDATEPROFILEMENU);
+end;
+
+
+procedure TFSXSimConnectInterface.ObserveRemove(AProfile: TProfile);
+begin
+  Client.Comm.Send(TM_UPDATEPROFILEMENU);
+end;
+
+
+procedure TFSXSimConnectInterface.ObserveActiveChanged(AProfile: TProfile);
+begin
+end;
+
+
+
 { TFSXSimConnectDefinition }
 constructor TFSXSimConnectDefinition.Create;
 begin
@@ -301,14 +376,19 @@ end;
 { TFSXSimConnectClient }
 function TFSXSimConnectClient.Initialize: Boolean;
 begin
+  Debug.Log('FSX SimConnect: Initializing');
+
   Result := inherited Initialize;
   if not Result then
     exit;
 
   FDefinitions := TFSXSimConnectDefinitionMap.Create;
+  FMenuProfiles := TStringList.Create;
 
-//  FSimConnectDataEvent := TEvent.Create(nil, False, False, '');
-//  Task.RegisterWaitObject(SimConnectDataEvent.Handle, HandleSimConnectDataEvent);
+  {$IFDEF SCUSEEVENT}
+  FSimConnectDataEvent := TEvent.Create(nil, False, False, '');
+  Task.RegisterWaitObject(SimConnectDataEvent.Handle, HandleSimConnectDataEvent);
+  {$ENDIF}
 
   TrySimConnect;
 end;
@@ -316,7 +396,13 @@ end;
 
 procedure TFSXSimConnectClient.Cleanup;
 begin
-//  FreeAndNil(FSimConnectDataEvent);
+  Debug.Log('FSX SimConnect: Cleaning up');
+
+  {$IFDEF SCUSEEVENT}
+  FreeAndNil(FSimConnectDataEvent);
+  {$ENDIF}
+
+  FreeAndNil(FMenuProfiles);
   FreeAndNil(FDefinitions);
 
   if SimConnectHandle <> 0 then
@@ -329,41 +415,85 @@ end;
 
 
 procedure TFSXSimConnectClient.TrySimConnect;
+var
+  eventHandle: THandle;
+
 begin
   if SimConnectHandle <> 0 then
     exit;
 
+  Debug.Log('FSX SimConnect: Attempting to connect to SimConnect');
+
   if InitSimConnect then
   begin
-    if SimConnect_Open(FSimConnectHandle, FSXSimConnectAppName, 0, 0, 0 (*SimConnectDataEvent.Handle*), 0) = S_OK then
+    {$IFDEF SCUSEEVENT}
+    eventHandle := SimConnectDataEvent.Handle;
+    {$ELSE}
+    eventHandle := 0;
+    {$ENDIF}
+
+    if SimConnect_Open(FSimConnectHandle, FSXSimConnectAppName, 0, 0, eventHandle, 0) = S_OK then
     begin
+      Debug.Log('FSX SimConnect: Succesfully connected');
       TFSXSimConnectStateMonitor.SetCurrentState(scsConnected);
 
       Task.ClearTimer(TIMER_TRYSIMCONNECT);
       RegisterDefinitions;
+      UpdateProfileMenu;
 
+      {$IFNDEF SCUSEEVENT}
       Task.SetTimer(TIMER_PROCESSMESSAGES, INTERVAL_PROCESSMESSAGES, TM_PROCESSMESSAGES);
+      {$ENDIF}
     end;
   end;
 
   if SimConnectHandle = 0 then
   begin
+    Debug.LogFmt('FSX SimConnect: Connection failed, trying again in %d seconds', [INTERVAL_TRYSIMCONNECT div 1000]);
     TFSXSimConnectStateMonitor.SetCurrentState(scsFailed);
 
     Task.SetTimer(TIMER_TRYSIMCONNECT, INTERVAL_TRYSIMCONNECT, TM_TRYSIMCONNECT);
+    {$IFNDEF SCUSEEVENT}
     Task.ClearTimer(TIMER_PROCESSMESSAGES);
+    {$ENDIF}
   end;
 end;
 
 
 procedure TFSXSimConnectClient.HandleSimConnectDataEvent;
+const
+  RecvMessageName: array[SIMCONNECT_RECV_ID] of string =
+                   (
+                     'Null',
+                     'Exception',
+                     'Open',
+                     'Quit',
+                     'Event',
+                     'Event Object Addremove',
+                     'Event Filename',
+                     'Event Frame',
+                     'Simobject Data',
+                     'Simobject Data Bytype',
+                     'Weather Observation',
+                     'Cloud State',
+                     'Assigned Object Id',
+                     'Reserved Key',
+                     'Custom Action',
+                     'System State',
+                     'Client Data'
+                   );
+
+
 var
   data: PSimConnectRecv;
   dataSize: Cardinal;
   simObjectData: PSimConnectRecvSimObjectData;
+  eventData: PSimConnectRecvEvent;
   definitionRef: TFSXSimConnectDefinitionRef;
 
 begin
+  Debug.Log('FSX SimConnect: Handling messages');
+
   while (SimConnectHandle <> 0) and
         (SimConnect_GetNextDispatch(SimConnectHandle, data, dataSize) = S_OK) do
   begin
@@ -371,6 +501,7 @@ begin
       SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
         begin
           simObjectData := PSimConnectRecvSimObjectData(data);
+          Debug.LogFmt('FSX SimConnect: Received Sim Object Data message (definition = %d)', [simObjectData^.dwDefineID]);
 
           if Definitions.ContainsKey(simObjectData^.dwDefineID) then
           begin
@@ -379,16 +510,51 @@ begin
           end;
         end;
 
+      SIMCONNECT_RECV_ID_EVENT:
+        begin
+          eventData := PSimConnectRecvEvent(data);
+          Debug.LogFmt('FSX SimConnect: Received Event message (eventId = %d)', [eventData^.uEventID]);
+
+          HandleEvent(eventData^.uEventID);
+        end;
+
       SIMCONNECT_RECV_ID_QUIT:
         begin
+          Debug.Log('FSX SimConnect: Received Quit message');
+
           FSimConnectHandle := 0;
+          {$IFNDEF SCUSEEVENT}
           Task.ClearTimer(TIMER_PROCESSMESSAGES);
+          {$ENDIF}
           Task.SetTimer(TIMER_TRYSIMCONNECT, INTERVAL_TRYSIMCONNECT, TM_TRYSIMCONNECT);
+
+          FMenuProfiles.Clear;
 
           TFSXSimConnectStateMonitor.SetCurrentState(scsDisconnected);
         end;
+    else
+      if SIMCONNECT_RECV_ID(data^.dwID) in [Low(SIMCONNECT_RECV_ID)..High(SIMCONNECT_RECV_ID)] then
+        Debug.LogFmt('FSX SimConnect: Received unhandled message (%s)', [RecvMessageName[SIMCONNECT_RECV_ID(data^.dwID)]])
+      else
+        Debug.LogFmt('FSX SimConnect: Received unknown message (%d)', [data^.dwID]);
     end;
   end;
+end;
+
+
+procedure TFSXSimConnectClient.HandleEvent(AEventID: Integer);
+var
+  profileName: string;
+  profile: TProfile;
+
+begin
+  if (AEventID <= 0) or (AEventID > FMenuProfiles.Count) then
+    exit;
+
+  profileName := FMenuProfiles[Pred(AEventID)];
+  profile := TProfileManager.Find(profileName);
+  if Assigned(profile) then
+    TProfileManager.Instance.ActiveProfile := profile;
 end;
 
 
@@ -399,6 +565,8 @@ var
 begin
   if SimConnectHandle = 0 then
     exit;
+
+  UpdateProfileMenu;
 
   for definitionID in Definitions.Keys do
     RegisterDefinition(definitionID, Definitions[definitionID].Definition);
@@ -413,6 +581,8 @@ var
 begin
   if SimConnectHandle = 0 then
     exit;
+
+  Debug.LogFmt('FSX SimConnect: Registering definition %d', [ADefinitionID]);
 
   for variableIndex := 0 to Pred(ADefinition.GetVariableCount) do
   begin
@@ -446,7 +616,10 @@ end;
 procedure TFSXSimConnectClient.UnregisterDefinition(ADefinitionID: Cardinal);
 begin
   if SimConnectHandle <> 0 then
+  begin
+    Debug.LogFmt('FSX SimConnect: Unregistering definition: %d', [ADefinitionID]);
     SimConnect_ClearDataDefinition(SimConnectHandle, ADefinitionID);
+  end;
 end;
 
 
@@ -482,6 +655,69 @@ begin
 end;
 
 
+procedure TFSXSimConnectClient.UpdateProfileMenu;
+var
+  profile: TProfile;
+  profileIndex: Integer;
+  menuIndex: Integer;
+  profileName: string;
+
+begin
+  if SimConnectHandle = 0 then
+    exit;
+
+  Debug.Log('FSX SimConnect: Updating profile menu');
+
+  if FMenuWasCascaded then
+  begin
+    for menuIndex := Pred(FMenuProfiles.Count) downto 0 do
+      SimConnect_MenuDeleteSubItem(SimConnectHandle, 1, Cardinal(FMenuProfiles.Objects[menuIndex]));
+
+    SimConnect_MenuDeleteItem(SimConnectHandle, 1);
+  end else
+  begin
+    for menuIndex := Pred(FMenuProfiles.Count) downto 0 do
+      SimConnect_MenuDeleteItem(SimConnectHandle, Cardinal(FMenuProfiles.Objects[menuIndex]));
+  end;
+
+  FMenuProfiles.Clear;
+
+
+  if ProfileMenu then
+  begin
+    for profile in TProfileManager.Instance do
+      FMenuProfiles.Add(profile.Name);
+
+    FMenuProfiles.Sort;
+
+
+    if ProfileMenuCascaded then
+    begin
+      SimConnect_MenuAddItem(SimConnectHandle, FSXMenuProfiles, 1, 0);
+
+      for profileIndex := 0 to Pred(FMenuProfiles.Count) do
+      begin
+        profileName := Format(FSXMenuProfileFormatCascaded, [FMenuProfiles[profileIndex]]);
+
+        SimConnect_MenuAddSubItem(SimConnectHandle, 1, PAnsiChar(AnsiString(profileName)), Succ(profileIndex), Succ(profileIndex));
+        FMenuProfiles.Objects[profileIndex] := TObject(Succ(profileIndex));
+      end;
+    end else
+    begin
+      for profileIndex := 0 to Pred(FMenuProfiles.Count) do
+      begin
+        profileName := Format(FSXMenuProfileFormat, [FMenuProfiles[profileIndex]]);
+
+        SimConnect_MenuAddItem(SimConnectHandle, PAnsiChar(AnsiString(profileName)), Succ(profileIndex), Succ(profileIndex));
+        FMenuProfiles.Objects[profileIndex] := TObject(Succ(profileIndex));
+      end;
+    end;
+
+    FMenuWasCascaded := ProfileMenuCascaded;
+  end;
+end;
+
+
 procedure TFSXSimConnectClient.TMAddDefinition(var Msg: TOmniMessage);
 var
   addDefinition: TAddDefinitionValue;
@@ -489,11 +725,14 @@ var
   definitionRef: TFSXSimConnectDefinitionRef;
   definitionAccess: IFSXSimConnectDefinitionAccess;
   hasDefinition: Boolean;
+  refCount: Integer;
 
 begin
   addDefinition := Msg.MsgData;
   definitionAccess := (addDefinition.Definition as IFSXSimConnectDefinitionAccess);
   hasDefinition := False;
+
+  Debug.Log('FSX SimConnect: Received request to add a definition');
 
   { Attempt to re-use existing definition to save on SimConnect traffic }
   for definitionID in Definitions.Keys do
@@ -502,8 +741,11 @@ begin
 
     if SameDefinition(definitionRef.Definition, definitionAccess) then
     begin
-      definitionRef.Attach(addDefinition.DataHandler);
+      refCount := definitionRef.Attach(addDefinition.DataHandler);
       addDefinition.DefinitionID := definitionID;
+
+      Debug.LogFmt('FSX SimConnect: Definition exists, incremented reference count (definitionID = %d, refCount = %d)', [definitionID, refCount]);
+
 
       { Request an update on the definition to update the new worker }
       UpdateDefinition(definitionID);
@@ -517,6 +759,7 @@ begin
   begin
     { Add as new definition }
     Inc(FLastDefinitionID);
+    Debug.LogFmt('FSX SimConnect: Adding as new definition (%d)', [FLastDefinitionID]);
 
     definitionRef := TFSXSimConnectDefinitionRef.Create(definitionAccess);
     definitionRef.Attach(addDefinition.DataHandler);
@@ -534,15 +777,23 @@ procedure TFSXSimConnectClient.TMRemoveDefinition(var Msg: TOmniMessage);
 var
   removeDefinition: TRemoveDefinitionValue;
   definitionRef: TFSXSimConnectDefinitionRef;
+  refCount: Integer;
 
 begin
   removeDefinition := Msg.MsgData;
+  Debug.LogFmt('FSX SimConnect: Received request to remove a definition (%d)', [removeDefinition.DefinitionID]);
 
   if Definitions.ContainsKey(removeDefinition.DefinitionID) then
   begin
     definitionRef := Definitions[removeDefinition.DefinitionID];
-    if definitionRef.Detach(removeDefinition.DataHandler) = 0 then
+    refCount := definitionRef.Detach(removeDefinition.DataHandler);
+
+    Debug.LogFmt('FSX SimConnect: Definition exists, decreased reference count (refCount = %d)', [refCount]);
+
+    if refCount = 0 then
     begin
+      Debug.Log('FSX SimConnect: Removing definition');
+
       { Unregister with SimConnect }
       UnregisterDefinition(removeDefinition.DefinitionID);
 
@@ -560,9 +811,36 @@ begin
 end;
 
 
+{$IFNDEF SCUSEEVENT}
 procedure TFSXSimConnectClient.TMProcessMessages(var Msg: TOmniMessage);
 begin
   HandleSimConnectDataEvent;
+end;
+{$ENDIF}
+
+
+procedure TFSXSimConnectClient.TMSetProfileMenu(var Msg: TOmniMessage);
+var
+  newProfileMenu: Boolean;
+  newProfileMenuCascaded: Boolean;
+
+begin
+  newProfileMenu := Msg.MsgData[0];
+  newProfileMenuCascaded := Msg.MsgData[1];
+
+  if (newProfileMenu <> FProfileMenu) or (newProfileMenuCascaded <> FProfileMenuCascaded) then
+  begin
+    FProfileMenu := newProfileMenu;
+    FProfileMenuCascaded := newProfileMenuCascaded;
+
+    UpdateProfileMenu;
+  end;
+end;
+
+
+procedure TFSXSimConnectClient.TMUpdateProfileMenu(var Msg: TOmniMessage);
+begin
+  UpdateProfileMenu;
 end;
 
 
@@ -594,9 +872,10 @@ begin
 end;
 
 
-procedure TFSXSimConnectDefinitionRef.Attach(ADataHandler: IFSXSimConnectDataHandler);
+function TFSXSimConnectDefinitionRef.Attach(ADataHandler: IFSXSimConnectDataHandler): Integer;
 begin
   DataHandlers.Add(ADataHandler as IFSXSimConnectDataHandler);
+  Result := DataHandlers.Count;
 end;
 
 

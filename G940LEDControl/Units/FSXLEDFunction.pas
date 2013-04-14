@@ -145,6 +145,13 @@ type
     function GetLightMask: Integer; override;
   end;
 
+  TFSXAllLightsFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetCategoryName: string; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
 
   { Autopilot }
   TCustomFSXAutoPilotFunction = class(TCustomFSXFunction)
@@ -480,6 +487,27 @@ end;
 function TFSXRecognitionLightsFunction.GetLightMask: Integer;
 begin
   Result := FSX_LIGHTON_RECOGNITION;
+end;
+
+
+{ TFSXAllLightsFunction }
+procedure TFSXAllLightsFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDOn,       FSXStateDisplayNameOn,      lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDPartial,  FSXStateDisplayNamePartial, lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDOff,      FSXStateDisplayNameOff,     lcRed));
+end;
+
+
+function TFSXAllLightsFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryLights;
+end;
+
+
+function TFSXAllLightsFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXAllLightsFunctionWorker;
 end;
 
 

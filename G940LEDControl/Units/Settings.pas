@@ -10,6 +10,8 @@ type
     FCheckUpdates: Boolean;
     FHasCheckUpdates: Boolean;
     FActiveProfile: string;
+    FProfileMenu: Boolean;
+    FProfileMenuCascaded: Boolean;
 
     procedure SetCheckUpdates(const Value: Boolean);
   public
@@ -20,6 +22,9 @@ type
     property HasCheckUpdates: Boolean read FHasCheckUpdates;
 
     property ActiveProfile: string read FActiveProfile write FActiveProfile;
+
+    property ProfileMenu: Boolean read FProfileMenu write FProfileMenu;
+    property ProfileMenuCascaded: Boolean read FProfileMenuCascaded write FProfileMenuCascaded;
   end;
 
 
@@ -29,6 +34,9 @@ const
 
   KeyCheckUpdates = 'CheckUpdates';
   KeyActiveProfile = 'ActiveProfile';
+
+  KeyProfileMenu = 'ProfileMenu';
+  KeyProfileMenuCascaded = 'ProfileMenuCascaded';
 
 
 { TSettings }
@@ -44,6 +52,12 @@ begin
 
     if not AReader.ReadString(KeyActiveProfile, FActiveProfile) then
       FActiveProfile := '';
+
+    if not AReader.ReadBoolean(KeyProfileMenu, FProfileMenu) then
+      FProfileMenu := False;
+
+    if not AReader.ReadBoolean(KeyProfileMenuCascaded, FProfileMenuCascaded) then
+      FProfileMenuCascaded := False;
   finally
     AReader.EndSection;
   end;
@@ -56,6 +70,8 @@ begin
   try
     AWriter.WriteBoolean(KeyCheckUpdates, CheckUpdates);
     AWriter.WriteString(KeyActiveProfile, ActiveProfile);
+    AWriter.WriteBoolean(KeyProfileMenu, ProfileMenu);
+    AWriter.WriteBoolean(KeyProfileMenuCascaded, ProfileMenuCascaded);
   finally
     AWriter.EndSection;
   end;

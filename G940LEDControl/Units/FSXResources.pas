@@ -15,9 +15,11 @@ const
 
   FSXStateUIDOn = 'on';
   FSXStateUIDOff = 'off';
+  FSXStateUIDPartial = 'partial';
 
   FSXStateDisplayNameOn = 'On';
   FSXStateDisplayNameOff = 'Off';
+  FSXStateDisplayNamePartial = 'Partial';
 
 
   FSXFunctionUIDEngine = 'engine';
@@ -76,6 +78,9 @@ const
 
   FSXFunctionUIDRecognitionLights = 'recognitionLights';
     FSXFunctionDisplayNameRecognitionLights = 'Recognition lights';
+
+  FSXFunctionUIDAllLights = 'allLights';
+    FSXFunctionDisplayNameAllLights = 'All lights';
 
 
   FSXFunctionUIDParkingBrake = 'parkingBrake';
@@ -189,6 +194,10 @@ const
     FSXFunctionDisplayNameAutoPilotNav = 'Autopilot nav';
 
 
+
+  FSXMenuProfiles = 'G940 Profile';
+  FSXMenuProfileFormat = 'G940: %s';
+  FSXMenuProfileFormatCascaded = '%s';
 
 
 implementation
