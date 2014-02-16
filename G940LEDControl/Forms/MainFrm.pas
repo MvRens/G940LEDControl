@@ -1,5 +1,7 @@
 unit MainFrm;
 
+// #ToDo1 -oMvR: 3-3-2013: trigger profile update when Save As only changes the name
+
 interface
 uses
   System.Classes,
@@ -19,12 +21,11 @@ uses
   pngimage,
   X2UtPersistIntf,
 
-  ButtonAssignmentFrm,
   FSXSimConnectIntf,
   LEDStateConsumer,
   Profile,
   ProfileManager,
-  Settings, VirtualTrees, Vcl.ImgList, Vcl.ActnList, Vcl.ToolWin, Vcl.Menus;
+  Settings;
 
 
 const
@@ -44,6 +45,13 @@ const
 
 
 type
+  TLEDControls = record
+    ConfigureButton: TButton;
+    CategoryLabel: TLabel;
+    FunctionLabel: TLabel;
+  end;
+
+
   TMainForm = class(TForm, IProfileObserver)
     imgStateNotFound: TImage;
     lblG940Throttle: TLabel;
@@ -64,6 +72,35 @@ type
     btnCheckUpdates: TButton;
     lblProxy: TLabel;
     tsButtons: TTabSheet;
+    btnP1: TButton;
+    lblP1Function: TLabel;
+    lblP1Category: TLabel;
+    btnP2: TButton;
+    lblP2Function: TLabel;
+    lblP2Category: TLabel;
+    btnP3: TButton;
+    lblP3Function: TLabel;
+    lblP3Category: TLabel;
+    btnP4: TButton;
+    lblP4Function: TLabel;
+    lblP4Category: TLabel;
+    btnP5: TButton;
+    lblP5Function: TLabel;
+    lblP5Category: TLabel;
+    btnP6: TButton;
+    lblP6Function: TLabel;
+    lblP6Category: TLabel;
+    btnP7: TButton;
+    lblP7Function: TLabel;
+    lblP7Category: TLabel;
+    btnP8: TButton;
+    lblP8Function: TLabel;
+    lblP8Category: TLabel;
+    lblProfile: TLabel;
+    cmbProfiles: TComboBox;
+    btnSaveProfile: TButton;
+    btnDeleteProfile: TButton;
+    bvlProfiles: TBevel;
     pnlFSX: TPanel;
     imgFSXStateNotConnected: TImage;
     imgFSXStateConnected: TImage;
@@ -75,44 +112,11 @@ type
     cbProfileMenuCascaded: TCheckBox;
     lblProfileSwitching: TLabel;
     bvlProfileSwitching: TBevel;
-    TrayIcon: TTrayIcon;
-    bafP1: TButtonAssignmentFrame;
-    bafP2: TButtonAssignmentFrame;
-    bafP3: TButtonAssignmentFrame;
-    bafP4: TButtonAssignmentFrame;
-    bafP5: TButtonAssignmentFrame;
-    bafP6: TButtonAssignmentFrame;
-    bafP7: TButtonAssignmentFrame;
-    bafP8: TButtonAssignmentFrame;
-    vstProfile: TVirtualStringTree;
-    pnlProfiles: TPanel;
-    tbProfiles: TToolBar;
-    tbNewProfile: TToolButton;
-    tbSaveProfile: TToolButton;
-    ActionList: TActionList;
-    actNewProfile: TAction;
-    actSaveProfile: TAction;
-    actRevertProfile: TAction;
-    tbRevertProfile: TToolButton;
-    ImageList: TImageList;
-    tbDeleteProfile: TToolButton;
-    actDeleteProfile: TAction;
-    ToolButton1: TToolButton;
-    tbSetActiveProfile: TToolButton;
-    actSetActiveProfile: TAction;
-    pmnProfiles: TPopupMenu;
-    pmnProfilesNew: TMenuItem;
-    pmnProfilesSave: TMenuItem;
-    pmnProfilesRevert: TMenuItem;
-    pmnProfilesDelete: TMenuItem;
-    pmnProfilesSetActive: TMenuItem;
-    pmnProfilesSep1: TMenuItem;
-    tbRenameProfile: TToolButton;
-    actRenameProfile: TAction;
 
     procedure FormCreate(Sender: TObject);
     procedure lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
     procedure btnCheckUpdatesClick(Sender: TObject);
+    procedure LEDButtonClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure cmbProfilesClick(Sender: TObject);
     procedure cbCheckUpdatesClick(Sender: TObject);
@@ -120,14 +124,8 @@ type
     procedure btnDeleteProfileClick(Sender: TObject);
     procedure cbProfileMenuClick(Sender: TObject);
     procedure cbProfileMenuCascadedClick(Sender: TObject);
-    procedure actNewProfileExecute(Sender: TObject);
-    procedure actSaveProfileExecute(Sender: TObject);
-    procedure actRevertProfileExecute(Sender: TObject);
-    procedure actSetActiveProfileExecute(Sender: TObject);
-    procedure actDeleteProfileExecute(Sender: TObject);
-    procedure actRenameProfileExecute(Sender: TObject);
   private
-    FLEDControls: array[0..LED_COUNT - 1] of TButtonAssignmentFrame;
+    FLEDControls: array[0..LED_COUNT - 1] of TLEDControls;
     FEventMonitor: TOmniEventMonitor;
 
     FProfilesFilename: string;
@@ -181,8 +179,6 @@ type
 
     procedure HandleDeviceStateMessage(AMessage: TOmniMessage);
     procedure HandleFSXStateMessage(AMessage: TOmniMessage);
-
-    procedure LEDConfigurationClick(Sender: TObject);
 
     procedure CMAskAutoUpdate(var Msg: TMessage); message CM_ASKAUTOUPDATE;
 
@@ -291,7 +287,7 @@ begin
   worker := TFSXStateMonitorWorker.Create;
   EventMonitor.Monitor(CreateTask(worker)).Run;
 
-  Profiles.Attach(Self);
+  TProfileManager.Attach(Self);
 
   FindLEDControls;
 
@@ -310,7 +306,7 @@ begin
   FinalizeProfileMenu;
 
   UnregisterDeviceArrival;
-  Profiles.Detach(Self);
+  TProfileManager.Detach(Self);
 end;
 
 
@@ -382,7 +378,7 @@ var
   profile: TProfile;
 
 begin
-  profile := Profiles.ActiveProfile;
+  profile := TProfileManager.Instance.ActiveProfile;
 
   if Settings.ActiveProfile <> profile.Name then
   begin
@@ -390,13 +386,12 @@ begin
     SaveSettings;
   end;
 
-  // #ToDo1 -oMvR: 21-4-2013: invalidate profile node
-//  FLockChangeProfile := True;
-//  try
-//    cmbProfiles.ItemIndex := cmbProfiles.Items.IndexOfObject(profile);
-//  finally
-//    FLockChangeProfile := False;
-//  end;
+  FLockChangeProfile := True;
+  try
+    cmbProfiles.ItemIndex := cmbProfiles.Items.IndexOfObject(profile);
+  finally
+    FLockChangeProfile := False;
+  end;
 
   LoadActiveProfile;
 end;
@@ -416,17 +411,20 @@ procedure TMainForm.FindLEDControls;
 var
   ledIndex: Integer;
   ledNumber: string;
-  buttonFrame: TButtonAssignmentFrame;
 
 begin
   for ledIndex := 0 to Pred(LED_COUNT) do
   begin
     ledNumber := IntToStr(Succ(ledIndex));
 
-    buttonFrame := (ComponentByName('bafP' + ledNumber, ledIndex) as TButtonAssignmentFrame);
-    buttonFrame.OnConfigurationClick := LEDConfigurationClick;
+    FLEDControls[ledIndex].ConfigureButton := (ComponentByName('btnP' + ledNumber, ledIndex) as TButton);
+    FLEDControls[ledIndex].CategoryLabel := (ComponentByName('lblP' + ledNumber + 'Category', ledIndex) as TLabel);
+    FLEDControls[ledIndex].FunctionLabel := (ComponentByName('lblP' + ledNumber + 'Function', ledIndex) as TLabel);
 
-    FLEDControls[ledIndex] := buttonFrame;
+    FLEDControls[ledIndex].ConfigureButton.OnClick := LEDButtonClick;
+    FLEDControls[ledIndex].CategoryLabel.Caption := '';
+    FLEDControls[ledIndex].CategoryLabel.Font.Color := clGrayText;
+    FLEDControls[ledIndex].FunctionLabel.Caption := '';
   end;
 end;
 
@@ -456,43 +454,43 @@ begin
       begin
         Debug.Log('UI: Succesfully converted 0.x profile');
         defaultProfile.Name := DefaultProfileName;
+        defaultProfile.IsTemporary := True;
       end;
 
       if Assigned(defaultProfile) then
-        Profiles.Add(defaultProfile);
+        TProfileManager.Add(defaultProfile);
     end else
     begin
       persistXML := TX2UtPersistXML.Create;
       try
         persistXML.FileName := FProfilesFilename;
-        Profiles.Load(persistXML.CreateReader);
+        TProfileManager.Load(persistXML.CreateReader);
       finally
         FreeAndNil(persistXML);
       end;
     end;
 
     { Make sure we always have a profile }
-    if Profiles.Count = 0 then
+    if TProfileManager.Instance.Count = 0 then
     begin
       Debug.Log('UI: No profiles found, creating default profile');
-      Profiles.Add(CreateDefaultProfile);
+      TProfileManager.Add(CreateDefaultProfile);
     end;
 
-    // #ToDo1 -oMvR: 21-4-2013: load tree
-//    FLockChangeProfile := True;
-//    try
-//      cmbProfiles.Items.BeginUpdate;
-//      try
-//        cmbProfiles.Items.Clear;
-//
-//        for profile in TProfileManager.Instance do
-//          cmbProfiles.Items.AddObject(profile.Name, profile);
-//      finally
-//        cmbProfiles.Items.EndUpdate;
-//      end;
-//    finally
-//      FLockChangeProfile := False;
-//    end;
+    FLockChangeProfile := True;
+    try
+      cmbProfiles.Items.BeginUpdate;
+      try
+        cmbProfiles.Items.Clear;
+
+        for profile in TProfileManager.Instance do
+          cmbProfiles.Items.AddObject(profile.Name, profile);
+      finally
+        cmbProfiles.Items.EndUpdate;
+      end;
+    finally
+      FLockChangeProfile := False;
+    end;
   finally
     Debug.UnIndent;
   end;
@@ -509,7 +507,7 @@ begin
   persistXML := TX2UtPersistXML.Create;
   try
     persistXML.FileName := FProfilesFilename;
-    Profiles.Save(persistXML.CreateWriter);
+    TProfileManager.Instance.Save(persistXML.CreateWriter);
   finally
     FreeAndNil(persistXML);
   end;
@@ -554,21 +552,13 @@ begin
     { Default profile }
     profile := nil;
     if Length(Settings.ActiveProfile) > 0 then
-    begin
-      { Version 0.2 used the profile name, not a UID }
-      if Settings.ActiveProfile[1] <> '{' then
-      begin
-        profile := Profiles.FindByName(Settings.ActiveProfile);
-        Settings.ActiveProfile := profile.UID;
-      end else
-        profile := Profiles.FindByUID(Settings.ActiveProfile);
-    end;
+      profile := TProfileManager.Instance.Find(Settings.ActiveProfile);
 
     { LoadProfiles ensures there's always at least 1 profile }
-    if (not Assigned(profile)) and (Profiles.Count > 0) then
-      profile := Profiles[0];
+    if (not Assigned(profile)) and (TProfileManager.Instance.Count > 0) then
+      profile := TProfileManager.Instance[0];
 
-    Profiles.ActiveProfile := profile;
+    TProfileManager.Instance.ActiveProfile := profile;
 
     { Auto-update }
     cbCheckUpdates.Checked := Settings.CheckUpdates;
@@ -611,7 +601,7 @@ begin
   { Default button functions are assigned during UpdateButton }
   Result := TProfile.Create;
   Result.Name := DefaultProfileName;
-//  Result.IsTemporary := True;
+  Result.IsTemporary := True;
 end;
 
 
@@ -621,8 +611,7 @@ var
   buttonIndex: Integer;
 
 begin
-  // #ToDo1 -oMvR: 21-4-2013: change to LoadSelectedProfile
-  activeProfile := Profiles.ActiveProfile;
+  activeProfile := TProfileManager.Instance.ActiveProfile;
   if not Assigned(activeProfile) then
     exit;
 
@@ -663,52 +652,16 @@ begin
 
   if Assigned(buttonFunction) then
   begin
-    FLEDControls[AButtonIndex].CategoryName := buttonFunction.GetCategoryName;
-    FLEDControls[AButtonIndex].FunctionName := buttonFunction.GetDisplayName;
+    FLEDControls[AButtonIndex].CategoryLabel.Caption := buttonFunction.GetCategoryName;
+    FLEDControls[AButtonIndex].FunctionLabel.Caption := buttonFunction.GetDisplayName;
   end;
-end;
-
-
-procedure TMainForm.actDeleteProfileExecute(Sender: TObject);
-begin
-//
-end;
-
-
-procedure TMainForm.actNewProfileExecute(Sender: TObject);
-begin
-  //
-end;
-
-
-procedure TMainForm.actRenameProfileExecute(Sender: TObject);
-begin
-  //
-end;
-
-
-procedure TMainForm.actRevertProfileExecute(Sender: TObject);
-begin
-  //
-end;
-
-
-procedure TMainForm.actSaveProfileExecute(Sender: TObject);
-begin
-  //
-end;
-
-
-procedure TMainForm.actSetActiveProfileExecute(Sender: TObject);
-begin
- //
 end;
 
 
 procedure TMainForm.AddProfile(AProfile: TProfile);
 begin
-//  cmbProfiles.Items.AddObject(AProfile.Name, AProfile);
-  Profiles.Add(AProfile, True);
+  cmbProfiles.Items.AddObject(AProfile.Name, AProfile);
+  TProfileManager.Instance.Add(AProfile, True);
 end;
 
 
@@ -718,18 +671,18 @@ var
   oldItemIndex: Integer;
 
 begin
-//  itemIndex := cmbProfiles.Items.IndexOfObject(AProfile);
-//  if itemIndex > -1 then
-//  begin
-//    oldItemIndex := cmbProfiles.ItemIndex;
-//    FLockChangeProfile := True;
-//    try
-//      cmbProfiles.Items[itemIndex] := AProfile.Name;
-//      cmbProfiles.ItemIndex := oldItemIndex;
-//    finally
-//      FLockChangeProfile := False;
-//    end;
-//  end;
+  itemIndex := cmbProfiles.Items.IndexOfObject(AProfile);
+  if itemIndex > -1 then
+  begin
+    oldItemIndex := cmbProfiles.ItemIndex;
+    FLockChangeProfile := True;
+    try
+      cmbProfiles.Items[itemIndex] := AProfile.Name;
+      cmbProfiles.ItemIndex := oldItemIndex;
+    finally
+      FLockChangeProfile := False;
+    end;
+  end;
 end;
 
 
@@ -738,39 +691,39 @@ var
   itemIndex: Integer;
 
 begin
-//  itemIndex := cmbProfiles.Items.IndexOfObject(AProfile);
-//  if itemIndex > -1 then
-//  begin
-//    TProfileManager.Remove(AProfile);
-//    cmbProfiles.Items.Delete(itemIndex);
-//
-//    if TProfileManager.Instance.Count = 0 then
-//      AddProfile(CreateDefaultProfile);
-//
-//    if ASetActiveProfile then
-//    begin
-//      if itemIndex >= TProfileManager.Instance.Count then
-//        itemIndex := Pred(TProfileManager.Instance.Count);
-//
-//      FLockChangeProfile := True;
-//      try
-//        cmbProfiles.ItemIndex := itemIndex;
-//        TProfileManager.Instance.ActiveProfile := TProfile(cmbProfiles.Items.Objects[itemIndex]);
-//      finally
-//        FLockChangeProfile := False;
-//      end;
-//    end;
-//  end;
+  itemIndex := cmbProfiles.Items.IndexOfObject(AProfile);
+  if itemIndex > -1 then
+  begin
+    TProfileManager.Remove(AProfile);
+    cmbProfiles.Items.Delete(itemIndex);
+
+    if TProfileManager.Instance.Count = 0 then
+      AddProfile(CreateDefaultProfile);
+
+    if ASetActiveProfile then
+    begin
+      if itemIndex >= TProfileManager.Instance.Count then
+        itemIndex := Pred(TProfileManager.Instance.Count);
+
+      FLockChangeProfile := True;
+      try
+        cmbProfiles.ItemIndex := itemIndex;
+        TProfileManager.Instance.ActiveProfile := TProfile(cmbProfiles.Items.Objects[itemIndex]);
+      finally
+        FLockChangeProfile := False;
+      end;
+    end;
+  end;
 end;
 
 
 procedure TMainForm.cmbProfilesClick(Sender: TObject);
 begin
-//  if not FLockChangeProfile then
-//  begin
-//    if cmbProfiles.ItemIndex > -1 then
-//      TProfileManager.Instance.ActiveProfile := TProfile(cmbProfiles.Items.Objects[cmbProfiles.ItemIndex]);
-//  end;
+  if not FLockChangeProfile then
+  begin
+    if cmbProfiles.ItemIndex > -1 then
+      TProfileManager.Instance.ActiveProfile := TProfile(cmbProfiles.Items.Objects[cmbProfiles.ItemIndex]);
+  end;
 end;
 
 
@@ -833,7 +786,7 @@ begin
 end;
 
 
-procedure TMainForm.LEDConfigurationClick(Sender: TObject);
+procedure TMainForm.LEDButtonClick(Sender: TObject);
 
   function GetUniqueProfileName(const AName: string): string;
   var
@@ -843,15 +796,14 @@ procedure TMainForm.LEDConfigurationClick(Sender: TObject);
     Result := AName;
     counter := 0;
 
-//    while Assigned(Profiles.Find(Result)) do
-//    begin
-//      Inc(counter);
-//      Result := Format('%s (%d)', [AName, counter]);
-//    end;
+    while Assigned(TProfileManager.Find(Result)) do
+    begin
+      Inc(counter);
+      Result := Format('%s (%d)', [AName, counter]);
+    end;
   end;
 
 
-  // #ToDo1 -oMvR: 6-5-2013: new style!
 var
   activeProfile: TProfile;
   buttonIndex: NativeInt;
@@ -859,25 +811,25 @@ var
   newProfile: Boolean;
 
 begin
-  activeProfile := Profiles.ActiveProfile;
+  activeProfile := TProfileManager.Instance.ActiveProfile;
   if not Assigned(activeProfile) then
     exit;
 
   { Behaviour similar to the Windows System Sounds control panel;
     when a change occurs, create a temporary profile "(modified)"
     so the original profile can still be selected }
-//  if not activeProfile.IsTemporary then
-//  begin
-//    profile := TProfile.Create;
-//    profile.Assign(activeProfile);
-//    profile.Name := GetUniqueProfileName(profile.Name + ProfilePostfixModified);
-//    profile.IsTemporary := True;
-//    newProfile := True;
-//  end else
-//  begin
+  if not activeProfile.IsTemporary then
+  begin
+    profile := TProfile.Create;
+    profile.Assign(activeProfile);
+    profile.Name := GetUniqueProfileName(profile.Name + ProfilePostfixModified);
+    profile.IsTemporary := True;
+    newProfile := True;
+  end else
+  begin
     profile := activeProfile;
     newProfile := False;
-//  end;
+  end;
 
   buttonIndex := (Sender as TComponent).Tag;
   if TButtonFunctionForm.Execute(profile, buttonIndex) then
@@ -1003,13 +955,13 @@ var
 
 begin
   name := '';
-  profile := Profiles.ActiveProfile;
+  profile := TProfileManager.Instance.ActiveProfile;
   existingProfile := nil;
 
   repeat
     if InputQuery('Save profile as', 'Save this profile as:', name) then
     begin
-      existingProfile := Profiles.FindByName(name);
+      existingProfile := TProfileManager.Find(name);
       if existingProfile = profile then
         existingProfile := nil;
 
@@ -1034,24 +986,24 @@ begin
     existingProfile.Assign(profile);
     existingProfile.Name := name;
     UpdateProfile(existingProfile);
-    Profiles.ActiveProfile := existingProfile;
+    TProfileManager.Instance.ActiveProfile := existingProfile;
 
-//    if profile.IsTemporary then
-//      DeleteProfile(profile, False);
+    if profile.IsTemporary then
+      DeleteProfile(profile, False);
   end else
   begin
-//    if profile.IsTemporary then
-//    begin
-//      profile.Name := name;
-//      profile.IsTemporary := False;
-//      UpdateProfile(profile);
-//    end else
-//    begin
+    if profile.IsTemporary then
+    begin
+      profile.Name := name;
+      profile.IsTemporary := False;
+      UpdateProfile(profile);
+    end else
+    begin
       newProfile := TProfile.Create;
       newProfile.Assign(profile);
       newProfile.Name := name;
       AddProfile(newProfile);
-//    end;
+    end;
   end;
 
   SaveProfiles;
@@ -1063,7 +1015,7 @@ var
   activeProfile: TProfile;
 
 begin
-  activeProfile := Profiles.ActiveProfile;
+  activeProfile := TProfileManager.Instance.ActiveProfile;
   if Assigned(activeProfile) then
   begin
     if MessageBox(Self.Handle, PChar(Format('Do you want to remove the profile named "%s"?', [activeProfile.Name])),

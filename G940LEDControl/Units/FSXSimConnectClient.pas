@@ -118,7 +118,6 @@ type
     FProfileMenu: Boolean;
     FProfileMenuCascaded: Boolean;
 
-    // #ToDo1 -oMvR: 6-5-2013: change to object list
     FMenuProfiles: TStringList;
     FMenuWasCascaded: Boolean;
   protected
@@ -312,9 +311,9 @@ begin
   if AEnabled <> FObservingProfileManager then
   begin
     if AEnabled then
-      Profiles.Attach(Self)
+      TProfileManager.Attach(Self)
     else
-      Profiles.Detach(Self);
+      TProfileManager.Detach(Self);
 
     FObservingProfileManager := AEnabled;
   end;
@@ -553,9 +552,9 @@ begin
     exit;
 
   profileName := FMenuProfiles[Pred(AEventID)];
-  profile := Profiles.FindByUID(profileName);
+  profile := TProfileManager.Find(profileName);
   if Assigned(profile) then
-    Profiles.ActiveProfile := profile;
+    TProfileManager.Instance.ActiveProfile := profile;
 end;
 
 
@@ -686,12 +685,8 @@ begin
 
   if ProfileMenu then
   begin
-    try
-      for profile in Profiles.LockList do
-        FMenuProfiles.Add(profile.Name);
-    finally
-      Profiles.UnlockList;
-    end;
+    for profile in TProfileManager.Instance do
+      FMenuProfiles.Add(profile.Name);
 
     FMenuProfiles.Sort;
 
