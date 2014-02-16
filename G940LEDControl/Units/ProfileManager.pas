@@ -3,7 +3,6 @@ unit ProfileManager;
 interface
 uses
   System.Classes,
-  System.SyncObjs,
 
   Profile,
   X2UtPersistIntf;
@@ -21,56 +20,52 @@ type
   TProfileManager = class;
 
 
-  TProfileManagerEnumerator = class(TProfileList.TEnumerator)
-  private
-    FManager: TProfileManager;
-  public
-    constructor Create(AManager: TProfileManager);
-    destructor Destroy; override;
+  ILockedProfileList = interface
+    ['{4F647762-AA70-4315-BB1C-E85E320F4E82}']
+    function GetEnumerator: TProfileList.TEnumerator;
   end;
+
 
 
   TProfileManager = class(TObject)
   private
-    FLock: TCriticalSection;
-    FProfiles: TProfileList;
     FObservers: TInterfaceList;
+    FProfileList: TProfileList;
     FActiveProfile: TProfile;
 
-    function GetActiveProfile: TProfile;
     function GetCount: Integer;
     function GetItem(Index: Integer): TProfile;
     procedure SetActiveProfile(const Value: TProfile);
     procedure SetItem(Index: Integer; const Value: TProfile);
   protected
     property Observers: TInterfaceList read FObservers;
-    property Profiles: TProfileList read FProfiles;
+    property ProfileList: TProfileList read FProfileList;
   public
-    class function Instance(): TProfileManager;
-
     constructor Create;
     destructor Destroy; override;
 
-    procedure Lock;
-    procedure Unlock;
+    procedure Add(AProfile: TProfile; ASetActive: Boolean = False);
+    function FindByName(const AName: string): TProfile;
+    function FindByUID(const AName: string): TProfile;
+    function Remove(const AProfile: TProfile): Integer;
 
-    class procedure Add(AProfile: TProfile; ASetActive: Boolean = False);
-    class function Find(const AName: string): TProfile;
-    class function Remove(const AProfile: TProfile): Integer;
+    procedure Load(AReader: IX2PersistReader);
+    procedure Save(AWriter: IX2PersistWriter);
 
-    class procedure Load(AReader: IX2PersistReader);
-    class procedure Save(AWriter: IX2PersistWriter);
+    procedure Attach(AObserver: IProfileObserver);
+    procedure Detach(AObserver: IProfileObserver);
 
-    class procedure Attach(AObserver: IProfileObserver);
-    class procedure Detach(AObserver: IProfileObserver);
+    function LockList: ILockedProfileList;
+    procedure UnlockList;
 
-    function GetEnumerator: TProfileManagerEnumerator;
-
-    property ActiveProfile: TProfile read GetActiveProfile write SetActiveProfile;
+    property ActiveProfile: TProfile read FActiveProfile write SetActiveProfile;
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TProfile read GetItem write SetItem; default;
   end;
 
+
+  { Singleton }
+  function Profiles: TProfileManager;
 
 
 
@@ -83,8 +78,20 @@ var
   ProfileManagerInstance: TProfileManager;
 
 
-{ TProfileManager }
-class function TProfileManager.Instance: TProfileManager;
+
+type
+  TLockedProfileList = class(TInterfacedObject, ILockedProfileList)
+  private
+    FList: TProfileList;
+  public
+    constructor Create(AList: TProfileList);
+
+    function GetEnumerator: TProfileList.TEnumerator;
+  end;
+
+
+
+function Profiles: TProfileManager;
 begin
   if not Assigned(ProfileManagerInstance) then
     ProfileManagerInstance := TProfileManager.Create;
@@ -93,136 +100,130 @@ begin
 end;
 
 
+{ TProfileManager }
 constructor TProfileManager.Create;
 begin
   inherited Create;
 
   FObservers := TInterfaceList.Create;
-  FProfiles := TProfileList.Create(True);
-  FLock := TCriticalSection.Create;
+  FProfileList := TProfileList.Create(True);
 end;
 
 
 destructor TProfileManager.Destroy;
 begin
-  FreeAndNil(FLock);
-  FreeAndNil(FProfiles);
+  FreeAndNil(FProfileList);
   FreeAndNil(FObservers);
 
   inherited;
 end;
 
 
-procedure TProfileManager.Lock;
-begin
-
-end;
-
-
-procedure TProfileManager.Unlock;
-begin
-
-end;
-
-
-class procedure TProfileManager.Add(AProfile: TProfile; ASetActive: Boolean);
+procedure TProfileManager.Add(AProfile: TProfile; ASetActive: Boolean);
 var
   observer: IInterface;
 
 begin
-  Instance.Lock;
+  TMonitor.Enter(ProfileList);
   try
-    Instance.Profiles.Add(AProfile);
+    ProfileList.Add(AProfile);
   finally
-    Instance.Unlock;
+    TMonitor.Exit(ProfileList);
   end;
 
-  for observer in Instance.Observers do
+  for observer in Observers do
     (observer as IProfileObserver).ObserveAdd(AProfile);
 
   if ASetActive then
-    Instance.SetActiveProfile(AProfile);
+    SetActiveProfile(AProfile);
 end;
 
 
-class function TProfileManager.Find(const AName: string): TProfile;
+function TProfileManager.FindByName(const AName: string): TProfile;
 begin
-  Result := Instance.Profiles.Find(AName);
+//  Result := Instance.ProfileList.Find(AName);
 end;
 
 
-class function TProfileManager.Remove(const AProfile: TProfile): Integer;
+function TProfileManager.FindByUID(const AName: string): TProfile;
+begin
+  //
+end;
+
+
+function TProfileManager.Remove(const AProfile: TProfile): Integer;
 var
   observer: IInterface;
 
 begin
-  Instance.Lock;
+  TMonitor.Enter(ProfileList);
   try
-    Result := Instance.Profiles.Remove(AProfile);
+    Result := ProfileList.Remove(AProfile);
   finally
-    Instance.Unlock;
+    TMonitor.Exit(ProfileList);
   end;
 
-  for observer in Instance.Observers do
+  for observer in Observers do
     (observer as IProfileObserver).ObserveRemove(AProfile);
 end;
 
 
-class procedure TProfileManager.Load(AReader: IX2PersistReader);
+procedure TProfileManager.Load(AReader: IX2PersistReader);
 begin
-  Instance.Lock;
+  TMonitor.Enter(ProfileList);
   try
-    Instance.Profiles.Load(AReader);
+    ProfileList.Load(AReader);
   finally
-    Instance.Unlock;
+    TMonitor.Exit(ProfileList);
   end;
 end;
 
 
-class procedure TProfileManager.Save(AWriter: IX2PersistWriter);
+procedure TProfileManager.Save(AWriter: IX2PersistWriter);
 begin
-  Instance.Lock;
+  TMonitor.Enter(ProfileList);
   try
-    Instance.Profiles.Save(AWriter);
+    ProfileList.Save(AWriter);
   finally
-    Instance.Unlock;
+    TMonitor.Exit(ProfileList);
   end;
 end;
 
 
-class procedure TProfileManager.Attach(AObserver: IProfileObserver);
+procedure TProfileManager.Attach(AObserver: IProfileObserver);
 begin
-  Instance.Observers.Add(AObserver as IProfileObserver);
+  Observers.Add(AObserver as IProfileObserver);
 end;
 
 
-class procedure TProfileManager.Detach(AObserver: IProfileObserver);
+procedure TProfileManager.Detach(AObserver: IProfileObserver);
 begin
-  Instance.Observers.Remove(AObserver as IProfileObserver);
+  Observers.Remove(AObserver as IProfileObserver);
 end;
 
 
-function TProfileManager.GetActiveProfile: TProfile;
+function TProfileManager.LockList: ILockedProfileList;
 begin
-  Result := Instance.FActiveProfile;
+  TMonitor.Enter(ProfileList);
+  Result := TLockedProfileList.Create(ProfileList);
+end;
+
+
+procedure TProfileManager.UnlockList;
+begin
+  TMonitor.Exit(ProfileList);
 end;
 
 
 function TProfileManager.GetCount: Integer;
 begin
-  Result := Instance.Profiles.Count;
-end;
-
-
-function TProfileManager.GetEnumerator: TProfileManagerEnumerator;
-begin
-  Result := TProfileManagerEnumerator.Create(Self);
+  Result := ProfileList.Count;
 end;
 
 
 function TProfileManager.GetItem(Index: Integer): TProfile;
 begin
-  Result := Profiles[Index];
+  Result := ProfileList[Index];
 end;
 
 
@@ -242,26 +243,24 @@ end;
 
 procedure TProfileManager.SetItem(Index: Integer; const Value: TProfile);
 begin
-  Profiles[Index] := Value;
+  ProfileList[Index] := Value;
 end;
 
 
-{ TProfileManagerEnumerator }
-constructor TProfileManagerEnumerator.Create(AManager: TProfileManager);
+{ TLockedProfileList }
+constructor TLockedProfileList.Create(AList: TProfileList);
 begin
-  inherited Create(AManager.Profiles);
+  inherited Create;
 
-  FManager := AManager;
-  FManager.Lock;
+  FList := AList;
 end;
 
 
-destructor TProfileManagerEnumerator.Destroy;
+function TLockedProfileList.GetEnumerator: TProfileList.TEnumerator;
 begin
-  FManager.Unlock;
-
-  inherited;
+  Result := FList.GetEnumerator;
 end;
+
 
 initialization
 finalization

@@ -1,8 +1,8 @@
 program G940LEDControl;
 
 uses
-  Forms,
-  SysUtils,
+  System.SysUtils,
+  Vcl.Forms,
   MainFrm in 'Forms\MainFrm.pas' {MainForm},
   LogiJoystickDLL in '..\Shared\LogiJoystickDLL.pas',
   SimConnect in '..\Shared\SimConnect.pas',
@@ -36,7 +36,8 @@ uses
   FSXLEDFunctionProviderIntf in 'Units\FSXLEDFunctionProviderIntf.pas',
   GxDbugIntf in 'Units\GxDbugIntf.pas',
   DebugLog in 'Units\DebugLog.pas',
-  DebugLogGExperts in 'Units\DebugLogGExperts.pas';
+  DebugLogGExperts in 'Units\DebugLogGExperts.pas',
+  ButtonAssignmentFrm in 'Forms\ButtonAssignmentFrm.pas' {ButtonAssignmentFrame: TFrame};
 
 {$R *.res}
 

@@ -44,8 +44,8 @@ type
 
   TProfile = class(TPersistent)
   private
+    FUID: string;
     FName: string;
-    FIsTemporary: Boolean;
     FButtons: TProfileButtonList;
 
     function GetButton(Index: Integer): TProfileButton;
@@ -61,8 +61,8 @@ type
 
     function HasButton(AIndex: Integer): Boolean;
 
+    property UID: string read FUID write FUID;
     property Name: string read FName write FName;
-    property IsTemporary: Boolean read FIsTemporary write FIsTemporary;
 
     property ButtonCount: Integer read GetButtonCount;
     property Buttons[Index: Integer]: TProfileButton read GetButton;
@@ -71,7 +71,7 @@ type
 
   TProfileList = class(TObjectList<TProfile>)
   public
-    function Find(const AName: string): TProfile;
+//    function Find(const AName: string): TProfile;
 
     procedure Load(AReader: IX2PersistReader);
     procedure Save(AWriter: IX2PersistWriter);
@@ -92,7 +92,6 @@ const
 
   KeyProviderUID = 'ProviderUID';
   KeyFunctionUID = 'FunctionUID';
-  KeyIsTemporary = 'IsTemporary';
 
 
 { TProfileButton }
@@ -232,8 +231,8 @@ begin
   begin
     sourceProfile := TProfile(Source);
 
+    FUID := sourceProfile.UID;
     FName := sourceProfile.Name;
-    FIsTemporary := sourceProfile.IsTemporary;
 
     FButtons.Clear;
     for buttonIndex := 0 to Pred(sourceProfile.ButtonCount) do
@@ -251,8 +250,8 @@ var
 begin
   buttonIndex := 0;
 
-  if not AReader.ReadBoolean(KeyIsTemporary, FIsTemporary) then
-    FIsTemporary := False;
+//  if not AReader.ReadBoolean(KeyIsTemporary, FIsTemporary) then
+//    FIsTemporary := False;
 
   while AReader.BeginSection(SectionButton + IntToStr(buttonIndex)) do
   try
@@ -277,7 +276,7 @@ var
   buttonIndex: Integer;
 
 begin
-  AWriter.WriteBoolean(KeyIsTemporary, IsTemporary);
+//  AWriter.WriteBoolean(KeyIsTemporary, IsTemporary);
 
   for buttonIndex := 0 to Pred(FButtons.Count) do
   begin
@@ -330,6 +329,7 @@ end;
 
 
 { TProfileList }
+{
 function TProfileList.Find(const AName: string): TProfile;
 var
   profile: TProfile;
@@ -344,6 +344,7 @@ begin
       break;
     end;
 end;
+}
 
 
 procedure TProfileList.Load(AReader: IX2PersistReader);
