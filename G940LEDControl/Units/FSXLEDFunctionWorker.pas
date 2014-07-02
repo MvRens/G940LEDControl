@@ -165,6 +165,14 @@ type
   end;
 
 
+  { Fuel }
+  TFSXFuelFunctionWorker = class(TCustomFSXFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+    procedure HandleData(AData: Pointer); override;
+  end;
+
+
 implementation
 uses
   System.Math,
@@ -510,7 +518,7 @@ var
   spoilersData: PSpoilersData;
 
 begin
-  SpoilersData := AData;
+  spoilersData := AData;
 
   if SpoilersData^.SpoilersAvailable <> 0 then
   begin
@@ -649,6 +657,49 @@ begin
     SetCurrentState(FSXStateUIDOn)
   else
     SetCurrentState(FSXStateUIDOff);
+end;
+
+
+{ TFSXFuelFunctionWorker }
+procedure TFSXFuelFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('FUEL TOTAL CAPACITY', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_FLOAT64);
+  ADefinition.AddVariable('FUEL TOTAL QUANTITY', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_FLOAT64);
+end;
+
+
+procedure TFSXFuelFunctionWorker.HandleData(AData: Pointer);
+type
+  PFuelData = ^TFuelData;
+  TFuelData = packed record
+    TotalCapacity: Double;
+    TotalQuantity: Double;
+  end;
+
+var
+  fuelData: PFuelData;
+  percentage: Integer;
+
+begin
+  fuelData := AData;
+
+  if fuelData^.TotalCapacity > 0 then
+  begin
+    percentage := Ceil(fuelData^.TotalQuantity / fuelData^.TotalCapacity * 100);
+    case percentage of
+      0:      SetCurrentState(FSXStateUIDFuelEmpty);
+      1:      SetCurrentState(FSXStateUIDFuel0to1);
+      2:      SetCurrentState(FSXStateUIDFuel1to2);
+      3..5:   SetCurrentState(FSXStateUIDFuel2to5);
+      6..10:  SetCurrentState(FSXStateUIDFuel5to10);
+      11..20: SetCurrentState(FSXStateUIDFuel10to20);
+      21..50: SetCurrentState(FSXStateUIDFuel20to50);
+      51..75: SetCurrentState(FSXStateUIDFuel50to75);
+    else
+              SetCurrentState(FSXStateUIDFuel75to100);
+    end;
+  end else
+    SetCurrentState(FSXStateUIDFuelNotAvailable);
 end;
 
 end.

@@ -194,6 +194,32 @@ const
     FSXFunctionDisplayNameAutoPilotNav = 'Autopilot nav';
 
 
+  FSXFunctionUIDFuel = 'fuelLevel';
+    FSXFunctionDisplayNameFuel = 'Fuel Level';
+
+      FSXStateUIDFuelNotAvailable = 'notAvailable';
+      FSXStateUIDFuelEmpty = 'empty';
+      FSXStateUIDFuel0to1 = '0To1';
+      FSXStateUIDFuel1to2 = '1To2';
+      FSXStateUIDFuel2to5 = '2To5';
+      FSXStateUIDFuel5to10 = '5To10';
+      FSXStateUIDFuel10to20 = '10To20';
+      FSXStateUIDFuel20to50 = '20To50';
+      FSXStateUIDFuel50to75 = '50To75';
+      FSXStateUIDFuel75to100 = '75To100';
+
+      FSXStateDisplayNameFuelNotAvailable = 'Not available';
+      FSXStateDisplayNameFuelEmpty = 'Empty';
+      FSXStateDisplayNameFuel0to1 = '< 1%';
+      FSXStateDisplayNameFuel1to2 = '< 2%';
+      FSXStateDisplayNameFuel2to5 = '< 5%';
+      FSXStateDisplayNameFuel5to10 = '< 10%';
+      FSXStateDisplayNameFuel10to20 = '< 20%';
+      FSXStateDisplayNameFuel20to50 = '< 50%';
+      FSXStateDisplayNameFuel50to75 = '< 75%';
+      FSXStateDisplayNameFuel75to100 = '75% - Full';
+
+
 
   FSXMenuProfiles = 'G940 Profile';
   FSXMenuProfileFormat = 'G940: %s';

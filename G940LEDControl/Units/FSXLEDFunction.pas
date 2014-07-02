@@ -199,6 +199,15 @@ type
   end;
 
 
+  { Fuel }
+  TFSXFuelFunction = class(TCustomFSXFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetCategoryName: string; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+
 implementation
 uses
   FSXLEDFunctionWorker,
@@ -578,6 +587,34 @@ end;
 function TFSXAvionicsMasterFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXAvionicsMasterFunctionWorker;
+end;
+
+
+{ TFSXFuelFunction }
+procedure TFSXFuelFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDFuelNotAvailable, FSXStateDisplayNameFuelNotAvailable,  lcOff));
+  RegisterState(TLEDState.Create(FSXStateUIDFuelEmpty,        FSXStateDisplayNameFuelEmpty,         lcFlashingRedFast));
+  RegisterState(TLEDState.Create(FSXStateUIDFuel0to1,         FSXStateDisplayNameFuel0to1,          lcFlashingRedNormal));
+  RegisterState(TLEDState.Create(FSXStateUIDFuel1to2,         FSXStateDisplayNameFuel1to2,          lcFlashingRedNormal));
+  RegisterState(TLEDState.Create(FSXStateUIDFuel2to5,         FSXStateDisplayNameFuel2to5,          lcRed));
+  RegisterState(TLEDState.Create(FSXStateUIDFuel5to10,        FSXStateDisplayNameFuel5to10,         lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFuel10to20,       FSXStateDisplayNameFuel10to20,        lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFuel20to50,       FSXStateDisplayNameFuel20to50,        lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDFuel50to75,       FSXStateDisplayNameFuel50to75,        lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDFuel75to100,      FSXStateDisplayNameFuel75to100,       lcGreen));
+end;
+
+
+function TFSXFuelFunction.GetCategoryName: string;
+begin
+  Result := FSXCategorySystems;
+end;
+
+
+function TFSXFuelFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXFuelFunctionWorker;
 end;
 
 end.

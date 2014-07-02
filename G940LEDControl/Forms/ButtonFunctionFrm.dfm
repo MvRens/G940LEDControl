@@ -5,7 +5,7 @@ object ButtonFunctionForm: TButtonFunctionForm
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'Configure button'
-  ClientHeight = 484
+  ClientHeight = 561
   ClientWidth = 692
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -31,7 +31,7 @@ object ButtonFunctionForm: TButtonFunctionForm
   object pnlButtons: TPanel
     AlignWithMargins = True
     Left = 0
-    Top = 441
+    Top = 518
     Width = 692
     Height = 43
     Margins.Left = 0
@@ -41,6 +41,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 3
+    ExplicitTop = 441
     DesignSize = (
       692
       43)
@@ -80,7 +81,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     Left = 8
     Top = 60
     Width = 257
-    Height = 373
+    Height = 450
     Margins.Left = 8
     Margins.Top = 8
     Margins.Right = 0
@@ -103,6 +104,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     OnGetText = vstFunctionsGetText
     OnPaintText = vstFunctionsPaintText
     OnIncrementalSearch = vstFunctionsIncrementalSearch
+    ExplicitHeight = 373
     Columns = <
       item
         Position = 0
@@ -115,7 +117,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     Left = 273
     Top = 60
     Width = 411
-    Height = 373
+    Height = 450
     Margins.Left = 8
     Margins.Top = 8
     Margins.Right = 8
@@ -123,6 +125,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 2
+    ExplicitHeight = 373
     object pnlName: TPanel
       Left = 0
       Top = 0
@@ -190,10 +193,11 @@ object ButtonFunctionForm: TButtonFunctionForm
       Left = 0
       Top = 97
       Width = 411
-      Height = 276
+      Height = 353
       Align = alClient
       BorderStyle = bsNone
       TabOrder = 1
+      ExplicitHeight = 276
     end
   end
   object pnlHeader: TPanel

@@ -164,6 +164,9 @@ begin
 
   { Radios }
   RegisterFunction(TFSXAvionicsMasterFunction.Create(     Self, FSXFunctionDisplayNameAvionicsMaster,       FSXFunctionUIDAvionicsMaster));
+
+  { Fuel }
+  RegisterFunction(TFSXFuelFunction.Create(               Self, FSXFunctionDisplayNameFuel,                 FSXFunctionUIDFuel));
 end;
 
 
