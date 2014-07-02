@@ -559,7 +559,8 @@ begin
       if Settings.ActiveProfile[1] <> '{' then
       begin
         profile := Profiles.FindByName(Settings.ActiveProfile);
-        Settings.ActiveProfile := profile.UID;
+        if Assigned(profile) then
+          Settings.ActiveProfile := profile.UID;
       end else
         profile := Profiles.FindByUID(Settings.ActiveProfile);
     end;
