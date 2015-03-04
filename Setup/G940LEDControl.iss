@@ -2,7 +2,7 @@
 #define AppExeName "G940LEDControl.exe"
 #define AppVersion GetFileVersion("..\G940LEDControl\Bin\" + AppExeName)
 #define AppPublisher "X²Software"
-#define AppURL "http://g940.x2software.net/r"
+#define AppURL "http://g940.x2software.net/"
 
 [Setup]
 AppId={{704baf93-d22e-471b-bdcf-d21d82d73398}
