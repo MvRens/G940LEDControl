@@ -82,6 +82,13 @@ type
     function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
+  TFSXThrottleFunction = class(TCustomFSXFunction)
+  protected
+    function GetCategoryName: string; override;
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
 
   { Control surfaces }
   TFSXFlapsFunction = class(TCustomFSXFunction)
@@ -204,6 +211,19 @@ type
   protected
     procedure RegisterStates; override;
     function GetCategoryName: string; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+
+  { ATC }
+  TFSXATCVisibilityFunction = class(TCustomMultiStateLEDFunction)
+  protected
+    procedure RegisterStates; override;
+
+    function GetCategoryName: string; override;
+    function GetDisplayName: string; override;
+    function GetUID: string; override;
+
     function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
@@ -381,6 +401,29 @@ end;
 function TFSXEngineFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXEngineFunctionWorker;
+end;
+
+
+{ TFSXThrottleFunction }
+function TFSXThrottleFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryEngines;
+end;
+
+
+procedure TFSXThrottleFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDThrottleNoEngines,  FSXStateDisplayNameThrottleNoThrottles, lcOff));
+  RegisterState(TLEDState.Create(FSXStateUIDThrottleOff,        FSXStateDisplayNameThrottleOff, lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDThrottlePartial,    FSXStateDisplayNameThrottlePartial, lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDThrottleFull,       FSXStateDisplayNameThrottleFull, lcRed));
+  RegisterState(TLEDState.Create(FSXStateUIDThrottleReverse,    FSXStateDisplayNameThrottleReverse, lcFlashingAmberNormal));
+end;
+
+
+function TFSXThrottleFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXThrottleFunctionWorker;
 end;
 
 
@@ -615,6 +658,38 @@ end;
 function TFSXFuelFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXFuelFunctionWorker;
+end;
+
+
+{ TFSXATCFunction }
+procedure TFSXATCVisibilityFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDATCHidden,  FSXStateDisplayNameATCHidden,   lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDATCVisible, FSXStateDisplayNameATCVisible,  lcFlashingAmberNormal));
+end;
+
+
+function TFSXATCVisibilityFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryATC;
+end;
+
+
+function TFSXATCVisibilityFunction.GetDisplayName: string;
+begin
+  Result := FSXFunctionDisplayNameATCVisibility;
+end;
+
+
+function TFSXATCVisibilityFunction.GetUID: string;
+begin
+  Result := FSXFunctionUIDATCVisibility;
+end;
+
+
+function TFSXATCVisibilityFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXATCVisibilityFunctionWorker;
 end;
 
 end.

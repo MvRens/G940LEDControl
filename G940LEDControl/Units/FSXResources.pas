@@ -12,6 +12,7 @@ const
   FSXCategoryLights = FSXCategory + ' - Lights';
   FSXCategoryAutoPilot = FSXCategory + ' - Autopilot';
   FSXCategoryRadios = FSXCategory + ' - Radios';
+  FSXCategoryATC = FSXCategory + ' - ATC';
 
   FSXStateUIDOn = 'on';
   FSXStateUIDOff = 'off';
@@ -38,6 +39,22 @@ const
     FSXStateDisplayNameEngineAllOff = 'All off';
     FSXStateDisplayNameEngineFailed = 'Engine failure';
     FSXStateDisplayNameEngineOnFire = 'On fire';
+
+
+  FSXFunctionUIDThrottle = 'throttle';
+    FSXFunctionDisplayNameThrottle = 'Throttle';
+
+    FSXStateUIDThrottleNoEngines = 'noEngines';
+    FSXStateUIDThrottleOff = 'off';
+    FSXStateUIDThrottlePartial = 'partial';
+    FSXStateUIDThrottleFull = 'full';
+    FSXStateUIDThrottleReverse = 'reverse';
+
+    FSXStateDisplayNameThrottleNoThrottles = 'No engines';
+    FSXStateDisplayNameThrottleOff = 'Off';
+    FSXStateDisplayNameThrottlePartial = 'Partial';
+    FSXStateDisplayNameThrottleFull = 'Full';
+    FSXStateDisplayNameThrottleReverse = 'Reversed';
 
 
   FSXFunctionUIDGear = 'gear';
@@ -218,6 +235,16 @@ const
       FSXStateDisplayNameFuel20to50 = '< 50%';
       FSXStateDisplayNameFuel50to75 = '< 75%';
       FSXStateDisplayNameFuel75to100 = '75% - Full';
+
+
+  FSXFunctionUIDATCVisibility = 'atcVisiblity';
+    FSXFunctionDisplayNameATCVisibility = 'ATC Visibility (experimental)';
+
+    FSXStateUIDATCHidden = 'hidden';
+    FSXStateUIDATCVisible = 'visible';
+
+    FSXStateDisplayNameATCHidden = 'Hidden';
+    FSXStateDisplayNameATCVisible = 'Visible';
 
 
 

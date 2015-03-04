@@ -2,8 +2,12 @@ unit FSXLEDFunctionWorker;
 
 interface
 uses
+  OtlTaskControl,
+
   FSXLEDFunctionProvider,
-  FSXSimConnectIntf;
+  FSXSimConnectIntf,
+  LEDFunction,
+  LEDFunctionIntf;
 
 
 type
@@ -59,6 +63,12 @@ type
   end;
 
   TFSXEngineFunctionWorker = class(TCustomFSXFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+    procedure HandleData(AData: Pointer); override;
+  end;
+
+  TFSXThrottleFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
@@ -173,10 +183,23 @@ type
   end;
 
 
+  { ATC }
+  TFSXATCVisibilityFunctionWorker = class(TCustomLEDMultiStateFunctionWorker)
+  private
+    FMonitorTask: IOmniTaskControl;
+  public
+    constructor Create(const AProviderUID: string; const AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''); override;
+    destructor Destroy; override;
+  end;
+
+
 implementation
 uses
   System.Math,
   System.SysUtils,
+  Winapi.Windows,
+
+  OtlTask,
 
   FSXResources,
   LEDStateIntf,
@@ -455,6 +478,64 @@ begin
 end;
 
 
+{ TFSXThrottleFunctionWorker }
+procedure TFSXThrottleFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+var
+  engineIndex: Integer;
+
+begin
+  ADefinition.AddVariable('NUMBER OF ENGINES', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_INT32);
+
+  for engineIndex := 1 to FSX_MAX_ENGINES do
+    ADefinition.AddVariable(Format('GENERAL ENG THROTTLE LEVER POSITION:%d', [engineIndex]), FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+end;
+
+
+procedure TFSXThrottleFunctionWorker.HandleData(AData: Pointer);
+type
+  PThrottleData = ^TThrottleData;
+  TThrottleData = packed record
+    NumberOfEngines: Integer;
+    Position: array[1..FSX_MAX_ENGINES] of Double;
+  end;
+
+var
+  throttleData: PThrottleData;
+  reverse: Boolean;
+  totalPosition: Double;
+  engineIndex: Integer;
+
+begin
+  throttleData := AData;
+
+  if throttleData^.NumberOfEngines > 0 then
+  begin
+    reverse := False;
+    totalPosition := 0;
+
+    for engineIndex := 1 to throttleData^.NumberOfEngines do
+    begin
+      if throttleData^.Position[engineIndex] < 0 then
+      begin
+        reverse := True;
+        break;
+      end else
+        totalPosition := totalPosition + throttleData^.Position[engineIndex];
+    end;
+
+    if reverse then
+      SetCurrentState(FSXStateUIDThrottleReverse)
+    else
+      case Trunc(totalPosition / throttleData^.NumberOfEngines) of
+        0..5:     SetCurrentState(FSXStateUIDThrottleOff);
+        95..100:  SetCurrentState(FSXStateUIDThrottleFull);
+      else        SetCurrentState(FSXStateUIDThrottlePartial);
+      end;
+  end else
+    SetCurrentState(FSXStateUIDThrottleNoEngines);
+end;
+
+
 { TFSXFlapsFunctionWorker }
 procedure TFSXFlapsFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
@@ -700,6 +781,90 @@ begin
     end;
   end else
     SetCurrentState(FSXStateUIDFuelNotAvailable);
+end;
+
+
+type
+  TFSXATCVisibilityStateChanged = reference to procedure(AVisible: Boolean);
+
+  TFSXATCVisibilityTask = class(TOmniWorker)
+  private
+    FOnStateChanged: TFSXATCVisibilityStateChanged;
+    FVisible: Boolean;
+  public
+    constructor Create(AOnStateChanged: TFSXATCVisibilityStateChanged);
+    procedure Run;
+  end;
+
+
+{ TFSXATCVisibilityFunctionWorker }
+constructor TFSXATCVisibilityFunctionWorker.Create(const AProviderUID, AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string);
+begin
+  inherited Create(AProviderUID, AFunctionUID, AStates, ASettings, APreviousState);
+
+  FMonitorTask := CreateTask(TFSXATCVisibilityTask.Create(
+    procedure(AVisible: Boolean)
+    begin
+      if AVisible then
+        SetCurrentState(FSXStateUIDATCVisible)
+      else
+        SetCurrentState(FSXStateUIDATCHidden);
+    end))
+    .SetTimer(1, MSecsPerSec, @TFSXATCVisibilityTask.Run)
+    .Run;
+end;
+
+
+destructor TFSXATCVisibilityFunctionWorker.Destroy;
+begin
+  FMonitorTask.Terminate;
+  FMonitorTask := nil;
+
+  inherited Destroy;
+end;
+
+
+{ TFSXATCVisibilityTask }
+constructor TFSXATCVisibilityTask.Create(AOnStateChanged: TFSXATCVisibilityStateChanged);
+begin
+  inherited Create;
+
+  FOnStateChanged := AOnStateChanged;
+  FVisible := False;
+end;
+
+
+procedure TFSXATCVisibilityTask.Run;
+const
+  ClassNameMainWindow = 'FS98MAIN';
+  ClassNameChildWindow = 'FS98CHILD';
+  ClassNameFloatWindow = 'FS98FLOAT';
+  WindowTitleATC = 'ATC Menu';
+
+var
+  visible: Boolean;
+  mainWindow: THandle;
+  atcWindow: THandle;
+
+begin
+  { Docked }
+  atcWindow := 0;
+  mainWindow := FindWindow(ClassNameMainWindow, nil);
+  if mainWindow <> 0 then
+    atcWindow := FindWindowEx(mainWindow, 0, ClassNameChildWindow, WindowTitleATC);
+
+  { Undocked }
+  if atcWindow = 0 then
+    atcWindow := FindWindow(ClassNameFloatWindow, WindowTitleATC);
+
+
+  visible := (atcWindow <> 0) and IsWindowVisible(atcWindow);
+
+  if visible <> FVisible then
+  begin
+    FVisible := visible;
+    FOnStateChanged(visible);
+  end;
 end;
 
 end.
