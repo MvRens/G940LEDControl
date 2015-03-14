@@ -67,6 +67,21 @@ type
   end;
 
 
+  { Instruments }
+  TFSXPitotOnOffFunction = class(TCustomFSXOnOffFunction)
+  protected
+    function GetCategoryName: string; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXPitotWarningFunction = class(TCustomFSXFunction)
+  protected
+    function GetCategoryName: string; override;
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+
   { Engines }
   TFSXEngineAntiIceFunction = class(TCustomFSXFunction)
   protected
@@ -355,6 +370,48 @@ end;
 function TFSXTailHookFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXTailHookFunctionWorker;
+end;
+
+
+{ TFSXPitotOnOffFunction }
+function TFSXPitotOnOffFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryInstruments;
+end;
+
+
+function TFSXPitotOnOffFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXPitotOnOffFunctionWorker;
+end;
+
+
+{ TFSXPitotWarningFunction }
+function TFSXPitotWarningFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryInstruments;
+end;
+
+
+procedure TFSXPitotWarningFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIceNone, FSXStateDisplayNamePitotOffIceNone, lcRed));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIce25to50, FSXStateDisplayNamePitotOffIce25to50, lcFlashingAmberNormal));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIce50to75, FSXStateDisplayNamePitotOffIce50to75, lcFlashingAmberFast));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIce75to100, FSXStateDisplayNamePitotOffIce75to100, lcFlashingAmberFast));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIceFull, FSXStateDisplayNamePitotOffIceFull, lcFlashingRedFast));
+
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIceFull, FSXStateDisplayNamePitotOnIceFull, lcFlashingRedNormal));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIce75to100, FSXStateDisplayNamePitotOnIce75to100, lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIce50to75, FSXStateDisplayNamePitotOnIce50to75, lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIce25to50, FSXStateDisplayNamePitotOnIce25to50, lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIceNone, FSXStateDisplayNamePitotOnIceNone, lcGreen));
+end;
+
+
+function TFSXPitotWarningFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXPitotWarningFunctionWorker;
 end;
 
 

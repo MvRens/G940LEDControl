@@ -11,17 +11,21 @@ uses
 
 
 type
-  { Systems }
-  TFSXBatteryMasterFunctionWorker = class(TCustomFSXFunctionWorker)
+  TCustomFSXOnOffFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
-    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
   end;
 
-  TFSXDeIceFunctionWorker = class(TCustomFSXFunctionWorker)
+
+  { Systems }
+  TFSXBatteryMasterFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
-    procedure HandleData(AData: Pointer); override;
+  end;
+
+  TFSXDeIceFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
   end;
 
   TFSXExitDoorFunctionWorker = class(TCustomFSXFunctionWorker)
@@ -36,19 +40,30 @@ type
     procedure HandleData(AData: Pointer); override;
   end;
 
-  TFSXParkingBrakeFunctionWorker = class(TCustomFSXFunctionWorker)
+  TFSXParkingBrakeFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
-    procedure HandleData(AData: Pointer); override;
   end;
 
-  TFSXPressDumpSwitchFunctionWorker = class(TCustomFSXFunctionWorker)
+  TFSXPressDumpSwitchFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
-    procedure HandleData(AData: Pointer); override;
   end;
 
   TFSXTailHookFunctionWorker = class(TCustomFSXFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+    procedure HandleData(AData: Pointer); override;
+  end;
+
+
+  { Instruments }
+  TFSXPitotOnOffFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+  end;
+
+  TFSXPitotWarningFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
@@ -168,10 +183,9 @@ type
 
 
   { Radios }
-  TFSXAvionicsMasterFunctionWorker = class(TCustomFSXFunctionWorker)
+  TFSXAvionicsMasterFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
-    procedure HandleData(AData: Pointer); override;
   end;
 
 
@@ -196,6 +210,7 @@ type
 implementation
 uses
   System.Math,
+  System.StrUtils,
   System.SysUtils,
   Winapi.Windows,
 
@@ -206,6 +221,16 @@ uses
   SimConnect;
 
 
+{ TCustomFSXOnOffFunctionWorker }
+procedure TCustomFSXOnOffFunctionWorker.HandleData(AData: Pointer);
+begin
+  if PCardinal(AData)^ <> 0 then
+    SetCurrentState(FSXStateUIDOn)
+  else
+    SetCurrentState(FSXStateUIDOff);
+end;
+
+
 { TFSXBatteryMasterFunctionWorker }
 procedure TFSXBatteryMasterFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
@@ -213,28 +238,10 @@ begin
 end;
 
 
-procedure TFSXBatteryMasterFunctionWorker.HandleData(AData: Pointer);
-begin
-  if PCardinal(AData)^ <> 0 then
-    SetCurrentState(FSXStateUIDOn)
-  else
-    SetCurrentState(FSXStateUIDOff);
-end;
-
-
 { TFSXDeIceFunctionWorker }
 procedure TFSXDeIceFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
   ADefinition.AddVariable('STRUCTURAL DEICE SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
-end;
-
-
-procedure TFSXDeIceFunctionWorker.HandleData(AData: Pointer);
-begin
-  if PCardinal(AData)^ <> 0 then
-    SetCurrentState(FSXStateUIDOn)
-  else
-    SetCurrentState(FSXStateUIDOff);
 end;
 
 
@@ -306,28 +313,10 @@ begin
 end;
 
 
-procedure TFSXParkingBrakeFunctionWorker.HandleData(AData: Pointer);
-begin
-  if PCardinal(AData)^ <> 0 then
-    SetCurrentState(FSXStateUIDOn)
-  else
-    SetCurrentState(FSXStateUIDOff);
-end;
-
-
 { TFSXPressDumpSwitchFunctionWorker }
 procedure TFSXPressDumpSwitchFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
   ADefinition.AddVariable('PRESSURIZATION DUMP SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
-end;
-
-
-procedure TFSXPressDumpSwitchFunctionWorker.HandleData(AData: Pointer);
-begin
-  if PCardinal(AData)^ <> 0 then
-    SetCurrentState(FSXStateUIDOn)
-  else
-    SetCurrentState(FSXStateUIDOff);
 end;
 
 
@@ -344,6 +333,47 @@ begin
     0..5:     SetCurrentState(FSXStateUIDTailHookRetracted);
     95..100:  SetCurrentState(FSXStateUIDTailHookBetween);
   else        SetCurrentState(FSXStateUIDTailHookExtended);
+  end;
+end;
+
+
+{ TFSXPitotOnOffFunctionWorker }
+procedure TFSXPitotOnOffFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('PITOT HEAT', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+end;
+
+
+{ TFSXPitotWarningFunctionWorker }
+procedure TFSXPitotWarningFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('PITOT HEAT', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('PITOT ICE PCT', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+end;
+
+
+procedure TFSXPitotWarningFunctionWorker.HandleData(AData: Pointer);
+type
+  PPitotData = ^TPitotData;
+  TPitotData = packed record
+    HeatActive: Cardinal;
+    IcePercentage: Double;
+  end;
+
+var
+  pitotData: PPitotData;
+  heatActive: Boolean;
+
+begin
+  pitotData := AData;
+  heatActive := (pitotData^.HeatActive <> 0);
+
+  case Trunc(pitotData^.IcePercentage) of
+    25..49: SetCurrentState(IfThen(heatActive, FSXStateUIDPitotOnIce25to50, FSXStateUIDPitotOffIce25to50));
+    50..74: SetCurrentState(IfThen(heatActive, FSXStateUIDPitotOnIce50to75, FSXStateUIDPitotOffIce50to75));
+    75..99: SetCurrentState(IfThen(heatActive, FSXStateUIDPitotOnIce75to100, FSXStateUIDPitotOffIce75to100));
+    100:    SetCurrentState(IfThen(heatActive, FSXStateUIDPitotOnIceFull, FSXStateUIDPitotOffIceFull));
+  else      SetCurrentState(IfThen(heatActive, FSXStateUIDPitotOnIceNone, FSXStateUIDPitotOffIceNone));
   end;
 end;
 
@@ -729,15 +759,6 @@ end;
 procedure TFSXAvionicsMasterFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
   ADefinition.AddVariable('AVIONICS MASTER SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
-end;
-
-
-procedure TFSXAvionicsMasterFunctionWorker.HandleData(AData: Pointer);
-begin
-  if PCardinal(AData)^ <> 0 then
-    SetCurrentState(FSXStateUIDOn)
-  else
-    SetCurrentState(FSXStateUIDOff);
 end;
 
 

@@ -13,6 +13,7 @@ const
   FSXCategoryAutoPilot = FSXCategory + ' - Autopilot';
   FSXCategoryRadios = FSXCategory + ' - Radios';
   FSXCategoryATC = FSXCategory + ' - ATC';
+  FSXCategoryInstruments = FSXCategory + ' - Instruments';
 
   FSXStateUIDOn = 'on';
   FSXStateUIDOff = 'off';
@@ -246,6 +247,35 @@ const
     FSXStateDisplayNameATCHidden = 'Hidden';
     FSXStateDisplayNameATCVisible = 'Visible';
 
+
+  FSXFunctionUIDPitotOnOff = 'pitotOnOff';
+    FSXFunctionDisplayNamePitotOnOff = 'Pitot heat (on / off only)';
+
+
+  FSXFunctionUIDPitotWarning = 'pitotWarning';
+    FSXFunctionDisplayNamePitotWarning = 'Pitot heat (including warnings)';
+
+      FSXStateUIDPitotOffIceNone = 'off0';
+      FSXStateUIDPitotOffIce25to50 = 'off25To50';
+      FSXStateUIDPitotOffIce50to75 = 'off50To75';
+      FSXStateUIDPitotOffIce75to100 = 'off75To100';
+      FSXStateUIDPitotOffIceFull = 'off100';
+      FSXStateUIDPitotOnIceNone = 'on0';
+      FSXStateUIDPitotOnIce25to50 = 'on25To50';
+      FSXStateUIDPitotOnIce50to75 = 'on50To75';
+      FSXStateUIDPitotOnIce75to100 = 'on75To100';
+      FSXStateUIDPitotOnIceFull = 'on100';
+
+      FSXStateDisplayNamePitotOffIceNone = 'Heat off - No ice';
+      FSXStateDisplayNamePitotOffIce25to50 = 'Heat off - > 25% iced';
+      FSXStateDisplayNamePitotOffIce50to75 = 'Heat off - > 50% iced';
+      FSXStateDisplayNamePitotOffIce75to100 = 'Heat off - > 75% iced';
+      FSXStateDisplayNamePitotOffIceFull = 'Heat off - Fully iced';
+      FSXStateDisplayNamePitotOnIceNone = 'Heat on - No ice';
+      FSXStateDisplayNamePitotOnIce25to50 = 'Heat on - > 25% iced';
+      FSXStateDisplayNamePitotOnIce50to75 = 'Heat on - > 50% iced';
+      FSXStateDisplayNamePitotOnIce75to100 = 'Heat on - > 75% iced';
+      FSXStateDisplayNamePitotOnIceFull = 'Heat on - Fully iced';
 
 
   FSXMenuProfiles = 'G940 Profile';
