@@ -12,6 +12,8 @@ const
   FSXCategoryLights = FSXCategory + ' - Lights';
   FSXCategoryAutoPilot = FSXCategory + ' - Autopilot';
   FSXCategoryRadios = FSXCategory + ' - Radios';
+  FSXCategoryATC = FSXCategory + ' - ATC';
+  FSXCategoryInstruments = FSXCategory + ' - Instruments';
 
   FSXStateUIDOn = 'on';
   FSXStateUIDOff = 'off';
@@ -38,6 +40,22 @@ const
     FSXStateDisplayNameEngineAllOff = 'All off';
     FSXStateDisplayNameEngineFailed = 'Engine failure';
     FSXStateDisplayNameEngineOnFire = 'On fire';
+
+
+  FSXFunctionUIDThrottle = 'throttle';
+    FSXFunctionDisplayNameThrottle = 'Throttle';
+
+    FSXStateUIDThrottleNoEngines = 'noEngines';
+    FSXStateUIDThrottleOff = 'off';
+    FSXStateUIDThrottlePartial = 'partial';
+    FSXStateUIDThrottleFull = 'full';
+    FSXStateUIDThrottleReverse = 'reverse';
+
+    FSXStateDisplayNameThrottleNoThrottles = 'No engines';
+    FSXStateDisplayNameThrottleOff = 'Off';
+    FSXStateDisplayNameThrottlePartial = 'Partial';
+    FSXStateDisplayNameThrottleFull = 'Full';
+    FSXStateDisplayNameThrottleReverse = 'Reversed';
 
 
   FSXFunctionUIDGear = 'gear';
@@ -193,6 +211,71 @@ const
   FSXFunctionUIDAutoPilotNav = 'autoPilotNav';
     FSXFunctionDisplayNameAutoPilotNav = 'Autopilot nav';
 
+
+  FSXFunctionUIDFuel = 'fuelLevel';
+    FSXFunctionDisplayNameFuel = 'Fuel Level';
+
+      FSXStateUIDFuelNotAvailable = 'notAvailable';
+      FSXStateUIDFuelEmpty = 'empty';
+      FSXStateUIDFuel0to1 = '0To1';
+      FSXStateUIDFuel1to2 = '1To2';
+      FSXStateUIDFuel2to5 = '2To5';
+      FSXStateUIDFuel5to10 = '5To10';
+      FSXStateUIDFuel10to20 = '10To20';
+      FSXStateUIDFuel20to50 = '20To50';
+      FSXStateUIDFuel50to75 = '50To75';
+      FSXStateUIDFuel75to100 = '75To100';
+
+      FSXStateDisplayNameFuelNotAvailable = 'Not available';
+      FSXStateDisplayNameFuelEmpty = 'Empty';
+      FSXStateDisplayNameFuel0to1 = '< 1%';
+      FSXStateDisplayNameFuel1to2 = '< 2%';
+      FSXStateDisplayNameFuel2to5 = '< 5%';
+      FSXStateDisplayNameFuel5to10 = '< 10%';
+      FSXStateDisplayNameFuel10to20 = '< 20%';
+      FSXStateDisplayNameFuel20to50 = '< 50%';
+      FSXStateDisplayNameFuel50to75 = '< 75%';
+      FSXStateDisplayNameFuel75to100 = '75% - Full';
+
+
+  FSXFunctionUIDATCVisibility = 'atcVisiblity';
+    FSXFunctionDisplayNameATCVisibility = 'ATC Visibility (experimental)';
+
+    FSXStateUIDATCHidden = 'hidden';
+    FSXStateUIDATCVisible = 'visible';
+
+    FSXStateDisplayNameATCHidden = 'Hidden';
+    FSXStateDisplayNameATCVisible = 'Visible';
+
+
+  FSXFunctionUIDPitotOnOff = 'pitotOnOff';
+    FSXFunctionDisplayNamePitotOnOff = 'Pitot heat (on / off only)';
+
+
+  FSXFunctionUIDPitotWarning = 'pitotWarning';
+    FSXFunctionDisplayNamePitotWarning = 'Pitot heat (including warnings)';
+
+      FSXStateUIDPitotOffIceNone = 'off0';
+      FSXStateUIDPitotOffIce25to50 = 'off25To50';
+      FSXStateUIDPitotOffIce50to75 = 'off50To75';
+      FSXStateUIDPitotOffIce75to100 = 'off75To100';
+      FSXStateUIDPitotOffIceFull = 'off100';
+      FSXStateUIDPitotOnIceNone = 'on0';
+      FSXStateUIDPitotOnIce25to50 = 'on25To50';
+      FSXStateUIDPitotOnIce50to75 = 'on50To75';
+      FSXStateUIDPitotOnIce75to100 = 'on75To100';
+      FSXStateUIDPitotOnIceFull = 'on100';
+
+      FSXStateDisplayNamePitotOffIceNone = 'Heat off - No ice';
+      FSXStateDisplayNamePitotOffIce25to50 = 'Heat off - > 25% iced';
+      FSXStateDisplayNamePitotOffIce50to75 = 'Heat off - > 50% iced';
+      FSXStateDisplayNamePitotOffIce75to100 = 'Heat off - > 75% iced';
+      FSXStateDisplayNamePitotOffIceFull = 'Heat off - Fully iced';
+      FSXStateDisplayNamePitotOnIceNone = 'Heat on - No ice';
+      FSXStateDisplayNamePitotOnIce25to50 = 'Heat on - > 25% iced';
+      FSXStateDisplayNamePitotOnIce50to75 = 'Heat on - > 50% iced';
+      FSXStateDisplayNamePitotOnIce75to100 = 'Heat on - > 75% iced';
+      FSXStateDisplayNamePitotOnIceFull = 'Heat on - Fully iced';
 
 
   FSXMenuProfiles = 'G940 Profile';

@@ -2,22 +2,30 @@ unit FSXLEDFunctionWorker;
 
 interface
 uses
+  OtlTaskControl,
+
   FSXLEDFunctionProvider,
-  FSXSimConnectIntf;
+  FSXSimConnectIntf,
+  LEDFunction,
+  LEDFunctionIntf;
 
 
 type
-  { Systems }
-  TFSXBatteryMasterFunctionWorker = class(TCustomFSXFunctionWorker)
+  TCustomFSXOnOffFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
-    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
   end;
 
-  TFSXDeIceFunctionWorker = class(TCustomFSXFunctionWorker)
+
+  { Systems }
+  TFSXBatteryMasterFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
-    procedure HandleData(AData: Pointer); override;
+  end;
+
+  TFSXDeIceFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
   end;
 
   TFSXExitDoorFunctionWorker = class(TCustomFSXFunctionWorker)
@@ -32,19 +40,30 @@ type
     procedure HandleData(AData: Pointer); override;
   end;
 
-  TFSXParkingBrakeFunctionWorker = class(TCustomFSXFunctionWorker)
+  TFSXParkingBrakeFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
-    procedure HandleData(AData: Pointer); override;
   end;
 
-  TFSXPressDumpSwitchFunctionWorker = class(TCustomFSXFunctionWorker)
+  TFSXPressDumpSwitchFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
-    procedure HandleData(AData: Pointer); override;
   end;
 
   TFSXTailHookFunctionWorker = class(TCustomFSXFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+    procedure HandleData(AData: Pointer); override;
+  end;
+
+
+  { Instruments }
+  TFSXPitotOnOffFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+  end;
+
+  TFSXPitotWarningFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
@@ -59,6 +78,12 @@ type
   end;
 
   TFSXEngineFunctionWorker = class(TCustomFSXFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+    procedure HandleData(AData: Pointer); override;
+  end;
+
+  TFSXThrottleFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
@@ -158,21 +183,52 @@ type
 
 
   { Radios }
-  TFSXAvionicsMasterFunctionWorker = class(TCustomFSXFunctionWorker)
+  TFSXAvionicsMasterFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+  end;
+
+
+  { Fuel }
+  TFSXFuelFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
   end;
 
 
+  { ATC }
+  TFSXATCVisibilityFunctionWorker = class(TCustomLEDMultiStateFunctionWorker)
+  private
+    FMonitorTask: IOmniTaskControl;
+  public
+    constructor Create(const AProviderUID: string; const AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''); override;
+    destructor Destroy; override;
+  end;
+
+
 implementation
 uses
   System.Math,
+  System.StrUtils,
   System.SysUtils,
+  Winapi.Windows,
+
+  OtlTask,
 
   FSXResources,
   LEDStateIntf,
   SimConnect;
+
+
+{ TCustomFSXOnOffFunctionWorker }
+procedure TCustomFSXOnOffFunctionWorker.HandleData(AData: Pointer);
+begin
+  if PCardinal(AData)^ <> 0 then
+    SetCurrentState(FSXStateUIDOn)
+  else
+    SetCurrentState(FSXStateUIDOff);
+end;
 
 
 { TFSXBatteryMasterFunctionWorker }
@@ -182,28 +238,10 @@ begin
 end;
 
 
-procedure TFSXBatteryMasterFunctionWorker.HandleData(AData: Pointer);
-begin
-  if PCardinal(AData)^ <> 0 then
-    SetCurrentState(FSXStateUIDOn)
-  else
-    SetCurrentState(FSXStateUIDOff);
-end;
-
-
 { TFSXDeIceFunctionWorker }
 procedure TFSXDeIceFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
   ADefinition.AddVariable('STRUCTURAL DEICE SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
-end;
-
-
-procedure TFSXDeIceFunctionWorker.HandleData(AData: Pointer);
-begin
-  if PCardinal(AData)^ <> 0 then
-    SetCurrentState(FSXStateUIDOn)
-  else
-    SetCurrentState(FSXStateUIDOff);
 end;
 
 
@@ -275,28 +313,10 @@ begin
 end;
 
 
-procedure TFSXParkingBrakeFunctionWorker.HandleData(AData: Pointer);
-begin
-  if PCardinal(AData)^ <> 0 then
-    SetCurrentState(FSXStateUIDOn)
-  else
-    SetCurrentState(FSXStateUIDOff);
-end;
-
-
 { TFSXPressDumpSwitchFunctionWorker }
 procedure TFSXPressDumpSwitchFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
   ADefinition.AddVariable('PRESSURIZATION DUMP SWITCH', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
-end;
-
-
-procedure TFSXPressDumpSwitchFunctionWorker.HandleData(AData: Pointer);
-begin
-  if PCardinal(AData)^ <> 0 then
-    SetCurrentState(FSXStateUIDOn)
-  else
-    SetCurrentState(FSXStateUIDOff);
 end;
 
 
@@ -313,6 +333,47 @@ begin
     0..5:     SetCurrentState(FSXStateUIDTailHookRetracted);
     95..100:  SetCurrentState(FSXStateUIDTailHookBetween);
   else        SetCurrentState(FSXStateUIDTailHookExtended);
+  end;
+end;
+
+
+{ TFSXPitotOnOffFunctionWorker }
+procedure TFSXPitotOnOffFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('PITOT HEAT', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+end;
+
+
+{ TFSXPitotWarningFunctionWorker }
+procedure TFSXPitotWarningFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('PITOT HEAT', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('PITOT ICE PCT', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+end;
+
+
+procedure TFSXPitotWarningFunctionWorker.HandleData(AData: Pointer);
+type
+  PPitotData = ^TPitotData;
+  TPitotData = packed record
+    HeatActive: Cardinal;
+    IcePercentage: Double;
+  end;
+
+var
+  pitotData: PPitotData;
+  heatActive: Boolean;
+
+begin
+  pitotData := AData;
+  heatActive := (pitotData^.HeatActive <> 0);
+
+  case Trunc(pitotData^.IcePercentage) of
+    25..49: SetCurrentState(IfThen(heatActive, FSXStateUIDPitotOnIce25to50, FSXStateUIDPitotOffIce25to50));
+    50..74: SetCurrentState(IfThen(heatActive, FSXStateUIDPitotOnIce50to75, FSXStateUIDPitotOffIce50to75));
+    75..99: SetCurrentState(IfThen(heatActive, FSXStateUIDPitotOnIce75to100, FSXStateUIDPitotOffIce75to100));
+    100:    SetCurrentState(IfThen(heatActive, FSXStateUIDPitotOnIceFull, FSXStateUIDPitotOffIceFull));
+  else      SetCurrentState(IfThen(heatActive, FSXStateUIDPitotOnIceNone, FSXStateUIDPitotOffIceNone));
   end;
 end;
 
@@ -447,6 +508,64 @@ begin
 end;
 
 
+{ TFSXThrottleFunctionWorker }
+procedure TFSXThrottleFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+var
+  engineIndex: Integer;
+
+begin
+  ADefinition.AddVariable('NUMBER OF ENGINES', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_INT32);
+
+  for engineIndex := 1 to FSX_MAX_ENGINES do
+    ADefinition.AddVariable(Format('GENERAL ENG THROTTLE LEVER POSITION:%d', [engineIndex]), FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+end;
+
+
+procedure TFSXThrottleFunctionWorker.HandleData(AData: Pointer);
+type
+  PThrottleData = ^TThrottleData;
+  TThrottleData = packed record
+    NumberOfEngines: Integer;
+    Position: array[1..FSX_MAX_ENGINES] of Double;
+  end;
+
+var
+  throttleData: PThrottleData;
+  reverse: Boolean;
+  totalPosition: Double;
+  engineIndex: Integer;
+
+begin
+  throttleData := AData;
+
+  if throttleData^.NumberOfEngines > 0 then
+  begin
+    reverse := False;
+    totalPosition := 0;
+
+    for engineIndex := 1 to throttleData^.NumberOfEngines do
+    begin
+      if throttleData^.Position[engineIndex] < 0 then
+      begin
+        reverse := True;
+        break;
+      end else
+        totalPosition := totalPosition + throttleData^.Position[engineIndex];
+    end;
+
+    if reverse then
+      SetCurrentState(FSXStateUIDThrottleReverse)
+    else
+      case Trunc(totalPosition / throttleData^.NumberOfEngines) of
+        0..5:     SetCurrentState(FSXStateUIDThrottleOff);
+        95..100:  SetCurrentState(FSXStateUIDThrottleFull);
+      else        SetCurrentState(FSXStateUIDThrottlePartial);
+      end;
+  end else
+    SetCurrentState(FSXStateUIDThrottleNoEngines);
+end;
+
+
 { TFSXFlapsFunctionWorker }
 procedure TFSXFlapsFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
@@ -510,7 +629,7 @@ var
   spoilersData: PSpoilersData;
 
 begin
-  SpoilersData := AData;
+  spoilersData := AData;
 
   if SpoilersData^.SpoilersAvailable <> 0 then
   begin
@@ -643,12 +762,130 @@ begin
 end;
 
 
-procedure TFSXAvionicsMasterFunctionWorker.HandleData(AData: Pointer);
+{ TFSXFuelFunctionWorker }
+procedure TFSXFuelFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
-  if PCardinal(AData)^ <> 0 then
-    SetCurrentState(FSXStateUIDOn)
-  else
-    SetCurrentState(FSXStateUIDOff);
+  ADefinition.AddVariable('FUEL TOTAL CAPACITY', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_FLOAT64);
+  ADefinition.AddVariable('FUEL TOTAL QUANTITY', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_FLOAT64);
+end;
+
+
+procedure TFSXFuelFunctionWorker.HandleData(AData: Pointer);
+type
+  PFuelData = ^TFuelData;
+  TFuelData = packed record
+    TotalCapacity: Double;
+    TotalQuantity: Double;
+  end;
+
+var
+  fuelData: PFuelData;
+  percentage: Integer;
+
+begin
+  fuelData := AData;
+
+  if fuelData^.TotalCapacity > 0 then
+  begin
+    percentage := Ceil(fuelData^.TotalQuantity / fuelData^.TotalCapacity * 100);
+    case percentage of
+      0:      SetCurrentState(FSXStateUIDFuelEmpty);
+      1:      SetCurrentState(FSXStateUIDFuel0to1);
+      2:      SetCurrentState(FSXStateUIDFuel1to2);
+      3..5:   SetCurrentState(FSXStateUIDFuel2to5);
+      6..10:  SetCurrentState(FSXStateUIDFuel5to10);
+      11..20: SetCurrentState(FSXStateUIDFuel10to20);
+      21..50: SetCurrentState(FSXStateUIDFuel20to50);
+      51..75: SetCurrentState(FSXStateUIDFuel50to75);
+    else
+              SetCurrentState(FSXStateUIDFuel75to100);
+    end;
+  end else
+    SetCurrentState(FSXStateUIDFuelNotAvailable);
+end;
+
+
+type
+  TFSXATCVisibilityStateChanged = reference to procedure(AVisible: Boolean);
+
+  TFSXATCVisibilityTask = class(TOmniWorker)
+  private
+    FOnStateChanged: TFSXATCVisibilityStateChanged;
+    FVisible: Boolean;
+  public
+    constructor Create(AOnStateChanged: TFSXATCVisibilityStateChanged);
+    procedure Run;
+  end;
+
+
+{ TFSXATCVisibilityFunctionWorker }
+constructor TFSXATCVisibilityFunctionWorker.Create(const AProviderUID, AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string);
+begin
+  inherited Create(AProviderUID, AFunctionUID, AStates, ASettings, APreviousState);
+
+  FMonitorTask := CreateTask(TFSXATCVisibilityTask.Create(
+    procedure(AVisible: Boolean)
+    begin
+      if AVisible then
+        SetCurrentState(FSXStateUIDATCVisible)
+      else
+        SetCurrentState(FSXStateUIDATCHidden);
+    end))
+    .SetTimer(1, MSecsPerSec, @TFSXATCVisibilityTask.Run)
+    .Run;
+end;
+
+
+destructor TFSXATCVisibilityFunctionWorker.Destroy;
+begin
+  FMonitorTask.Terminate;
+  FMonitorTask := nil;
+
+  inherited Destroy;
+end;
+
+
+{ TFSXATCVisibilityTask }
+constructor TFSXATCVisibilityTask.Create(AOnStateChanged: TFSXATCVisibilityStateChanged);
+begin
+  inherited Create;
+
+  FOnStateChanged := AOnStateChanged;
+  FVisible := False;
+end;
+
+
+procedure TFSXATCVisibilityTask.Run;
+const
+  ClassNameMainWindow = 'FS98MAIN';
+  ClassNameChildWindow = 'FS98CHILD';
+  ClassNameFloatWindow = 'FS98FLOAT';
+  WindowTitleATC = 'ATC Menu';
+
+var
+  visible: Boolean;
+  mainWindow: THandle;
+  atcWindow: THandle;
+
+begin
+  { Docked }
+  atcWindow := 0;
+  mainWindow := FindWindow(ClassNameMainWindow, nil);
+  if mainWindow <> 0 then
+    atcWindow := FindWindowEx(mainWindow, 0, ClassNameChildWindow, WindowTitleATC);
+
+  { Undocked }
+  if atcWindow = 0 then
+    atcWindow := FindWindow(ClassNameFloatWindow, WindowTitleATC);
+
+
+  visible := (atcWindow <> 0) and IsWindowVisible(atcWindow);
+
+  if visible <> FVisible then
+  begin
+    FVisible := visible;
+    FOnStateChanged(visible);
+  end;
 end;
 
 end.

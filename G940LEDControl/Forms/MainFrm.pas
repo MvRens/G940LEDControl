@@ -222,8 +222,9 @@ const
   DefaultProfileName = 'Default';
   ProfilePostfixModified = ' (modified)';
 
-  FilenameProfiles = 'G940LEDControl\Profiles.xml';
-  FilenameSettings = 'G940LEDControl\Settings.xml';
+  UserDataPath = 'G940LEDControl\';
+  FilenameProfiles = UserDataPath + 'Profiles.xml';
+  FilenameSettings = UserDataPath + 'Settings.xml';
 
   TextStateSearching = 'Searching...';
   TextStateNotFound = 'Not found';
@@ -290,6 +291,8 @@ begin
   TProfileManager.Attach(Self);
 
   FindLEDControls;
+
+  ForceDirectories(App.UserPath + UserDataPath);
 
   FProfilesFilename := App.UserPath + FilenameProfiles;
   LoadProfiles;

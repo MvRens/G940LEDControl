@@ -136,9 +136,14 @@ begin
   RegisterFunction(TFSXPressDumpSwitchFunction.Create(    Self, FSXFunctionDisplayNamePressDumpSwitch,      FSXFunctionUIDPressDumpSwitch));
   RegisterFunction(TFSXTailHookFunction.Create(           Self, FSXFunctionDisplayNameTailHook,             FSXFunctionUIDTailHook));
 
+  { Instruments }
+  RegisterFunction(TFSXPitotOnOffFunction.Create(         Self, FSXFunctionDisplayNamePitotOnOff,           FSXFunctionUIDPitotOnOff));
+  RegisterFunction(TFSXPitotWarningFunction.Create(       Self, FSXFunctionDisplayNamePitotWarning,         FSXFunctionUIDPitotWarning));
+
   { Engines }
   RegisterFunction(TFSXEngineAntiIceFunction.Create(      Self, FSXFunctionDisplayNameEngineAntiIce,        FSXFunctionUIDEngineAntiIce));
   RegisterFunction(TFSXEngineFunction.Create(             Self, FSXFunctionDisplayNameEngine,               FSXFunctionUIDEngine));
+  RegisterFunction(TFSXThrottleFunction.Create(           Self, FSXFunctionDisplayNameThrottle,             FSXFunctionUIDThrottle));
 
   { Control surfaces }
   RegisterFunction(TFSXFlapsFunction.Create(              Self, FSXFunctionDisplayNameFlaps,                FSXFunctionUIDFlaps));
@@ -164,6 +169,12 @@ begin
 
   { Radios }
   RegisterFunction(TFSXAvionicsMasterFunction.Create(     Self, FSXFunctionDisplayNameAvionicsMaster,       FSXFunctionUIDAvionicsMaster));
+
+  { Fuel }
+  RegisterFunction(TFSXFuelFunction.Create(               Self, FSXFunctionDisplayNameFuel,                 FSXFunctionUIDFuel));
+
+  { ATC }
+  RegisterFunction(TFSXATCVisibilityFunction.Create(FSXProviderUID));
 end;
 
 
