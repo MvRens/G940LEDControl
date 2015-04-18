@@ -662,6 +662,7 @@ type
 
   // Additional procedures to support dynamic loading
 function InitSimConnect: boolean;
+function InitSimConnectFromLibrary(Name: string): boolean;
 procedure CloseSimConnect;
 function IsSimConnectInitialized: Boolean;
 

@@ -124,6 +124,7 @@ type
     btnLog: TButton;
     TrayIcon: TTrayIcon;
     ApplicationEvents: TApplicationEvents;
+    cbFSXSEAutoLaunch: TCheckBox;
 
     procedure FormCreate(Sender: TObject);
     procedure lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
@@ -143,6 +144,7 @@ type
     procedure btnLogClick(Sender: TObject);
     procedure ApplicationEventsMinimize(Sender: TObject);
     procedure TrayIconClick(Sender: TObject);
+    procedure cbFSXSEAutoLaunchClick(Sender: TObject);
   private
     FLog: IX2Log;
     FLEDControls: array[0..LED_COUNT - 1] of TLEDControls;
@@ -231,6 +233,7 @@ uses
 
   ButtonFunctionFrm,
   ConfigConversion,
+  FSXAutoLaunch,
   FSXLEDFunctionProviderIntf,
   FSXResources,
   FSXSimConnectStateMonitor,
@@ -345,6 +348,7 @@ begin
   UnregisterDeviceArrival;
   TProfileManager.Detach(Self);
 
+  TX2LogObserverMonitorForm.CloseInstance(TX2GlobalLog.Instance);
   TX2LogObserverMonitorForm.UnlockInstance(TX2GlobalLog.Instance);
 end;
 
@@ -609,6 +613,8 @@ begin
     cbMinimizeToTray.Checked := Settings.MinimizeToTray;
     cbLaunchMinimized.Checked := Settings.LaunchMinimized;
 
+    cbFSXAutoLaunch.Checked := TFSXAutoLaunch.IsEnabled(fsxStandard);
+    cbFSXSEAutoLaunch.Checked := TFSXAutoLaunch.IsEnabled(fsxSteamEdition);
 
     cbProfileMenu.Checked := Settings.ProfileMenu;
     cbProfileMenuCascaded.Checked := Settings.ProfileMenuCascaded;
@@ -1104,7 +1110,29 @@ end;
 
 procedure TMainForm.cbFSXAutoLaunchClick(Sender: TObject);
 begin
-  //
+  if FLoadingSettings then
+    exit;
+
+  FLoadingSettings := True;
+  try
+    cbFSXAutoLaunch.Checked := TFSXAutoLaunch.SetEnabled(fsxStandard, cbFSXAutoLaunch.Checked);
+  finally
+    FLoadingSettings := False;
+  end;
+end;
+
+
+procedure TMainForm.cbFSXSEAutoLaunchClick(Sender: TObject);
+begin
+  if FLoadingSettings then
+    exit;
+
+  FLoadingSettings := True;
+  try
+    cbFSXSEAutoLaunch.Checked := TFSXAutoLaunch.SetEnabled(fsxSteamEdition, cbFSXSEAutoLaunch.Checked);
+  finally
+    FLoadingSettings := False;
+  end;
 end;
 
 

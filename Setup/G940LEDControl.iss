@@ -30,7 +30,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "..\G940LEDControl\Bin\{#AppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\G940LEDControl\Bin\LogiJoystickDLL.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\G940LEDControl\Bin\SimConnect.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\G940LEDControl\Bin\FSX-SimConnect.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\G940LEDControl\Bin\FSX-SE-SimConnect.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"

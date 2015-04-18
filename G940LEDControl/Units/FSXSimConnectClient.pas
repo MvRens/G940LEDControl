@@ -59,6 +59,7 @@ uses
   OtlComm,
   OtlCommon,
   SimConnect,
+  X2UtApp,
 
   FSXResources,
   FSXSimConnectStateMonitor;
@@ -137,7 +138,8 @@ type
     function Initialize: Boolean; override;
     procedure Cleanup; override;
 
-    procedure TrySimConnect;
+    procedure TrySimConnect; overload;
+    procedure TrySimConnect(const ALibraryName: string); overload;
 
     procedure RegisterDefinitions;
     procedure RegisterDefinition(ADefinitionID: Cardinal; ADefinition: IFSXSimConnectDefinitionAccess);
@@ -427,16 +429,35 @@ end;
 
 
 procedure TFSXSimConnectClient.TrySimConnect;
-var
-  eventHandle: THandle;
-
 begin
   if SimConnectHandle <> 0 then
     exit;
 
-  Log.Info('Attempting to connect to SimConnect');
+  TrySimConnect('FSX-SimConnect.dll');
+  if SimConnectHandle = 0 then
+    TrySimConnect('FSX-SE-SimConnect.dll');
 
-  if InitSimConnect then
+  if SimConnectHandle = 0 then
+  begin
+    Log.Info(Format('FSX SimConnect: Connection failed, trying again in %d seconds', [INTERVAL_TRYSIMCONNECT div 1000]));
+    TFSXSimConnectStateMonitor.SetCurrentState(scsFailed);
+
+    Task.SetTimer(TIMER_TRYSIMCONNECT, INTERVAL_TRYSIMCONNECT, TM_TRYSIMCONNECT);
+    {$IFNDEF SCUSEEVENT}
+    Task.ClearTimer(TIMER_PROCESSMESSAGES);
+    {$ENDIF}
+  end;
+end;
+
+
+procedure TFSXSimConnectClient.TrySimConnect(const ALibraryName: string);
+var
+  eventHandle: THandle;
+
+begin
+  Log.Info('Attempting to connect to SimConnect using ' + ALibraryName);
+
+  if InitSimConnectFromLibrary(App.Path + ALibraryName) then
   begin
     {$IFDEF SCUSEEVENT}
     eventHandle := SimConnectDataEvent.Handle;
@@ -456,18 +477,8 @@ begin
       {$IFNDEF SCUSEEVENT}
       Task.SetTimer(TIMER_PROCESSMESSAGES, INTERVAL_PROCESSMESSAGES, TM_PROCESSMESSAGES);
       {$ENDIF}
-    end;
-  end;
-
-  if SimConnectHandle = 0 then
-  begin
-    Log.Info(Format('FSX SimConnect: Connection failed, trying again in %d seconds', [INTERVAL_TRYSIMCONNECT div 1000]));
-    TFSXSimConnectStateMonitor.SetCurrentState(scsFailed);
-
-    Task.SetTimer(TIMER_TRYSIMCONNECT, INTERVAL_TRYSIMCONNECT, TM_TRYSIMCONNECT);
-    {$IFNDEF SCUSEEVENT}
-    Task.ClearTimer(TIMER_PROCESSMESSAGES);
-    {$ENDIF}
+    end else
+      FSimConnectHandle := 0;
   end;
 end;
 

@@ -379,7 +379,7 @@ object MainForm: TMainForm
         452)
       object lblProfileSwitching: TLabel
         Left = 11
-        Top = 187
+        Top = 239
         Width = 92
         Height = 13
         Caption = 'Profile switching'
@@ -392,7 +392,7 @@ object MainForm: TMainForm
       end
       object bvlProfileSwitching: TBevel
         Left = 124
-        Top = 194
+        Top = 246
         Width = 305
         Height = 13
         Anchors = [akLeft, akTop, akRight]
@@ -400,7 +400,7 @@ object MainForm: TMainForm
       end
       object lblLaunch: TLabel
         Left = 11
-        Top = 122
+        Top = 134
         Width = 40
         Height = 13
         Caption = 'Launch'
@@ -413,7 +413,7 @@ object MainForm: TMainForm
       end
       object bvlLaunch: TBevel
         Left = 80
-        Top = 129
+        Top = 141
         Width = 353
         Height = 13
         Anchors = [akLeft, akTop, akRight]
@@ -442,7 +442,7 @@ object MainForm: TMainForm
       end
       object cbProfileMenu: TCheckBox
         Left = 11
-        Top = 212
+        Top = 264
         Width = 409
         Height = 17
         Caption = ' Add profile selection to FSX/Prepar3D "Add-ons" menu'
@@ -453,7 +453,7 @@ object MainForm: TMainForm
       end
       object cbProfileMenuCascaded: TCheckBox
         Left = 31
-        Top = 235
+        Top = 287
         Width = 389
         Height = 17
         Caption = ' Cascaded menu (profiles in "G940 Profile" submenu)'
@@ -462,7 +462,7 @@ object MainForm: TMainForm
       end
       object cbFSXAutoLaunch: TCheckBox
         Left = 11
-        Top = 147
+        Top = 159
         Width = 409
         Height = 17
         Caption = ' Automatically start G940 LED Control when FSX launches'
@@ -510,6 +510,19 @@ object MainForm: TMainForm
         Caption = 'Application log...'
         TabOrder = 6
         OnClick = btnLogClick
+      end
+      object cbFSXSEAutoLaunch: TCheckBox
+        Left = 11
+        Top = 182
+        Width = 409
+        Height = 17
+        Caption = 
+          ' Automatically start G940 LED Control when FSX- Steam Edition la' +
+          'unches'
+        Checked = True
+        State = cbChecked
+        TabOrder = 7
+        OnClick = cbFSXSEAutoLaunchClick
       end
     end
     object tsAbout: TTabSheet

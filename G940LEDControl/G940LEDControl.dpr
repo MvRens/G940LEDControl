@@ -3,6 +3,7 @@ program G940LEDControl;
 uses
   Forms,
   SysUtils,
+  X2UtSingleInstance,
   MainFrm in 'Forms\MainFrm.pas' {MainForm},
   LogiJoystickDLL in '..\Shared\LogiJoystickDLL.pas',
   SimConnect in '..\Shared\SimConnect.pas',
@@ -34,7 +35,8 @@ uses
   FSXSimConnectStateMonitor in 'Units\FSXSimConnectStateMonitor.pas',
   ProfileManager in 'Units\ProfileManager.pas',
   FSXLEDFunctionProviderIntf in 'Units\FSXLEDFunctionProviderIntf.pas',
-  SimBaseDocumentXMLBinding in 'Units\SimBaseDocumentXMLBinding.pas';
+  SimBaseDocumentXMLBinding in 'Units\SimBaseDocumentXMLBinding.pas',
+  FSXAutoLaunch in 'Units\FSXAutoLaunch.pas';
 
 {$R *.res}
 
@@ -43,6 +45,9 @@ var
   MainForm: TMainForm;
 
 begin
+  if not SingleInstance('{67D1802F-2AB8-40B9-ADD7-14C9D36903C8}', False, False) then
+    exit;
+
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.Title := 'G940 LED Control';
