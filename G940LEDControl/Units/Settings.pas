@@ -12,6 +12,9 @@ type
     FActiveProfile: string;
     FProfileMenu: Boolean;
     FProfileMenuCascaded: Boolean;
+    FTrayIcon: Boolean;
+    FMinimizeToTray: Boolean;
+    FLaunchMinimized: Boolean;
 
     procedure SetCheckUpdates(const Value: Boolean);
   public
@@ -25,6 +28,10 @@ type
 
     property ProfileMenu: Boolean read FProfileMenu write FProfileMenu;
     property ProfileMenuCascaded: Boolean read FProfileMenuCascaded write FProfileMenuCascaded;
+
+    property TrayIcon: Boolean read FTrayIcon write FTrayIcon;
+    property MinimizeToTray: Boolean read FMinimizeToTray write FMinimizeToTray;
+    property LaunchMinimized: Boolean read FLaunchMinimized write FLaunchMinimized;
   end;
 
 
@@ -37,6 +44,10 @@ const
 
   KeyProfileMenu = 'ProfileMenu';
   KeyProfileMenuCascaded = 'ProfileMenuCascaded';
+
+  KeyTrayIcon = 'TrayIcon';
+  KeyMinimizeToTray = 'MinimizeToTray';
+  KeyLaunchMinimized = 'LaunchMinimized';
 
 
 { TSettings }
@@ -58,6 +69,15 @@ begin
 
     if not AReader.ReadBoolean(KeyProfileMenuCascaded, FProfileMenuCascaded) then
       FProfileMenuCascaded := False;
+
+    if not AReader.ReadBoolean(KeyTrayIcon, FTrayIcon) then
+      FTrayIcon := False;
+
+    if not AReader.ReadBoolean(KeyMinimizeToTray, FMinimizeToTray) then
+      FMinimizeToTray := False;
+
+    if not AReader.ReadBoolean(KeyLaunchMinimized, FLaunchMinimized) then
+      FLaunchMinimized := False;
   finally
     AReader.EndSection;
   end;
@@ -72,6 +92,9 @@ begin
     AWriter.WriteString(KeyActiveProfile, ActiveProfile);
     AWriter.WriteBoolean(KeyProfileMenu, ProfileMenu);
     AWriter.WriteBoolean(KeyProfileMenuCascaded, ProfileMenuCascaded);
+    AWriter.WriteBoolean(KeyTrayIcon, TrayIcon);
+    AWriter.WriteBoolean(KeyMinimizeToTray, MinimizeToTray);
+    AWriter.WriteBoolean(KeyLaunchMinimized, LaunchMinimized);
   finally
     AWriter.EndSection;
   end;

@@ -1,7 +1,7 @@
 object MainForm: TMainForm
   Left = 0
   Top = 0
-  ActiveControl = cmbProfiles
+  ActiveControl = cbTrayIcon
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'G940 LED Control'
@@ -29,7 +29,7 @@ object MainForm: TMainForm
     Margins.Top = 8
     Margins.Right = 8
     Margins.Bottom = 8
-    ActivePage = tsButtons
+    ActivePage = tsConfiguration
     Align = alClient
     TabOrder = 0
     object tsButtons: TTabSheet
@@ -374,9 +374,12 @@ object MainForm: TMainForm
     object tsConfiguration: TTabSheet
       Caption = ' Configuration '
       ImageIndex = 2
+      DesignSize = (
+        442
+        452)
       object lblProfileSwitching: TLabel
         Left = 11
-        Top = 19
+        Top = 187
         Width = 92
         Height = 13
         Caption = 'Profile switching'
@@ -388,40 +391,130 @@ object MainForm: TMainForm
         ParentFont = False
       end
       object bvlProfileSwitching: TBevel
-        Left = 224
-        Top = 26
-        Width = 205
+        Left = 124
+        Top = 194
+        Width = 305
         Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        Shape = bsTopLine
+      end
+      object lblLaunch: TLabel
+        Left = 11
+        Top = 122
+        Width = 40
+        Height = 13
+        Caption = 'Launch'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object bvlLaunch: TBevel
+        Left = 80
+        Top = 129
+        Width = 353
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        Shape = bsTopLine
+      end
+      object lblGeneral: TLabel
+        Left = 11
+        Top = 11
+        Width = 44
+        Height = 13
+        Caption = 'General'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object bvlGeneral: TBevel
+        Left = 80
+        Top = 18
+        Width = 353
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
         Shape = bsTopLine
       end
       object cbProfileMenu: TCheckBox
         Left = 11
-        Top = 44
+        Top = 212
         Width = 409
         Height = 17
-        Caption = ' Add profile selection to FSX "Add-ons" menu'
+        Caption = ' Add profile selection to FSX/Prepar3D "Add-ons" menu'
         Checked = True
         State = cbChecked
-        TabOrder = 0
+        TabOrder = 4
         OnClick = cbProfileMenuClick
       end
       object cbProfileMenuCascaded: TCheckBox
         Left = 31
-        Top = 67
+        Top = 235
         Width = 389
         Height = 17
         Caption = ' Cascaded menu (profiles in "G940 Profile" submenu)'
-        TabOrder = 1
+        TabOrder = 5
         OnClick = cbProfileMenuCascadedClick
+      end
+      object cbFSXAutoLaunch: TCheckBox
+        Left = 11
+        Top = 147
+        Width = 409
+        Height = 17
+        Caption = ' Automatically start G940 LED Control when FSX launches'
+        Checked = True
+        State = cbChecked
+        TabOrder = 3
+        OnClick = cbFSXAutoLaunchClick
+      end
+      object cbLaunchMinimized: TCheckBox
+        Left = 31
+        Top = 82
+        Width = 381
+        Height = 17
+        Caption = ' Start minimized'
+        TabOrder = 2
+        OnClick = cbLaunchMinimizedClick
+      end
+      object cbMinimizeToTray: TCheckBox
+        Left = 31
+        Top = 59
+        Width = 389
+        Height = 17
+        Caption = ' Minimize to the notification area'
+        Checked = True
+        State = cbChecked
+        TabOrder = 1
+        OnClick = cbMinimizeToTrayClick
+      end
+      object cbTrayIcon: TCheckBox
+        Left = 11
+        Top = 36
+        Width = 409
+        Height = 17
+        Caption = ' Show icon in the notification area'
+        Checked = True
+        State = cbChecked
+        TabOrder = 0
+        OnClick = cbTrayIconClick
+      end
+      object btnLog: TButton
+        Left = 11
+        Top = 412
+        Width = 102
+        Height = 25
+        Caption = 'Application log...'
+        TabOrder = 6
+        OnClick = btnLogClick
       end
     end
     object tsAbout: TTabSheet
       Caption = 'About'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object lblVersionCaption: TLabel
         Left = 16
         Top = 67
@@ -1057,5 +1150,15 @@ object MainForm: TMainForm
         Caption = 'Searching...'
       end
     end
+  end
+  object TrayIcon: TTrayIcon
+    OnClick = TrayIconClick
+    Left = 384
+    Top = 436
+  end
+  object ApplicationEvents: TApplicationEvents
+    OnMinimize = ApplicationEventsMinimize
+    Left = 300
+    Top = 436
   end
 end

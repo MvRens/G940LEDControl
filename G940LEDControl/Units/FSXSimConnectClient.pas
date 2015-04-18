@@ -9,6 +9,7 @@ uses
   Classes,
 
   OtlTaskControl,
+  X2Log.Intf,
 
   FSXSimConnectIntf,
   Profile,
@@ -42,7 +43,7 @@ type
     procedure ObserveRemove(AProfile: TProfile);
     procedure ObserveActiveChanged(AProfile: TProfile);
   public
-    constructor Create;
+    constructor Create(ALog: IX2Log);
     destructor Destroy; override;
   end;
 
@@ -59,7 +60,6 @@ uses
   OtlCommon,
   SimConnect,
 
-  DebugLog,
   FSXResources,
   FSXSimConnectStateMonitor;
 
@@ -120,6 +120,7 @@ type
 
     FMenuProfiles: TStringList;
     FMenuWasCascaded: Boolean;
+    FLog: IX2Log;
   protected
     procedure TMAddDefinition(var Msg: TOmniMessage); message TM_ADDDEFINITION;
     procedure TMRemoveDefinition(var Msg: TOmniMessage); message TM_REMOVEDEFINITION;
@@ -154,8 +155,11 @@ type
     property SimConnectDataEvent: TEvent read FSimConnectDataEvent;
     {$ENDIF}
 
+    property Log: IX2Log read FLog;
     property ProfileMenu: Boolean read FProfileMenu;
     property ProfileMenuCascaded: Boolean read FProfileMenuCascaded;
+  public
+    constructor Create(ALog: IX2Log);
   end;
 
 
@@ -229,7 +233,7 @@ type
 
 
 { TFSXSimConnectInterface }
-constructor TFSXSimConnectInterface.Create;
+constructor TFSXSimConnectInterface.Create(ALog: IX2Log);
 var
   worker: IOmniWorker;
 
@@ -238,7 +242,7 @@ begin
 
   FObservers := TInterfaceList.Create;
 
-  worker := TFSXSimConnectClient.Create;
+  worker := TFSXSimConnectClient.Create(ALog);
   FClient := CreateTask(worker).Run;
 end;
 
@@ -374,9 +378,17 @@ end;
 
 
 { TFSXSimConnectClient }
+constructor TFSXSimConnectClient.Create(ALog: IX2Log);
+begin
+  inherited Create;
+
+  FLog := ALog;
+end;
+
+
 function TFSXSimConnectClient.Initialize: Boolean;
 begin
-  Debug.Log('FSX SimConnect: Initializing');
+  Log.Info('Initializing');
 
   Result := inherited Initialize;
   if not Result then
@@ -396,7 +408,7 @@ end;
 
 procedure TFSXSimConnectClient.Cleanup;
 begin
-  Debug.Log('FSX SimConnect: Cleaning up');
+  Log.Info('Cleaning up');
 
   {$IFDEF SCUSEEVENT}
   FreeAndNil(FSimConnectDataEvent);
@@ -422,7 +434,7 @@ begin
   if SimConnectHandle <> 0 then
     exit;
 
-  Debug.Log('FSX SimConnect: Attempting to connect to SimConnect');
+  Log.Info('Attempting to connect to SimConnect');
 
   if InitSimConnect then
   begin
@@ -434,7 +446,7 @@ begin
 
     if SimConnect_Open(FSimConnectHandle, FSXSimConnectAppName, 0, 0, eventHandle, 0) = S_OK then
     begin
-      Debug.Log('FSX SimConnect: Succesfully connected');
+      Log.Info('Succesfully connected');
       TFSXSimConnectStateMonitor.SetCurrentState(scsConnected);
 
       Task.ClearTimer(TIMER_TRYSIMCONNECT);
@@ -449,7 +461,7 @@ begin
 
   if SimConnectHandle = 0 then
   begin
-    Debug.LogFmt('FSX SimConnect: Connection failed, trying again in %d seconds', [INTERVAL_TRYSIMCONNECT div 1000]);
+    Log.Info(Format('FSX SimConnect: Connection failed, trying again in %d seconds', [INTERVAL_TRYSIMCONNECT div 1000]));
     TFSXSimConnectStateMonitor.SetCurrentState(scsFailed);
 
     Task.SetTimer(TIMER_TRYSIMCONNECT, INTERVAL_TRYSIMCONNECT, TM_TRYSIMCONNECT);
@@ -492,7 +504,7 @@ var
   definitionRef: TFSXSimConnectDefinitionRef;
 
 begin
-  Debug.Log('FSX SimConnect: Handling messages');
+  Log.Verbose('Handling messages');
 
   while (SimConnectHandle <> 0) and
         (SimConnect_GetNextDispatch(SimConnectHandle, data, dataSize) = S_OK) do
@@ -501,7 +513,7 @@ begin
       SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
         begin
           simObjectData := PSimConnectRecvSimObjectData(data);
-          Debug.LogFmt('FSX SimConnect: Received Sim Object Data message (definition = %d)', [simObjectData^.dwDefineID]);
+          Log.Verbose(Format('Received Sim Object Data message (definition = %d)', [simObjectData^.dwDefineID]));
 
           if Definitions.ContainsKey(simObjectData^.dwDefineID) then
           begin
@@ -513,14 +525,14 @@ begin
       SIMCONNECT_RECV_ID_EVENT:
         begin
           eventData := PSimConnectRecvEvent(data);
-          Debug.LogFmt('FSX SimConnect: Received Event message (eventId = %d)', [eventData^.uEventID]);
+          Log.Verbose(Format('Received Event message (eventId = %d)', [eventData^.uEventID]));
 
           HandleEvent(eventData^.uEventID);
         end;
 
       SIMCONNECT_RECV_ID_QUIT:
         begin
-          Debug.Log('FSX SimConnect: Received Quit message');
+          Log.Verbose('Received Quit message');
 
           FSimConnectHandle := 0;
           {$IFNDEF SCUSEEVENT}
@@ -534,9 +546,9 @@ begin
         end;
     else
       if SIMCONNECT_RECV_ID(data^.dwID) in [Low(SIMCONNECT_RECV_ID)..High(SIMCONNECT_RECV_ID)] then
-        Debug.LogFmt('FSX SimConnect: Received unhandled message (%s)', [RecvMessageName[SIMCONNECT_RECV_ID(data^.dwID)]])
+        Log.Verbose(Format('Received unhandled message (%s)', [RecvMessageName[SIMCONNECT_RECV_ID(data^.dwID)]]))
       else
-        Debug.LogFmt('FSX SimConnect: Received unknown message (%d)', [data^.dwID]);
+        Log.Verbose(Format('Received unknown message (%d)', [data^.dwID]));
     end;
   end;
 end;
@@ -582,7 +594,7 @@ begin
   if SimConnectHandle = 0 then
     exit;
 
-  Debug.LogFmt('FSX SimConnect: Registering definition %d', [ADefinitionID]);
+  Log.Verbose(Format('Registering definition %d', [ADefinitionID]));
 
   for variableIndex := 0 to Pred(ADefinition.GetVariableCount) do
   begin
@@ -617,7 +629,7 @@ procedure TFSXSimConnectClient.UnregisterDefinition(ADefinitionID: Cardinal);
 begin
   if SimConnectHandle <> 0 then
   begin
-    Debug.LogFmt('FSX SimConnect: Unregistering definition: %d', [ADefinitionID]);
+    Log.Verbose(Format('Unregistering definition: %d', [ADefinitionID]));
     SimConnect_ClearDataDefinition(SimConnectHandle, ADefinitionID);
   end;
 end;
@@ -666,7 +678,7 @@ begin
   if SimConnectHandle = 0 then
     exit;
 
-  Debug.Log('FSX SimConnect: Updating profile menu');
+  Log.Info('Updating profile menu');
 
   if FMenuWasCascaded then
   begin
@@ -732,7 +744,7 @@ begin
   definitionAccess := (addDefinition.Definition as IFSXSimConnectDefinitionAccess);
   hasDefinition := False;
 
-  Debug.Log('FSX SimConnect: Received request to add a definition');
+  Log.Verbose('Received request to add a definition');
 
   { Attempt to re-use existing definition to save on SimConnect traffic }
   for definitionID in Definitions.Keys do
@@ -744,7 +756,7 @@ begin
       refCount := definitionRef.Attach(addDefinition.DataHandler);
       addDefinition.DefinitionID := definitionID;
 
-      Debug.LogFmt('FSX SimConnect: Definition exists, incremented reference count (definitionID = %d, refCount = %d)', [definitionID, refCount]);
+      Log.Verbose(Format('Definition exists, incremented reference count (definitionID = %d, refCount = %d)', [definitionID, refCount]));
 
 
       { Request an update on the definition to update the new worker }
@@ -759,7 +771,7 @@ begin
   begin
     { Add as new definition }
     Inc(FLastDefinitionID);
-    Debug.LogFmt('FSX SimConnect: Adding as new definition (%d)', [FLastDefinitionID]);
+    Log.Verbose(Format('Adding as new definition (%d)', [FLastDefinitionID]));
 
     definitionRef := TFSXSimConnectDefinitionRef.Create(definitionAccess);
     definitionRef.Attach(addDefinition.DataHandler);
@@ -781,18 +793,18 @@ var
 
 begin
   removeDefinition := Msg.MsgData;
-  Debug.LogFmt('FSX SimConnect: Received request to remove a definition (%d)', [removeDefinition.DefinitionID]);
+  Log.Verbose(Format('Received request to remove a definition (%d)', [removeDefinition.DefinitionID]));
 
   if Definitions.ContainsKey(removeDefinition.DefinitionID) then
   begin
     definitionRef := Definitions[removeDefinition.DefinitionID];
     refCount := definitionRef.Detach(removeDefinition.DataHandler);
 
-    Debug.LogFmt('FSX SimConnect: Definition exists, decreased reference count (refCount = %d)', [refCount]);
+    Log.Verbose(Format('Definition exists, decreased reference count (refCount = %d)', [refCount]));
 
     if refCount = 0 then
     begin
-      Debug.Log('FSX SimConnect: Removing definition');
+      Log.Verbose('Removing definition');
 
       { Unregister with SimConnect }
       UnregisterDefinition(removeDefinition.DefinitionID);

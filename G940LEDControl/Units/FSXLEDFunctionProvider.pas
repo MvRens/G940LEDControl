@@ -5,6 +5,8 @@ uses
   Generics.Collections,
   System.SyncObjs,
 
+  X2Log.Intf,
+
   FSXLEDFunctionProviderIntf,
   FSXSimConnectIntf,
   LEDFunction,
@@ -85,6 +87,8 @@ type
 implementation
 uses
   System.SysUtils,
+
+  X2Log.Global,
 
   FSXLEDFunction,
   FSXResources,
@@ -203,7 +207,7 @@ begin
     begin
       { Keep an object reference so we don't increment the reference count.
         We'll know when it's gone through the ObserveDestroy. }
-      FSimConnect := TFSXSimConnectInterface.Create;
+      FSimConnect := TFSXSimConnectInterface.Create(TX2GlobalLog.Category('FSX SimConnect'));
       (FSimConnect as IFSXSimConnect).Attach(Self);
     end;
 

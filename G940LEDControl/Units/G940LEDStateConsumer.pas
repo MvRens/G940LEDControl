@@ -60,8 +60,8 @@ uses
 
   OtlCommon,
   OtlTask,
+  X2Log.Global,
 
-  DebugLog,
   LEDColorIntf,
   LogiJoystickDLL;
 
@@ -100,16 +100,18 @@ begin
 
   Result := False;
 
-  Debug.Log('G940 LED State consumer: Initializing LogiJoystickDLL');
+  Log.Info('Initializing LogiJoystickDLL');
   if not LogiJoystickDLLInitialized then
   begin
+    Log.Error('Could not load LogiJoystickDLL.dll');
     Task.SetExitStatus(EXIT_ERROR_LOGIJOYSTICKDLL, 'Could not load LogiJoystickDLL.dll');
     exit;
   end;
 
-  Debug.Log('G940 LED State consumer: Initializing DirectInput');
+  Log.Info('G940 LED State consumer: Initializing DirectInput');
   if DirectInput8Create(SysInit.HInstance, DIRECTINPUT_VERSION, IDirectInput8, FDirectInput, nil) <> S_OK then
   begin
+    Log.Error('Failed to initialize DirectInput');
     Task.SetExitStatus(EXIT_ERROR_DIRECTINPUT, 'Failed to initialize DirectInput');
     exit;
   end;
@@ -125,7 +127,7 @@ begin
 
   if Assigned(ThrottleDevice) then
   begin
-    Debug.Log('G940 LED State consumer: Cleanup (all LEDs to Green)');
+    Log.Info('Cleanup (all LEDs to Green)');
     SetLEDs(ThrottleDevice, 0, $FF);
   end;
 end;
@@ -133,7 +135,7 @@ end;
 
 procedure TG940LEDStateConsumer.FindThrottleDevice;
 begin
-  Debug.Log('G940 LED State consumer: Searching for throttle device');
+  Log.Info('Searching for throttle device');
 
   SetDeviceState(DEVICESTATE_SEARCHING);
   DirectInput.EnumDevices(DI8DEVCLASS_GAMECTRL,
@@ -152,7 +154,7 @@ procedure TG940LEDStateConsumer.FoundThrottleDevice(ADeviceGUID: TGUID);
 begin
   if DirectInput.CreateDevice(ADeviceGUID, FThrottleDevice, nil) = S_OK then
   begin
-    FTHrottleDeviceGUID := ADeviceGUID;
+    FThrottleDeviceGUID := ADeviceGUID;
     SetDeviceState(DEVICESTATE_FOUND);
   end;
 end;
@@ -222,7 +224,7 @@ begin
     end;
   end;
 
-  Debug.LogFmt('G940 LED State consumer: Set LED colors (red = %s, green = %s)', [ByteToBin(red), ByteToBin(green)]);
+  Log.Verbose(Format('Set LED colors (red = %s, green = %s)', [ByteToBin(red), ByteToBin(green)]));
   SetLEDs(ThrottleDevice, red, green);
 end;
 
@@ -237,11 +239,11 @@ procedure TG940LEDStateConsumer.TMTestThrottleDevice(var Msg: TOmniMessage);
 begin
   if Assigned(ThrottleDevice) then
   begin
-    Debug.Log('G940 LED State consumer: Checking if throttle is still attached');
+    Log.Info('Checking if throttle is still attached');
 
     if DirectInput.GetDeviceStatus(ThrottleDeviceGUID) = DI_NOTATTACHED then
     begin
-      Debug.Log('G940 LED State consumer: Throttle disconnect');
+      Log.Info('Throttle disconnect');
 
       FThrottleDevice := nil;
       SetDeviceState(DEVICESTATE_NOTFOUND);

@@ -34,9 +34,7 @@ uses
   FSXSimConnectStateMonitor in 'Units\FSXSimConnectStateMonitor.pas',
   ProfileManager in 'Units\ProfileManager.pas',
   FSXLEDFunctionProviderIntf in 'Units\FSXLEDFunctionProviderIntf.pas',
-  GxDbugIntf in 'Units\GxDbugIntf.pas',
-  DebugLog in 'Units\DebugLog.pas',
-  DebugLogGExperts in 'Units\DebugLogGExperts.pas';
+  SimBaseDocumentXMLBinding in 'Units\SimBaseDocumentXMLBinding.pas';
 
 {$R *.res}
 
@@ -45,9 +43,6 @@ var
   MainForm: TMainForm;
 
 begin
-  if FindCmdLineSwitch('log') then
-    SetDebugLogConsumer(TGExpertsDebugLogConsumer.Create);
-
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.Title := 'G940 LED Control';
