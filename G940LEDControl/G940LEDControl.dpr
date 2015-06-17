@@ -36,17 +36,28 @@ uses
   ProfileManager in 'Units\ProfileManager.pas',
   FSXLEDFunctionProviderIntf in 'Units\FSXLEDFunctionProviderIntf.pas',
   SimBaseDocumentXMLBinding in 'Units\SimBaseDocumentXMLBinding.pas',
-  FSXAutoLaunch in 'Units\FSXAutoLaunch.pas';
+  FSXAutoLaunch in 'Units\FSXAutoLaunch.pas',
+  ControlIntf in 'Units\ControlIntf.pas';
 
 {$R *.res}
 
 
 var
   MainForm: TMainForm;
+  isRestarting: Boolean;
 
 begin
-  if not SingleInstance('{67D1802F-2AB8-40B9-ADD7-14C9D36903C8}', False, False) then
-    exit;
+  isRestarting := FindCmdLineSwitch('restart');
+
+  while not SingleInstance('{67D1802F-2AB8-40B9-ADD7-14C9D36903C8}', False, False) do
+  begin
+    Instance.Close;
+
+    if not isRestarting then
+      exit;
+
+    Sleep(1000);
+  end;
 
   Application.Initialize;
   Application.MainFormOnTaskbar := True;

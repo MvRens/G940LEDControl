@@ -282,6 +282,8 @@ const
   FSXMenuProfileFormat = 'G940: %s';
   FSXMenuProfileFormatCascaded = '%s';
 
+  FSXMenuRestart = 'Restart G940LEDControl';
+
 
 implementation
 

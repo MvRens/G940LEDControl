@@ -61,6 +61,7 @@ uses
   SimConnect,
   X2UtApp,
 
+  ControlIntf,
   FSXResources,
   FSXSimConnectStateMonitor;
 
@@ -80,6 +81,8 @@ const
   TIMER_PROCESSMESSAGES = 202;
   INTERVAL_PROCESSMESSAGES = 50;
   {$ENDIF}
+
+  MENU_RESTART = 65536;
 
 
 type
@@ -571,6 +574,13 @@ var
   profile: TProfile;
 
 begin
+  if AEventID = MENU_RESTART then
+  begin
+    GetControlHandler.Restart;
+    exit;
+  end;
+
+
   if (AEventID <= 0) or (AEventID > FMenuProfiles.Count) then
     exit;
 
@@ -697,10 +707,13 @@ begin
       SimConnect_MenuDeleteSubItem(SimConnectHandle, 1, Cardinal(FMenuProfiles.Objects[menuIndex]));
 
     SimConnect_MenuDeleteItem(SimConnectHandle, 1);
+    SimConnect_MenuDeleteItem(SimConnectHandle, 2);
   end else
   begin
     for menuIndex := Pred(FMenuProfiles.Count) downto 0 do
       SimConnect_MenuDeleteItem(SimConnectHandle, Cardinal(FMenuProfiles.Objects[menuIndex]));
+
+    SimConnect_MenuDeleteItem(SimConnectHandle, MENU_RESTART);
   end;
 
   FMenuProfiles.Clear;
@@ -725,6 +738,8 @@ begin
         SimConnect_MenuAddSubItem(SimConnectHandle, 1, PAnsiChar(AnsiString(profileName)), Succ(profileIndex), Succ(profileIndex));
         FMenuProfiles.Objects[profileIndex] := TObject(Succ(profileIndex));
       end;
+
+      SimConnect_MenuAddItem(SimConnectHandle, FSXMenuRestart, MENU_RESTART, 0);
     end else
     begin
       for profileIndex := 0 to Pred(FMenuProfiles.Count) do
@@ -734,6 +749,8 @@ begin
         SimConnect_MenuAddItem(SimConnectHandle, PAnsiChar(AnsiString(profileName)), Succ(profileIndex), Succ(profileIndex));
         FMenuProfiles.Objects[profileIndex] := TObject(Succ(profileIndex));
       end;
+
+      SimConnect_MenuAddItem(SimConnectHandle, FSXMenuRestart, MENU_RESTART, 0);
     end;
 
     FMenuWasCascaded := ProfileMenuCascaded;

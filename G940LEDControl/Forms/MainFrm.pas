@@ -22,6 +22,7 @@ uses
   X2Log.Intf,
   X2UtPersistIntf,
 
+  ControlIntf,
   FSXSimConnectIntf,
   LEDStateConsumer,
   Profile,
@@ -32,6 +33,7 @@ uses
 const
   CM_ASKAUTOUPDATE = WM_APP + 1;
   CM_PROFILECHANGED = WM_APP + 2;
+  CM_RESTART = WM_APP + 3;
 
   TM_UPDATE = 1;
   TM_NOUPDATE = 2;
@@ -53,7 +55,7 @@ type
   end;
 
 
-  TMainForm = class(TForm, IProfileObserver)
+  TMainForm = class(TForm, IProfileObserver, IControlHandler)
     imgStateNotFound: TImage;
     lblG940Throttle: TLabel;
     imgStateFound: TImage;
@@ -169,8 +171,12 @@ type
     procedure ObserveRemove(AProfile: TProfile);
     procedure ObserveActiveChanged(AProfile: TProfile);
 
+    { IControlHandler }
+    procedure Restart;
+
     procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
     procedure CMProfileChanged(var Msg: TMessage); message CM_PROFILECHANGED;
+    procedure CMRestart(var Msg: TMessage); message CM_RESTART;
   protected
     procedure FindLEDControls;
     procedure LoadProfiles;
@@ -338,11 +344,13 @@ begin
     Application.ShowMainForm := False;
 
   RegisterDeviceArrival;
+  SetControlHandler(Self);
 end;
 
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
+  SetControlHandler(nil);
   FinalizeProfileMenu;
 
   UnregisterDeviceArrival;
@@ -808,6 +816,19 @@ end;
 
 procedure TMainForm.ObserveRemove(AProfile: TProfile);
 begin
+end;
+
+
+procedure TMainForm.Restart;
+begin
+  PostMessage(Self.Handle, CM_RESTART, 0, 0);
+end;
+
+
+procedure TMainForm.CMRestart(var Msg: TMessage);
+begin
+  ShellExecute(0, 'open', PChar(App.FileName), '/restart', PChar(App.Path), SW_SHOWMINNOACTIVE);
+  Close;
 end;
 
 
