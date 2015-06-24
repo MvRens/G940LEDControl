@@ -3,6 +3,7 @@ program G940LEDControl;
 uses
   Forms,
   SysUtils,
+  Windows,
   X2UtSingleInstance,
   MainFrm in 'Forms\MainFrm.pas' {MainForm},
   LogiJoystickDLL in '..\Shared\LogiJoystickDLL.pas',
@@ -61,7 +62,12 @@ begin
 
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
+  Application.ShowMainForm := not isRestarting;
   Application.Title := 'G940 LED Control';
   Application.CreateForm(TMainForm, MainForm);
+
+  if isRestarting then
+    MainForm.Visible := True;
+
   Application.Run;
 end.

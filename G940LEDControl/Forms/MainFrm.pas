@@ -827,7 +827,7 @@ end;
 
 procedure TMainForm.CMRestart(var Msg: TMessage);
 begin
-  ShellExecute(0, 'open', PChar(App.FileName), '/restart', PChar(App.Path), SW_SHOWMINNOACTIVE);
+  ShellExecute(0, 'open', PChar(App.FileName), '/restart', PChar(App.Path), SW_SHOWNOACTIVATE);
   Close;
 end;
 

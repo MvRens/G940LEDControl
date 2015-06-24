@@ -8,6 +8,7 @@ object MainForm: TMainForm
   ClientHeight = 548
   ClientWidth = 466
   Color = clBtnFace
+  DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
