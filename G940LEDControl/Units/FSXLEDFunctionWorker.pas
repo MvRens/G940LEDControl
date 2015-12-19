@@ -45,6 +45,12 @@ type
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
   end;
 
+  TFSXAutoBrakeFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+    procedure HandleData(AData: Pointer); override;
+  end;
+
   TFSXPressDumpSwitchFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
@@ -98,6 +104,12 @@ type
   end;
 
   TFSXSpoilersFunctionWorker = class(TCustomFSXFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+    procedure HandleData(AData: Pointer); override;
+  end;
+
+  TFSXSpoilersArmedFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
@@ -310,6 +322,36 @@ end;
 procedure TFSXParkingBrakeFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
   ADefinition.AddVariable('BRAKE PARKING INDICATOR', FSX_UNIT_BOOL, SIMCONNECT_DATATYPE_INT32);
+end;
+
+
+{ TFSXAutoBrakeFunctionWorker }
+procedure TFSXAutoBrakeFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('AUTO BRAKE SWITCH CB', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_INT32);
+end;
+
+procedure TFSXAutoBrakeFunctionWorker.HandleData(AData: Pointer);
+type
+  PAutoBrakeData = ^TAutoBrakeData;
+  TAutoBrakeData = packed record
+    Position: Cardinal;
+  end;
+
+var
+  autoBrakeData: PAutoBrakeData;
+
+begin
+  autoBrakeData := AData;
+
+  case autoBrakeData^.Position of
+    0:  SetCurrentState(FSXStateUIDAutoBrake0);
+    1:  SetCurrentState(FSXStateUIDAutoBrake1);
+    2:  SetCurrentState(FSXStateUIDAutoBrake2);
+    3:  SetCurrentState(FSXStateUIDAutoBrake3);
+  else
+        SetCurrentState(FSXStateUIDAutoBrake4);
+  end;
 end;
 
 
@@ -631,7 +673,7 @@ var
 begin
   spoilersData := AData;
 
-  if SpoilersData^.SpoilersAvailable <> 0 then
+  if spoilersData^.SpoilersAvailable <> 0 then
   begin
     case Trunc(SpoilersData^.SpoilersHandlePercent) of
       0..5:     SetCurrentState(FSXStateUIDSpoilersRetracted);
@@ -641,6 +683,40 @@ begin
   end else
     SetCurrentState(FSXStateUIDSpoilersNotAvailable);
 end;
+
+
+{ TFSXSpoilersArmedFunctionWorker }
+procedure TFSXSpoilersArmedFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('SPOILER AVAILABLE', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('SPOILERS ARMED', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+end;
+
+
+procedure TFSXSpoilersArmedFunctionWorker.HandleData(AData: Pointer);
+type
+  PSpoilersArmedData = ^TSpoilersArmedData;
+  TSpoilersArmedData = packed record
+    SpoilersAvailable: Cardinal;
+    SpoilersArmed: Cardinal;
+  end;
+
+var
+  spoilersArmedData: PSpoilersArmedData;
+
+begin
+  spoilersArmedData := AData;
+
+  if spoilersArmedData^.SpoilersAvailable <> 0 then
+  begin
+    if spoilersArmedData^.SpoilersArmed <> 0 then
+      SetCurrentState(FSXStateUIDOn)
+    else
+      SetCurrentState(FSXStateUIDOff);
+  end else
+    SetCurrentState(FSXStateUIDSpoilersNotAvailable);
+end;
+
 
 
 { TFSXLightStatesFunctionWorker }

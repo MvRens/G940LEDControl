@@ -278,6 +278,26 @@ const
       FSXStateDisplayNamePitotOnIceFull = 'Heat on - Fully iced';
 
 
+  FSXFunctionUIDAutoBrake = 'autoBrake';
+    FSXFunctionDisplayNameAutoBrake = 'Auto brake';
+
+    FSXStateUIDAutoBrake0 = '0';
+    FSXStateUIDAutoBrake1 = '1';
+    FSXStateUIDAutoBrake2 = '2';
+    FSXStateUIDAutoBrake3 = '3';
+    FSXStateUIDAutoBrake4 = '4';
+
+    FSXStateDisplayNameAutoBrake0 = 'Off / not available';
+    FSXStateDisplayNameAutoBrake1 = '1';
+    FSXStateDisplayNameAutoBrake2 = '2';
+    FSXStateDisplayNameAutoBrake3 = '3';
+    FSXStateDisplayNameAutoBrake4 = '4';
+
+
+  FSXFunctionUIDSpoilersArmed = 'spoilersArmed';
+    FSXFunctionDisplayNameSpoilersArmed = 'Auto-spoilers armed';
+
+
   FSXMenuProfiles = 'G940 Profile';
   FSXMenuProfileFormat = 'G940: %s';
   FSXMenuProfileFormatCascaded = '%s';

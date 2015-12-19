@@ -54,6 +54,13 @@ type
     function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
+  TFSXAutoBrakeFunction = class(TCustomFSXFunction)
+  protected
+    function GetCategoryName: string; override;
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
   TFSXPressDumpSwitchFunction = class(TCustomFSXInvertedOnOffFunction)
   protected
     function GetCategoryName: string; override;
@@ -114,6 +121,13 @@ type
   end;
 
   TFSXSpoilersFunction = class(TCustomFSXFunction)
+  protected
+    function GetCategoryName: string; override;
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXSpoilersArmedFunction = class(TCustomFSXFunction)
   protected
     function GetCategoryName: string; override;
     procedure RegisterStates; override;
@@ -346,6 +360,27 @@ begin
 end;
 
 
+{ TFSXAutoBrakeFunction }
+function TFSXAutoBrakeFunction.GetCategoryName: string;
+begin
+  Result := FSXCategorySystems;
+end;
+
+procedure TFSXAutoBrakeFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDAutoBrake0, FSXStateDisplayNameAutoBrake0,  lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDAutoBrake1, FSXStateDisplayNameAutoBrake1,  lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDAutoBrake2, FSXStateDisplayNameAutoBrake2,  lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDAutoBrake3, FSXStateDisplayNameAutoBrake3,  lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDAutoBrake4, FSXStateDisplayNameAutoBrake4,  lcRed));
+end;
+
+function TFSXAutoBrakeFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXAutoBrakeFunctionWorker;
+end;
+
+
 { TFSXPressDumpSwitchFunction }
 function TFSXPressDumpSwitchFunction.GetCategoryName: string;
 begin
@@ -527,6 +562,27 @@ end;
 function TFSXSpoilersFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXSpoilersFunctionWorker;
+end;
+
+
+{ TFSXSpoilersArmedFunction }
+function TFSXSpoilersArmedFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryControlSurfaces;
+end;
+
+
+procedure TFSXSpoilersArmedFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDSpoilersNotAvailable, FSXStateDisplayNameSpoilersNotAvailable,  lcOff));
+  RegisterState(TLEDState.Create(FSXStateUIDOn,                   FSXStateDisplayNameOn,                    lcRed));
+  RegisterState(TLEDState.Create(FSXStateUIDOff,                  FSXStateDisplayNameOff,                   lcGreen));
+end;
+
+
+function TFSXSpoilersArmedFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXSpoilersArmedFunctionWorker;
 end;
 
 

@@ -13,6 +13,7 @@ uses
   Vcl.StdCtrls,
   Winapi.Messages,
   Winapi.Windows,
+  Vcl.AppEvnts,
 
   OtlComm,
   OtlEventMonitor,
@@ -27,7 +28,7 @@ uses
   LEDStateConsumer,
   Profile,
   ProfileManager,
-  Settings, Vcl.AppEvnts;
+  Settings;
 
 
 const

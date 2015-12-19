@@ -40,8 +40,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     Margins.Bottom = 0
     Align = alBottom
     BevelOuter = bvNone
-    TabOrder = 3
-    ExplicitTop = 441
+    TabOrder = 2
     DesignSize = (
       692
       43)
@@ -76,42 +75,6 @@ object ButtonFunctionForm: TButtonFunctionForm
       TabOrder = 1
     end
   end
-  object vstFunctions: TVirtualStringTree
-    AlignWithMargins = True
-    Left = 8
-    Top = 60
-    Width = 257
-    Height = 450
-    Margins.Left = 8
-    Margins.Top = 8
-    Margins.Right = 0
-    Margins.Bottom = 0
-    Align = alLeft
-    Header.AutoSizeIndex = 0
-    Header.Font.Charset = DEFAULT_CHARSET
-    Header.Font.Color = clWindowText
-    Header.Font.Height = -11
-    Header.Font.Name = 'Tahoma'
-    Header.Font.Style = []
-    Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
-    IncrementalSearch = isAll
-    TabOrder = 1
-    TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoSort, toAutoTristateTracking, toAutoDeleteMovedNodes]
-    TreeOptions.MiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toWheelPanning, toEditOnClick]
-    TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
-    TreeOptions.SelectionOptions = [toFullRowSelect]
-    OnFocusChanged = vstFunctionsFocusChanged
-    OnGetText = vstFunctionsGetText
-    OnPaintText = vstFunctionsPaintText
-    OnIncrementalSearch = vstFunctionsIncrementalSearch
-    ExplicitHeight = 373
-    Columns = <
-      item
-        Position = 0
-        Width = 253
-        WideText = 'Available functions'
-      end>
-  end
   object pnlFunction: TPanel
     AlignWithMargins = True
     Left = 273
@@ -124,8 +87,7 @@ object ButtonFunctionForm: TButtonFunctionForm
     Margins.Bottom = 0
     Align = alClient
     BevelOuter = bvNone
-    TabOrder = 2
-    ExplicitHeight = 373
+    TabOrder = 1
     object pnlName: TPanel
       Left = 0
       Top = 0
@@ -197,7 +159,6 @@ object ButtonFunctionForm: TButtonFunctionForm
       Align = alClient
       BorderStyle = bsNone
       TabOrder = 1
-      ExplicitHeight = 276
     end
   end
   object pnlHeader: TPanel
@@ -264,6 +225,82 @@ object ButtonFunctionForm: TButtonFunctionForm
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+    end
+  end
+  object pnlFunctions: TPanel
+    AlignWithMargins = True
+    Left = 8
+    Top = 60
+    Width = 257
+    Height = 450
+    Margins.Left = 8
+    Margins.Top = 8
+    Margins.Right = 0
+    Margins.Bottom = 0
+    Align = alLeft
+    BevelOuter = bvNone
+    TabOrder = 3
+    ExplicitLeft = 265
+    ExplicitTop = 52
+    ExplicitHeight = 458
+    object vstFunctions: TVirtualStringTree
+      Left = 0
+      Top = 29
+      Width = 257
+      Height = 421
+      Align = alClient
+      Header.AutoSizeIndex = 0
+      Header.Font.Charset = DEFAULT_CHARSET
+      Header.Font.Color = clWindowText
+      Header.Font.Height = -11
+      Header.Font.Name = 'Tahoma'
+      Header.Font.Style = []
+      Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
+      IncrementalSearch = isAll
+      TabOrder = 1
+      TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoSort, toAutoTristateTracking, toAutoDeleteMovedNodes]
+      TreeOptions.MiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toWheelPanning, toEditOnClick]
+      TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
+      TreeOptions.SelectionOptions = [toFullRowSelect]
+      OnFocusChanged = vstFunctionsFocusChanged
+      OnGetText = vstFunctionsGetText
+      OnPaintText = vstFunctionsPaintText
+      OnIncrementalSearch = vstFunctionsIncrementalSearch
+      ExplicitTop = 8
+      ExplicitHeight = 450
+      Columns = <
+        item
+          Position = 0
+          Width = 253
+          WideText = 'Available functions'
+        end>
+    end
+    object edtSearch: TEdit
+      Tag = 1
+      AlignWithMargins = True
+      Left = 0
+      Top = 0
+      Width = 257
+      Height = 21
+      Margins.Left = 0
+      Margins.Top = 0
+      Margins.Right = 0
+      Margins.Bottom = 8
+      Align = alTop
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clGrayText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      Text = 'Search...'
+      OnChange = edtSearchChange
+      OnEnter = edtSearchEnter
+      OnExit = edtSearchExit
+      ExplicitLeft = 72
+      ExplicitTop = 216
+      ExplicitWidth = 121
     end
   end
 end

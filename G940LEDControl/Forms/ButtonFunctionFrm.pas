@@ -43,6 +43,8 @@ type
     lblCurrentFunction: TLabel;
     lblCurrentCategory: TLabel;
     bvlFooter: TBevel;
+    pnlFunctions: TPanel;
+    edtSearch: TEdit;
 
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -51,6 +53,9 @@ type
     procedure vstFunctionsFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
     procedure vstFunctionsIncrementalSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; const SearchText: string; var Result: Integer);
     procedure btnOKClick(Sender: TObject);
+    procedure edtSearchChange(Sender: TObject);
+    procedure edtSearchEnter(Sender: TObject);
+    procedure edtSearchExit(Sender: TObject);
   private
     FProfile: TProfile;
     FButtonIndex: Integer;
@@ -64,6 +69,7 @@ type
     procedure Initialize(AProfile: TProfile; AButtonIndex: Integer);
 
     procedure LoadFunctions;
+    procedure ApplyFilter(const AFilter: string);
     procedure SetFunction(AProvider: ILEDFunctionProvider; AFunction: ILEDFunction);
 
     procedure LoadStates(AProvider: ILEDFunctionProvider; AFunction: ILEDMultiStateFunction);
@@ -99,6 +105,7 @@ type
 implementation
 uses
   System.Math,
+  System.StrUtils,
   System.SysUtils,
   Winapi.Windows,
 
@@ -225,6 +232,55 @@ begin
       end;
     finally
       FreeAndNil(categoryNodes);
+    end;
+  finally
+    vstFunctions.EndUpdate;
+  end;
+end;
+
+
+procedure TButtonFunctionForm.ApplyFilter(const AFilter: string);
+var
+  hasFilter: Boolean;
+  categoryNode: PVirtualNode;
+  functionNode: PVirtualNode;
+  hasVisibleChildren: Boolean;
+  nodeData: PFunctionNodeData;
+
+begin
+  hasFilter := (Length(AFilter) > 0);
+
+  vstFunctions.BeginUpdate;
+  try
+    categoryNode := vstFunctions.GetFirst;
+    while Assigned(categoryNode) do
+    begin
+      hasVisibleChildren := False;
+
+      functionNode := vstFunctions.GetFirstChild(categoryNode);
+      while Assigned(functionNode) do
+      begin
+        nodeData := vstFunctions.GetNodeData(functionNode);
+        if nodeData^.NodeType = ntFunction then
+        begin
+          if hasFilter and (not ContainsText(nodeData^.LEDFunction.GetDisplayName, AFilter)) then
+            Exclude(functionNode^.States, vsVisible)
+          else
+            Include(functionNode^.States, vsVisible);
+        end;
+
+        if vsVisible in functionNode^.States then
+          hasVisibleChildren := True;
+
+        functionNode := vstFunctions.GetNextSibling(functionNode);
+      end;
+
+      if hasVisibleChildren then
+        Include(categoryNode^.States, vsVisible)
+      else
+        Exclude(categoryNode^.States, vsVisible);
+
+      categoryNode := vstFunctions.GetNextSibling(categoryNode);
     end;
   finally
     vstFunctions.EndUpdate;
@@ -474,6 +530,39 @@ begin
   else
     TargetCanvas.Font.Style := [];
 end;
+
+
+procedure TButtonFunctionForm.edtSearchChange(Sender: TObject);
+begin
+  if edtSearch.Tag = 1 then
+    ApplyFilter('')
+  else
+    ApplyFilter(Trim(edtSearch.Text));
+end;
+
+
+procedure TButtonFunctionForm.edtSearchEnter(Sender: TObject);
+begin
+  if edtSearch.Tag = 1 then
+  begin
+    edtSearch.Text := '';
+    edtSearch.Font.Color := clWindowText;
+    edtSearch.Tag := 0;
+  end;
+end;
+
+
+procedure TButtonFunctionForm.edtSearchExit(Sender: TObject);
+begin
+  if Length(Trim(edtSearch.Text)) = 0 then
+  begin
+    edtSearch.Tag := 1;
+    edtSearch.Text := 'Search...';
+    edtSearch.Font.Color := clGrayText;
+  end else
+    edtSearch.Tag := 0;
+end;
+
 
 
 { TStateControlInfo }
