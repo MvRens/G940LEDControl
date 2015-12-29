@@ -61,7 +61,7 @@ type
   end;
 
 
-  TFSXSimConnectState = (scsDisconnected, scsConnected, scsFailed);
+  TFSXSimConnectState = (scsDisconnected, scsConnecting, scsConnected, scsFailed);
 
   IFSXSimConnectStateObserver = interface
     ['{0508904F-8189-479D-AF70-E98B00C9D9B2}']

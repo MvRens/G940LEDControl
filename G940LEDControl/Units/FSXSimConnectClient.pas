@@ -436,6 +436,8 @@ begin
   if SimConnectHandle <> 0 then
     exit;
 
+  TFSXSimConnectStateMonitor.SetCurrentState(scsConnecting);
+
   TrySimConnect('FSX-SimConnect.dll');
   if SimConnectHandle = 0 then
     TrySimConnect('FSX-SE-SimConnect.dll');

@@ -35,9 +35,15 @@ type
   end;
 
   TFSXGearFunctionWorker = class(TCustomFSXFunctionWorker)
+  private
+    FGearVariableName: string;
+    FGearPercentageFloat: Boolean;
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
+  public
+    property GearVariableName: string read FGearVariableName write FGearVariableName;
+    property GearPercentageFloat: Boolean read FGearPercentageFloat write FGearPercentageFloat;
   end;
 
   TFSXParkingBrakeFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
@@ -98,6 +104,18 @@ type
 
   { Control surfaces }
   TFSXFlapsFunctionWorker = class(TCustomFSXFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+    procedure HandleData(AData: Pointer); override;
+  end;
+
+  TFSXFlapsHandleIndexFunctionWorker = class(TCustomFSXFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+    procedure HandleData(AData: Pointer); override;
+  end;
+
+  TFSXFlapsHandlePercentageFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
@@ -277,10 +295,10 @@ end;
 { TFSXGearFunctionWorker }
 procedure TFSXGearFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
-  ADefinition.AddVariable('IS GEAR RETRACTABLE',     FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
-  ADefinition.AddVariable('GEAR TOTAL PCT EXTENDED', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
-  ADefinition.AddVariable('GEAR DAMAGE BY SPEED',    FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
-  ADefinition.AddVariable('GEAR SPEED EXCEEDED',     FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('IS GEAR RETRACTABLE',  FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable(GearVariableName,       FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+  ADefinition.AddVariable('GEAR DAMAGE BY SPEED', FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('GEAR SPEED EXCEEDED',  FSX_UNIT_BOOL,    SIMCONNECT_DATAType_INT32);
 end;
 
 
@@ -289,13 +307,14 @@ type
   PGearData = ^TGearData;
   TGearData = packed record
     IsGearRetractable: Cardinal;
-    TotalPctExtended: Double;
+    PercentageExtended: Double;
     DamageBySpeed: Integer;
     SpeedExceeded: Integer;
   end;
 
 var
   gearData: PGearData;
+  gearExtended: Double;
 
 begin
   gearData := AData;
@@ -308,7 +327,12 @@ begin
 
   else if gearData^.IsGearRetractable <> 0 then
   begin
-    case Trunc(gearData ^.TotalPctExtended * 100) of
+    if GearPercentageFloat then
+      gearExtended := gearData^.PercentageExtended * 100
+    else
+      gearExtended := gearData^.PercentageExtended;
+
+    case Trunc(gearExtended) of
       0:        SetCurrentState(FSXStateUIDGearRetracted);
       95..100:  SetCurrentState(FSXStateUIDGearExtended);
     else        SetCurrentState(FSXStateUIDGearBetween);
@@ -648,6 +672,90 @@ begin
       end;
   end else
     SetCurrentState(FSXStateUIDFlapsNotAvailable);
+end;
+
+
+{ TFSXFlapsHandleIndexFunctionWorker }
+procedure TFSXFlapsHandleIndexFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('FLAPS AVAILABLE', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('FLAPS HANDLE INDEX', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('FLAPS NUM HANDLE POSITIONS', FSX_UNIT_NUMBER, SIMCONNECT_DATAType_INT32);
+end;
+
+
+procedure TFSXFlapsHandleIndexFunctionWorker.HandleData(AData: Pointer);
+type
+  PFlapsData = ^TFlapsData;
+  TFlapsData = packed record
+    FlapsAvailable: Cardinal;
+    FlapsHandleIndex: Cardinal;
+    FlapsNumHandles: Cardinal;
+  end;
+
+var
+  flapsData: PFlapsData;
+
+begin
+  flapsData := AData;
+
+  if flapsData^.FlapsAvailable <> 0 then
+  begin
+    case flapsData^.FlapsHandleIndex of
+      0:  SetCurrentState(FSXStateUIDFlapsHandleIndex0);
+      1:  SetCurrentState(FSXStateUIDFlapsHandleIndex1);
+      2:  SetCurrentState(FSXStateUIDFlapsHandleIndex2);
+      3:  SetCurrentState(FSXStateUIDFlapsHandleIndex3);
+      4:  SetCurrentState(FSXStateUIDFlapsHandleIndex4);
+      5:  SetCurrentState(FSXStateUIDFlapsHandleIndex5);
+      6:  SetCurrentState(FSXStateUIDFlapsHandleIndex6);
+    else
+          SetCurrentState(FSXStateUIDFlapsHandleIndex7);
+    end;
+  end else
+    SetCurrentState(FSXStateUIDFlapsHandleIndexNotAvailable);
+end;
+
+
+{ TFSXFlapsHandlePercentageFunctionWorker }
+procedure TFSXFlapsHandlePercentageFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('FLAPS AVAILABLE', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('FLAPS HANDLE PERCENT', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+end;
+
+
+procedure TFSXFlapsHandlePercentageFunctionWorker.HandleData(AData: Pointer);
+type
+  PFlapsData = ^TFlapsData;
+  TFlapsData = packed record
+    FlapsAvailable: Cardinal;
+    FlapsHandlePercent: Double;
+  end;
+
+var
+  flapsData: PFlapsData;
+
+begin
+  flapsData := AData;
+
+  if flapsData^.FlapsAvailable <> 0 then
+  begin
+    case Trunc(flapsData^.FlapsHandlePercent) of
+      0..9:     SetCurrentState(FSXStateUIDFlapsHandlePercentage0To10);
+      10..19:   SetCurrentState(FSXStateUIDFlapsHandlePercentage10To20);
+      20..29:   SetCurrentState(FSXStateUIDFlapsHandlePercentage20To30);
+      30..39:   SetCurrentState(FSXStateUIDFlapsHandlePercentage30To40);
+      40..49:   SetCurrentState(FSXStateUIDFlapsHandlePercentage40To50);
+      50..59:   SetCurrentState(FSXStateUIDFlapsHandlePercentage50To60);
+      60..69:   SetCurrentState(FSXStateUIDFlapsHandlePercentage60To70);
+      70..79:   SetCurrentState(FSXStateUIDFlapsHandlePercentage70To80);
+      80..89:   SetCurrentState(FSXStateUIDFlapsHandlePercentage80To90);
+    else
+                SetCurrentState(FSXStateUIDFlapsHandlePercentage90To100);
+    end;
+  end else
+    SetCurrentState(FSXStateUIDFlapsHandlePercentageNotAvailable);
 end;
 
 

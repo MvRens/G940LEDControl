@@ -75,6 +75,18 @@ const
     FSXStateDisplayNameGearSpeedExceeded = 'Speed exceeded';
     FSXStateDisplayNameGearDamageBySpeed = 'Damage by speed';
 
+  FSXFunctionUIDLeftGear = 'leftGear';
+    FSXFunctionDisplayNameLeftGear = 'Left main landing gear';
+
+  FSXFunctionUIDRightGear = 'rightGear';
+    FSXFunctionDisplayNameRightGear = 'Right main landing gear';
+
+  FSXFunctionUIDCenterGear = 'centerGear';
+    FSXFunctionDisplayNameCenterGear = 'Nose landing gear';
+
+  FSXFunctionUIDTailGear = 'tailGear';
+    FSXFunctionDisplayNameTailGear = 'Tail landing gear';
+
 
   FSXFunctionUIDLandingLights = 'landingLights';
     FSXFunctionDisplayNameLandingLights = 'Landing lights';
@@ -145,6 +157,58 @@ const
     FSXStateDisplayNameFlapsExtended = 'Extended';
     FSXStateDisplayNameFlapsSpeedExceeded = 'Speed exceeded';
     FSXStateDisplayNameFlapsDamageBySpeed = 'Damage by speed';
+
+
+  FSXFunctionUIDFlapsHandleIndex = 'flapsHandleIndex';
+    FSXFunctionDisplayNameFlapsHandleIndex = 'Flaps (handle position)';
+
+    FSXStateUIDFlapsHandleIndexNotAvailable = 'notAvailable';
+    FSXStateUIDFlapsHandleIndex0 = '0';
+    FSXStateUIDFlapsHandleIndex1 = '1';
+    FSXStateUIDFlapsHandleIndex2 = '2';
+    FSXStateUIDFlapsHandleIndex3 = '3';
+    FSXStateUIDFlapsHandleIndex4 = '4';
+    FSXStateUIDFlapsHandleIndex5 = '5';
+    FSXStateUIDFlapsHandleIndex6 = '6';
+    FSXStateUIDFlapsHandleIndex7 = '7';
+
+    FSXStateDisplayNameFlapsHandleIndexNotAvailable = 'notAvailable';
+    FSXStateDisplayNameFlapsHandleIndex0 = 'Position 0 (Up)';
+    FSXStateDisplayNameFlapsHandleIndex1 = 'Position 1';
+    FSXStateDisplayNameFlapsHandleIndex2 = 'Position 2';
+    FSXStateDisplayNameFlapsHandleIndex3 = 'Position 3';
+    FSXStateDisplayNameFlapsHandleIndex4 = 'Position 4';
+    FSXStateDisplayNameFlapsHandleIndex5 = 'Position 5';
+    FSXStateDisplayNameFlapsHandleIndex6 = 'Position 6';
+    FSXStateDisplayNameFlapsHandleIndex7 = 'Position 7';
+
+
+  FSXFunctionUIDFlapsHandlePercentage = 'flapsHandlePercentage';
+    FSXFunctionDisplayNameFlapsHandlePercentage = 'Flaps (handle position - percentage)';
+
+    FSXStateUIDFlapsHandlePercentageNotAvailable = 'notAvailable';
+    FSXStateUIDFlapsHandlePercentage0To10 = '0To10';
+    FSXStateUIDFlapsHandlePercentage10To20 = '10To20';
+    FSXStateUIDFlapsHandlePercentage20To30 = '20To30';
+    FSXStateUIDFlapsHandlePercentage30To40 = '30To40';
+    FSXStateUIDFlapsHandlePercentage40To50 = '40To50';
+    FSXStateUIDFlapsHandlePercentage50To60 = '50To60';
+    FSXStateUIDFlapsHandlePercentage60To70 = '60To70';
+    FSXStateUIDFlapsHandlePercentage70To80 = '70To80';
+    FSXStateUIDFlapsHandlePercentage80To90 = '80To90';
+    FSXStateUIDFlapsHandlePercentage90To100 = '90To100';
+
+    FSXStateDisplayNameFlapsHandlePercentageNotAvailable = 'No flaps';
+    FSXStateDisplayNameFlapsHandlePercentage0To10 = '0% - 10%';
+    FSXStateDisplayNameFlapsHandlePercentage10To20 = '10% - 20%';
+    FSXStateDisplayNameFlapsHandlePercentage20To30 = '20% - 30%';
+    FSXStateDisplayNameFlapsHandlePercentage30To40 = '30% - 40%';
+    FSXStateDisplayNameFlapsHandlePercentage40To50 = '40% - 50%';
+    FSXStateDisplayNameFlapsHandlePercentage50To60 = '50% - 60%';
+    FSXStateDisplayNameFlapsHandlePercentage60To70 = '60% - 70%';
+    FSXStateDisplayNameFlapsHandlePercentage70To80 = '70% - 80%';
+    FSXStateDisplayNameFlapsHandlePercentage80To90 = '80% - 90%';
+    FSXStateDisplayNameFlapsHandlePercentage90To100 = '90% - 100%';
 
 
   FSXFunctionUIDSpoilers = 'spoilers';

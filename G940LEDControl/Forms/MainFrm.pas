@@ -266,8 +266,9 @@ const
   TextStateNotFound = 'Not found';
   TextStateFound = 'Connected';
 
+  TextFSXConnecting = 'Connecting...';
   TextFSXConnected = 'Connected';
-  TextFSXDisconnected = 'Not connected';
+  TextFSXDisconnected = 'No buttons configured';
   TextFSXFailed = 'Failed to connect';
 
 
@@ -312,6 +313,8 @@ begin
 
   PageControl.ActivePageIndex := 0;
   AlignBevel(bvlProfileSwitching, lblProfileSwitching);
+
+  SetFSXState(TextFSXDisconnected, False);
 
   FEventMonitor := TOmniEventMonitor.Create(Self);
 
@@ -1252,6 +1255,9 @@ begin
   case state of
     scsDisconnected:
       SetFSXState(TextFSXDisconnected, False);
+
+    scsConnecting:
+      SetFSXState(TextFSXConnecting, False);
 
     scsConnected:
       SetFSXState(TextFSXConnected, True);

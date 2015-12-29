@@ -798,9 +798,9 @@ object MainForm: TMainForm
       object lblFSXState: TLabel
         Left = 42
         Top = 23
-        Width = 70
+        Width = 31
         Height = 13
-        Caption = 'Not connected'
+        Caption = 'Status'
       end
     end
     object pnlG940: TPanel

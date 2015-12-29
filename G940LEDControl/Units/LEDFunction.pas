@@ -11,6 +11,7 @@ uses
 
 type
   TCustomLEDFunctionWorker = class;
+  TCustomLEDMultiStateFunctionWorker = class;
   TCustomLEDMultiStateFunctionWorkerClass = class of TCustomLEDMultiStateFunctionWorker;
 
 
@@ -53,6 +54,7 @@ type
 
     function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; virtual; abstract;
     function DoCreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''): TCustomLEDFunctionWorker; virtual;
+    procedure InitializeWorker(AWorker: TCustomLEDMultiStateFunctionWorker); virtual;
   protected
     function CreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''): ILEDFunctionWorker; override;
 
@@ -185,8 +187,19 @@ end;
 
 
 function TCustomMultiStateLEDFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string): TCustomLEDFunctionWorker;
+var
+  worker: TCustomLEDMultiStateFunctionWorker;
+
 begin
-  Result := GetWorkerClass.Create(FProviderUID, GetUID, Self, ASettings, APreviousState);
+  worker := GetWorkerClass.Create(FProviderUID, GetUID, Self, ASettings, APreviousState);
+  InitializeWorker(worker);
+
+  Result := worker;
+end;
+
+
+procedure TCustomMultiStateLEDFunction.InitializeWorker(AWorker: TCustomLEDMultiStateFunctionWorker);
+begin
 end;
 
 

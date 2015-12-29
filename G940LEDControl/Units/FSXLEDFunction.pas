@@ -42,10 +42,44 @@ type
     function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
-  TFSXGearFunction = class(TCustomFSXSystemsFunction)
+  TCustomFSXGearFunction = class(TCustomFSXSystemsFunction)
   protected
     procedure RegisterStates; override;
     function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+    procedure InitializeWorker(AWorker: TCustomLEDMultiStateFunctionWorker); override;
+  protected
+    function GetGearVariableName: string; virtual; abstract;
+    function GetGearPercentageFloat: Boolean; virtual; abstract;
+  end;
+
+  TFSXGearFunction = class(TCustomFSXGearFunction)
+  protected
+    function GetGearVariableName: string; override;
+    function GetGearPercentageFloat: Boolean; override;
+  end;
+
+  TFSXLeftGearFunction = class(TCustomFSXGearFunction)
+  protected
+    function GetGearVariableName: string; override;
+    function GetGearPercentageFloat: Boolean; override;
+  end;
+
+  TFSXRightGearFunction = class(TCustomFSXGearFunction)
+  protected
+    function GetGearVariableName: string; override;
+    function GetGearPercentageFloat: Boolean; override;
+  end;
+
+  TFSXCenterGearFunction = class(TCustomFSXGearFunction)
+  protected
+    function GetGearVariableName: string; override;
+    function GetGearPercentageFloat: Boolean; override;
+  end;
+
+  TFSXTailGearFunction = class(TCustomFSXGearFunction)
+  protected
+    function GetGearVariableName: string; override;
+    function GetGearPercentageFloat: Boolean; override;
   end;
 
   TFSXParkingBrakeFunction = class(TCustomFSXInvertedOnOffFunction)
@@ -120,6 +154,21 @@ type
     function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
+  TFSXFlapsHandleIndexFunction = class(TCustomFSXFunction)
+  protected
+    function GetCategoryName: string; override;
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXFlapsHandlePercentageFunction = class(TCustomFSXFunction)
+  protected
+    function GetCategoryName: string; override;
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+
   TFSXSpoilersFunction = class(TCustomFSXFunction)
   protected
     function GetCategoryName: string; override;
@@ -141,7 +190,7 @@ type
     function GetCategoryName: string; override;
 
     function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
-    function DoCreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''): TCustomLEDFunctionWorker; override;
+    procedure InitializeWorker(AWorker: TCustomLEDMultiStateFunctionWorker); override;
   protected
     function GetLightMask: Integer; virtual; abstract;
   end;
@@ -331,7 +380,7 @@ end;
 
 
 { TFSXGearFunction }
-procedure TFSXGearFunction.RegisterStates;
+procedure TCustomFSXGearFunction.RegisterStates;
 begin
   RegisterState(TLEDState.Create(FSXStateUIDGearNotRetractable, FSXStateDisplayNameGearNotRetractable,  lcOff));
   RegisterState(TLEDState.Create(FSXStateUIDGearRetracted,      FSXStateDisplayNameGearRetracted,       lcRed));
@@ -342,9 +391,87 @@ begin
 end;
 
 
-function TFSXGearFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+function TCustomFSXGearFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXGearFunctionWorker;
+end;
+
+
+procedure TCustomFSXGearFunction.InitializeWorker(AWorker: TCustomLEDMultiStateFunctionWorker);
+var
+  gearFunctionWorker: TFSXGearFunctionWorker;
+
+begin
+  gearFunctionWorker := (AWorker as TFSXGearFunctionWorker);
+  gearFunctionWorker.GearVariableName := GetGearVariableName;
+  gearFunctionWorker.GearPercentageFloat := GetGearPercentageFloat;
+
+  // Note: inherited sets SimConnect, which triggers RegisterVariables
+  inherited InitializeWorker(AWorker);
+end;
+
+
+{ TFSXGearFunction }
+function TFSXGearFunction.GetGearVariableName: string;
+begin
+  Result := 'GEAR TOTAL PCT EXTENDED';
+end;
+
+function TFSXGearFunction.GetGearPercentageFloat: Boolean;
+begin
+  Result :=  True;
+end;
+
+
+{ TFSXLefGearFunction }
+function TFSXLeftGearFunction.GetGearVariableName: string;
+begin
+  Result := 'GEAR LEFT POSITION';
+end;
+
+
+function TFSXLeftGearFunction.GetGearPercentageFloat: Boolean;
+begin
+  Result :=  False;
+end;
+
+
+{ TFSXRightGearFunction }
+function TFSXRightGearFunction.GetGearVariableName: string;
+begin
+  Result := 'GEAR RIGHT POSITION';
+end;
+
+
+function TFSXRightGearFunction.GetGearPercentageFloat: Boolean;
+begin
+  Result :=  False;
+end;
+
+
+{ TFSXCenterGearFunction }
+function TFSXCenterGearFunction.GetGearVariableName: string;
+begin
+  Result := 'GEAR CENTER POSITION';
+end;
+
+
+function TFSXCenterGearFunction.GetGearPercentageFloat: Boolean;
+begin
+  Result := False;
+end;
+
+
+{ TFSXTailGearFunction }
+function TFSXTailGearFunction.GetGearVariableName: string;
+begin
+  Result := 'GEAR TAIL POSITION';
+end;
+
+
+function TFSXTailGearFunction.GetGearPercentageFloat: Boolean;
+begin
+  Result := False;
 end;
 
 
@@ -543,6 +670,62 @@ begin
 end;
 
 
+{ TFSXFlapsHandleIndexFunction }
+function TFSXFlapsHandleIndexFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryControlSurfaces;
+end;
+
+
+procedure TFSXFlapsHandleIndexFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandleIndexNotAvailable, FSXStateDisplayNameFlapsHandleIndexNotAvailable,  lcOff));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandleIndex0,            FSXStateDisplayNameFlapsHandleIndex0,             lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandleIndex1,            FSXStateDisplayNameFlapsHandleIndex1,             lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandleIndex2,            FSXStateDisplayNameFlapsHandleIndex2,             lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandleIndex3,            FSXStateDisplayNameFlapsHandleIndex3,             lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandleIndex4,            FSXStateDisplayNameFlapsHandleIndex4,             lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandleIndex5,            FSXStateDisplayNameFlapsHandleIndex5,             lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandleIndex6,            FSXStateDisplayNameFlapsHandleIndex6,             lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandleIndex7,            FSXStateDisplayNameFlapsHandleIndex7,             lcAmber));
+end;
+
+
+function TFSXFlapsHandleIndexFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXFlapsHandleIndexFunctionWorker;
+end;
+
+
+{ TFSXFlapsHandlePercentageFunction }
+function TFSXFlapsHandlePercentageFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryControlSurfaces;
+end;
+
+
+procedure TFSXFlapsHandlePercentageFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandlePercentageNotAvailable,  FSXStateDisplayNameFlapsHandlePercentageNotAvailable, lcOff));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandlePercentage0To10,         FSXStateDisplayNameFlapsHandlePercentage0To10,        lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandlePercentage10To20,        FSXStateDisplayNameFlapsHandlePercentage10To20,       lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandlePercentage20To30,        FSXStateDisplayNameFlapsHandlePercentage20To30,       lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandlePercentage30To40,        FSXStateDisplayNameFlapsHandlePercentage30To40,       lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandlePercentage40To50,        FSXStateDisplayNameFlapsHandlePercentage40To50,       lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandlePercentage50To60,        FSXStateDisplayNameFlapsHandlePercentage50To60,       lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandlePercentage60To70,        FSXStateDisplayNameFlapsHandlePercentage60To70,       lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandlePercentage70To80,        FSXStateDisplayNameFlapsHandlePercentage70To80,       lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandlePercentage80To90,        FSXStateDisplayNameFlapsHandlePercentage80To90,       lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFlapsHandlePercentage90To100,       FSXStateDisplayNameFlapsHandlePercentage90To100,      lcRed));
+end;
+
+
+function TFSXFlapsHandlePercentageFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXFlapsHandlePercentageFunctionWorker;
+end;
+
+
 { TFSXSpoilersFunction }
 function TFSXSpoilersFunction.GetCategoryName: string;
 begin
@@ -599,10 +782,12 @@ begin
 end;
 
 
-function TCustomFSXLightFunction.DoCreateWorker(ASettings: ILEDFunctionWorkerSettings; const APreviousState: string): TCustomLEDFunctionWorker;
+procedure TCustomFSXLightFunction.InitializeWorker(AWorker: TCustomLEDMultiStateFunctionWorker);
 begin
-  Result := inherited DoCreateWorker(ASettings, APreviousState);
-  (Result as TFSXLightStatesFunctionWorker).StateMask := GetLightMask;
+  (AWorker as TFSXLightStatesFunctionWorker).StateMask := GetLightMask;
+
+  // Note: inherited sets SimConnect, which triggers RegisterVariables
+  inherited InitializeWorker(AWorker);
 end;
 
 
