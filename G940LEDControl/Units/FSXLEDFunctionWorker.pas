@@ -68,6 +68,26 @@ type
     procedure HandleData(AData: Pointer); override;
   end;
 
+  TFSXTailWheelLockFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+  end;
+
+  TFSXCustomFloatFunctionWorker = class(TCustomFSXFunctionWorker)
+  protected
+    procedure HandleData(AData: Pointer); override;
+  end;
+
+  TFSXFloatLeftFunctionWorker = class(TFSXCustomFloatFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+  end;
+
+  TFSXFloatRightFunctionWorker = class(TFSXCustomFloatFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+  end;
+
 
   { Instruments }
   TFSXPitotOnOffFunctionWorker = class(TCustomFSXOnOffFunctionWorker)
@@ -128,6 +148,12 @@ type
   end;
 
   TFSXSpoilersArmedFunctionWorker = class(TCustomFSXFunctionWorker)
+  protected
+    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
+    procedure HandleData(AData: Pointer); override;
+  end;
+
+  TFSXWaterRudderFunctionWorker = class(TCustomFSXFunctionWorker)
   protected
     procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); override;
     procedure HandleData(AData: Pointer); override;
@@ -342,6 +368,42 @@ begin
 end;
 
 
+{ TFSXCustomFloatFunctionWorker }
+procedure TFSXCustomFloatFunctionWorker.HandleData(AData: Pointer);
+type
+  PFloatData = ^TFloatData;
+  TFloatData = packed record
+    PercentageExtended: Double;
+  end;
+
+var
+  floatData: PFloatData;
+
+begin
+  floatData := AData;
+
+  case Trunc(floatData^.PercentageExtended) of
+    0:        SetCurrentState(FSXStateUIDFloatRetracted);
+    95..100:  SetCurrentState(FSXStateUIDFloatExtended);
+  else        SetCurrentState(FSXStateUIDFloatBetween);
+  end;
+end;
+
+
+{ TFSXFloatLeftFunctionWorker }
+procedure TFSXFloatLeftFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('RETRACT LEFT FLOAT EXTENDED', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+end;
+
+
+{ TFSXFloatRightFunctionWorker }
+procedure TFSXFloatRightFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('RETRACT RIGHT FLOAT EXTENDED', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+end;
+
+
 { TFSXParkingBrakeFunctionWorker }
 procedure TFSXParkingBrakeFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
 begin
@@ -400,6 +462,13 @@ begin
     95..100:  SetCurrentState(FSXStateUIDTailHookBetween);
   else        SetCurrentState(FSXStateUIDTailHookExtended);
   end;
+end;
+
+
+{ TFSXTailWheelLockFunctionWorker }
+procedure TFSXTailWheelLockFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('TAILWHEEL LOCK ON', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
 end;
 
 
@@ -825,6 +894,33 @@ begin
     SetCurrentState(FSXStateUIDSpoilersNotAvailable);
 end;
 
+
+{ TFSXWaterRudderFunctionWorker }
+procedure TFSXWaterRudderFunctionWorker.RegisterVariables(ADefinition: IFSXSimConnectDefinition);
+begin
+  ADefinition.AddVariable('WATER RUDDER HANDLE POSITION', FSX_UNIT_PERCENT, SIMCONNECT_DATAType_FLOAT64);
+end;
+
+
+procedure TFSXWaterRudderFunctionWorker.HandleData(AData: Pointer);
+type
+  PWaterRudderData = ^TWaterRudderData;
+  TWaterRudderData = packed record
+    WaterRudderHandlePercent: Double;
+  end;
+
+var
+  waterRudderData: PWaterRudderData;
+
+begin
+  waterRudderData := AData;
+
+  case Trunc(WaterRudderData^.WaterRudderHandlePercent) of
+    0..5:     SetCurrentState(FSXStateUIDWaterRudderRetracted);
+    95..100:  SetCurrentState(FSXStateUIDWaterRudderExtended);
+  else        SetCurrentState(FSXStateUIDWaterRudderBetween);
+  end;
+end;
 
 
 { TFSXLightStatesFunctionWorker }

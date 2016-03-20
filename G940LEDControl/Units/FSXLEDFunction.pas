@@ -107,6 +107,27 @@ type
     function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
+  TFSXTailWheelLockFunction = class(TCustomFSXSystemsFunction)
+  protected
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXCustomFloatFunction = class(TCustomFSXSystemsFunction)
+  protected
+    procedure RegisterStates; override;
+  end;
+
+  TFSXFloatLeftFunction = class(TFSXCustomFloatFunction)
+  protected
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXFloatRightFunction = class(TFSXCustomFloatFunction)
+  protected
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
 
   { Instruments }
   TFSXPitotOnOffFunction = class(TCustomFSXOnOffFunction)
@@ -177,6 +198,13 @@ type
   end;
 
   TFSXSpoilersArmedFunction = class(TCustomFSXFunction)
+  protected
+    function GetCategoryName: string; override;
+    procedure RegisterStates; override;
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
+  TFSXWaterRudderFunction = class(TCustomFSXFunction)
   protected
     function GetCategoryName: string; override;
     procedure RegisterStates; override;
@@ -535,6 +563,43 @@ begin
 end;
 
 
+{ TFSXTailWheelLockFunction }
+procedure TFSXTailWheelLockFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDTailWheelLocked,    FSXStateDisplayNameTailWheelLocked,   lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDTailWheelUnlocked,  FSXStateDisplayNameTailWheelUnlocked, lcRed));
+end;
+
+
+function TFSXTailWheelLockFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXTailWheelLockFunctionWorker;
+end;
+
+
+{ TFSXCustomFloatFunction }
+procedure TFSXCustomFloatFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDFloatRetracted, FSXStateDisplayNameFloatRetracted,  lcRed));
+  RegisterState(TLEDState.Create(FSXStateUIDFloatBetween,   FSXStateDisplayNameFloatBetween,    lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDFloatExtended,  FSXStateDisplayNameFloatExtended,   lcGreen));
+end;
+
+
+{ TFSXFloatLeftFunction }
+function TFSXFloatLeftFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXFloatLeftFunctionWorker;
+end;
+
+
+{ TFSXFloatRightFunction }
+function TFSXFloatRightFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXFloatRightFunctionWorker;
+end;
+
+
 { TFSXPitotOnOffFunction }
 function TFSXPitotOnOffFunction.GetCategoryName: string;
 begin
@@ -557,17 +622,17 @@ end;
 
 procedure TFSXPitotWarningFunction.RegisterStates;
 begin
-  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIceNone, FSXStateDisplayNamePitotOffIceNone, lcRed));
-  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIce25to50, FSXStateDisplayNamePitotOffIce25to50, lcFlashingAmberNormal));
-  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIce50to75, FSXStateDisplayNamePitotOffIce50to75, lcFlashingAmberFast));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIceNone,    FSXStateDisplayNamePitotOffIceNone, lcRed));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIce25to50,  FSXStateDisplayNamePitotOffIce25to50, lcFlashingAmberNormal));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIce50to75,  FSXStateDisplayNamePitotOffIce50to75, lcFlashingAmberFast));
   RegisterState(TLEDState.Create(FSXStateUIDPitotOffIce75to100, FSXStateDisplayNamePitotOffIce75to100, lcFlashingAmberFast));
-  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIceFull, FSXStateDisplayNamePitotOffIceFull, lcFlashingRedFast));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOffIceFull,    FSXStateDisplayNamePitotOffIceFull, lcFlashingRedFast));
 
-  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIceFull, FSXStateDisplayNamePitotOnIceFull, lcFlashingRedNormal));
-  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIce75to100, FSXStateDisplayNamePitotOnIce75to100, lcAmber));
-  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIce50to75, FSXStateDisplayNamePitotOnIce50to75, lcAmber));
-  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIce25to50, FSXStateDisplayNamePitotOnIce25to50, lcAmber));
-  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIceNone, FSXStateDisplayNamePitotOnIceNone, lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIceFull,     FSXStateDisplayNamePitotOnIceFull, lcFlashingRedNormal));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIce75to100,  FSXStateDisplayNamePitotOnIce75to100, lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIce50to75,   FSXStateDisplayNamePitotOnIce50to75, lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIce25to50,   FSXStateDisplayNamePitotOnIce25to50, lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDPitotOnIceNone,     FSXStateDisplayNamePitotOnIceNone, lcGreen));
 end;
 
 
@@ -766,6 +831,27 @@ end;
 function TFSXSpoilersArmedFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXSpoilersArmedFunctionWorker;
+end;
+
+
+{ TFSXWaterRudderFunction }
+function TFSXWaterRudderFunction.GetCategoryName: string;
+begin
+  Result := FSXCategoryControlSurfaces;
+end;
+
+
+procedure TFSXWaterRudderFunction.RegisterStates;
+begin
+  RegisterState(TLEDState.Create(FSXStateUIDWaterRudderRetracted, FSXStateDisplayNameWaterRudderRetracted,  lcGreen));
+  RegisterState(TLEDState.Create(FSXStateUIDWaterRudderBetween,   FSXStateDisplayNameWaterRudderBetween,    lcAmber));
+  RegisterState(TLEDState.Create(FSXStateUIDWaterRudderExtended,  FSXStateDisplayNameWaterRudderExtended,   lcRed));
+end;
+
+
+function TFSXWaterRudderFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXWaterRudderFunctionWorker;
 end;
 
 

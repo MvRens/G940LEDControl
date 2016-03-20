@@ -75,6 +75,22 @@ const
     FSXStateDisplayNameGearSpeedExceeded = 'Speed exceeded';
     FSXStateDisplayNameGearDamageBySpeed = 'Damage by speed';
 
+
+  FSXFunctionUIDFloatLeft = 'floatLeft';
+    FSXFunctionDisplayNameFloatLeft = 'Float (left)';
+
+    FSXStateUIDFloatRetracted = 'retracted';
+    FSXStateUIDFloatBetween = 'between';
+    FSXStateUIDFloatExtended = 'extended';
+
+    FSXStateDisplayNameFloatRetracted = 'Retracted';
+    FSXStateDisplayNameFloatBetween = 'Extending / retracting';
+    FSXStateDisplayNameFloatExtended = 'Extended';
+
+  FSXFunctionUIDFloatRight = 'floatRight';
+    FSXFunctionDisplayNameFloatRight = 'Float (right)';
+
+
   FSXFunctionUIDLeftGear = 'leftGear';
     FSXFunctionDisplayNameLeftGear = 'Left main landing gear';
 
@@ -139,6 +155,16 @@ const
     FSXStateDisplayNameTailHookRetracted = 'Retracted';
     FSXStateDisplayNameTailHookBetween = 'Extending / retracting';
     FSXStateDisplayNameTailHookExtended = 'Extended';
+
+
+  FSXFunctionUIDTailWheelLock = 'tailWheelLock';
+    FSXFunctionDisplayNameTailWheelLock = 'Tail wheel lock';
+
+      FSXStateUIDTailWheelUnlocked = FSXStateUIDOff;
+      FSXStateUIDTailWheelLocked = FSXStateUIDOn;
+
+      FSXStateDisplayNameTailWheelUnlocked = 'Unlocked';
+      FSXStateDisplayNameTailWheelLocked = 'Locked';
 
 
   FSXFunctionUIDFlaps = 'flaps';
@@ -223,6 +249,18 @@ const
     FSXStateDisplayNameSpoilersRetracted = 'Retracted';
     FSXStateDisplayNameSpoilersBetween = 'Extending / retracting';
     FSXStateDisplayNameSpoilersExtended = 'Extended';
+
+
+  FSXFunctionUIDWaterRudder = 'waterRudder';
+    FSXFunctionDisplayNameWaterRudder = 'Water rudder';
+
+    FSXStateUIDWaterRudderRetracted = 'retracted';
+    FSXStateUIDWaterRudderBetween = 'between';
+    FSXStateUIDWaterRudderExtended = 'extended';
+
+    FSXStateDisplayNameWaterRudderRetracted = 'Retracted';
+    FSXStateDisplayNameWaterRudderBetween = 'Extending / retracting';
+    FSXStateDisplayNameWaterRudderExtended = 'Extended';
 
 
   FSXFunctionUIDBatteryMaster = 'batteryMaster';

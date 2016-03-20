@@ -144,6 +144,9 @@ begin
   RegisterFunction(TFSXAutoBrakeFunction.Create(            Self, FSXFunctionDisplayNameAutoBrake,              FSXFunctionUIDAutoBrake));
   RegisterFunction(TFSXPressDumpSwitchFunction.Create(      Self, FSXFunctionDisplayNamePressDumpSwitch,        FSXFunctionUIDPressDumpSwitch));
   RegisterFunction(TFSXTailHookFunction.Create(             Self, FSXFunctionDisplayNameTailHook,               FSXFunctionUIDTailHook));
+  RegisterFunction(TFSXTailWheelLockFunction.Create(        Self, FSXFunctionDisplayNameTailWheelLock,          FSXFunctionUIDTailWheelLock));
+  RegisterFunction(TFSXFloatLeftFunction.Create(            Self, FSXFunctionDisplayNameFloatLeft,              FSXFunctionUIDFloatLeft));
+  RegisterFunction(TFSXFloatRightFunction.Create(           Self, FSXFunctionDisplayNameFloatRight,             FSXFunctionUIDFloatRight));
 
   { Instruments }
   RegisterFunction(TFSXPitotOnOffFunction.Create(           Self, FSXFunctionDisplayNamePitotOnOff,             FSXFunctionUIDPitotOnOff));
@@ -160,6 +163,7 @@ begin
   RegisterFunction(TFSXFlapsHandlePercentageFunction.Create(Self, FSXFunctionDisplayNameFlapsHandlePercentage,  FSXFunctionUIDFlapsHandlePercentage));
   RegisterFunction(TFSXSpoilersFunction.Create(             Self, FSXFunctionDisplayNameSpoilers,               FSXFunctionUIDSpoilers));
   RegisterFunction(TFSXSpoilersArmedFunction.Create(        Self, FSXFunctionDisplayNameSpoilersArmed,          FSXFunctionUIDSpoilersArmed));
+  RegisterFunction(TFSXWaterRudderFunction.Create(          Self, FSXFunctionDisplayNameWaterRudder,            FSXFunctionUIDWaterRudder));
 
   { Lights }
   RegisterFunction(TFSXBeaconLightsFunction.Create(         Self, FSXFunctionDisplayNameBeaconLights,           FSXFunctionUIDBeaconLights));

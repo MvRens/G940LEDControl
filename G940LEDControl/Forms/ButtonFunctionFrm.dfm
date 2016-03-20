@@ -13,10 +13,14 @@ object ButtonFunctionForm: TButtonFunctionForm
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   Position = poMainFormCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
+  OnKeyPress = FormKeyPress
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object bvlHeader: TBevel
@@ -69,7 +73,6 @@ object ButtonFunctionForm: TButtonFunctionForm
       Width = 75
       Height = 25
       Anchors = [akTop, akRight]
-      Cancel = True
       Caption = 'Cancel'
       ModalResult = 2
       TabOrder = 1
@@ -240,9 +243,6 @@ object ButtonFunctionForm: TButtonFunctionForm
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 3
-    ExplicitLeft = 265
-    ExplicitTop = 52
-    ExplicitHeight = 458
     object vstFunctions: TVirtualStringTree
       Left = 0
       Top = 29
@@ -266,8 +266,6 @@ object ButtonFunctionForm: TButtonFunctionForm
       OnGetText = vstFunctionsGetText
       OnPaintText = vstFunctionsPaintText
       OnIncrementalSearch = vstFunctionsIncrementalSearch
-      ExplicitTop = 8
-      ExplicitHeight = 450
       Columns = <
         item
           Position = 0
@@ -294,13 +292,21 @@ object ButtonFunctionForm: TButtonFunctionForm
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      Text = 'Search...'
+      Text = 'Search (Ctrl+F)...'
       OnChange = edtSearchChange
       OnEnter = edtSearchEnter
       OnExit = edtSearchExit
-      ExplicitLeft = 72
-      ExplicitTop = 216
-      ExplicitWidth = 121
+      OnKeyDown = edtSearchKeyDown
+      OnKeyUp = edtSearchKeyUp
+    end
+  end
+  object ActionList: TActionList
+    Left = 40
+    Top = 136
+    object actSearch: TAction
+      Caption = 'actSearch'
+      ShortCut = 16454
+      OnExecute = actSearchExecute
     end
   end
 end

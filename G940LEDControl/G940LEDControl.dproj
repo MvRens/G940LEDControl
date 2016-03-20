@@ -8,7 +8,7 @@
 			<FrameworkType>VCL</FrameworkType>
 			<ProjectVersion>13.4</ProjectVersion>
 			<Base>True</Base>
-			<Config Condition="'$(Config)'==''">Debug</Config>
+			<Config Condition="'$(Config)'==''">Release</Config>
 			<Platform Condition="'$(Platform)'==''">Win32</Platform>
 			<TargetedPlatforms>1</TargetedPlatforms>
 			<AppType>Application</AppType>
@@ -49,7 +49,8 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<VerInfo_Release>4</VerInfo_Release>
+			<VerInfo_Build>1</VerInfo_Build>
+			<VerInfo_Release>5</VerInfo_Release>
 			<VerInfo_MinorVer>1</VerInfo_MinorVer>
 			<DCC_UsePackage>rtl;dbrtl;$(DCC_UsePackage)</DCC_UsePackage>
 			<DCC_DcuOutput>Lib</DCC_DcuOutput>
@@ -59,7 +60,7 @@
 			<Manifest_File>None</Manifest_File>
 			<Icon_MainIcon>G940LEDControl_Icon.ico</Icon_MainIcon>
 			<DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;$(DCC_Namespace)</DCC_Namespace>
-			<VerInfo_Keys>CompanyName=X²Software;FileDescription=G940 LED Control;FileVersion=1.1.4.0;InternalName=;LegalCopyright=© 2011 - 2015 X²Software;LegalTrademarks=;OriginalFilename=G940LEDControl.exe;ProductName=G940 LED Control;ProductVersion=1.1;Comments=</VerInfo_Keys>
+			<VerInfo_Keys>CompanyName=X²Software;FileDescription=G940 LED Control;FileVersion=1.1.5.1;InternalName=;LegalCopyright=© 2011 - 2015 X²Software;LegalTrademarks=;OriginalFilename=G940LEDControl.exe;ProductName=G940 LED Control;ProductVersion=1.1;Comments=</VerInfo_Keys>
 			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win64)'!=''">
@@ -67,6 +68,7 @@
 			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win32)'!=''">
+			<VerInfo_Keys>CompanyName=X²Software;FileDescription=G940 LED Control;FileVersion=1.1.5.1;InternalName=;LegalCopyright=© 2011 - 2016 X²Software;LegalTrademarks=;OriginalFilename=G940LEDControl.exe;ProductName=G940 LED Control;ProductVersion=1.1;Comments=</VerInfo_Keys>
 			<DCC_PACKAGE_NO_LINK>false</DCC_PACKAGE_NO_LINK>
 			<DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
 			<DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
@@ -81,6 +83,7 @@
 			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+			<VerInfo_Keys>CompanyName=X²Software;FileDescription=G940 LED Control;FileVersion=1.1.5.1;InternalName=;LegalCopyright=© 2011 - 2016 X²Software;LegalTrademarks=;OriginalFilename=G940LEDControl.exe;ProductName=G940 LED Control;ProductVersion=1.1;Comments=</VerInfo_Keys>
 			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">

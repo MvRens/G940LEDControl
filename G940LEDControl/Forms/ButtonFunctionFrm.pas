@@ -16,7 +16,7 @@ uses
   LEDColorIntf,
   LEDFunctionIntf,
   LEDStateIntf,
-  Profile;
+  Profile, Vcl.ActnList;
 
 
 type
@@ -45,17 +45,25 @@ type
     bvlFooter: TBevel;
     pnlFunctions: TPanel;
     edtSearch: TEdit;
+    ActionList: TActionList;
+    actSearch: TAction;
 
-    procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
-    procedure vstFunctionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
-    procedure vstFunctionsPaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType);
-    procedure vstFunctionsFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
-    procedure vstFunctionsIncrementalSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; const SearchText: string; var Result: Integer);
+    procedure actSearchExecute(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
     procedure edtSearchChange(Sender: TObject);
     procedure edtSearchEnter(Sender: TObject);
     procedure edtSearchExit(Sender: TObject);
+    procedure edtSearchKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure edtSearchKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure FormShow(Sender: TObject);
+    procedure vstFunctionsFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
+    procedure vstFunctionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
+    procedure vstFunctionsIncrementalSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; const SearchText: string; var Result: Integer);
+    procedure vstFunctionsPaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType);
   private
     FProfile: TProfile;
     FButtonIndex: Integer;
@@ -70,6 +78,7 @@ type
 
     procedure LoadFunctions;
     procedure ApplyFilter(const AFilter: string);
+    procedure EnsureSelection;
     procedure SetFunction(AProvider: ILEDFunctionProvider; AFunction: ILEDFunction);
 
     procedure LoadStates(AProvider: ILEDFunctionProvider; AFunction: ILEDMultiStateFunction);
@@ -172,6 +181,31 @@ begin
 end;
 
 
+procedure TButtonFunctionForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+  begin
+    if (ActiveControl = edtSearch) and (Length(Trim(edtSearch.Text)) > 0) then
+      edtSearch.Text := ''
+    else
+      ModalResult := mrCancel;
+  end;
+end;
+
+
+procedure TButtonFunctionForm.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  if Key = Chr(VK_ESCAPE) then
+    Key := #0;
+end;
+
+
+procedure TButtonFunctionForm.FormShow(Sender: TObject);
+begin
+  ActiveControl := vstFunctions;
+end;
+
+
 procedure TButtonFunctionForm.LoadFunctions;
 var
   categoryNodes: TDictionary<string,PVirtualNode>;
@@ -227,12 +261,17 @@ begin
           nodeData^.LEDFunction := ledFunction;
 
           if isCurrentProvider and Assigned(CurrentFunction) and (ledFunction.GetUID = CurrentFunction.GetUID) then
+          begin
+            vstFunctions.FocusedNode := node;
             vstFunctions.Selected[node] := True;
+          end;
         end;
       end;
     finally
       FreeAndNil(categoryNodes);
     end;
+
+    EnsureSelection;
   finally
     vstFunctions.EndUpdate;
   end;
@@ -262,29 +301,44 @@ begin
       begin
         nodeData := vstFunctions.GetNodeData(functionNode);
         if nodeData^.NodeType = ntFunction then
-        begin
-          if hasFilter and (not ContainsText(nodeData^.LEDFunction.GetDisplayName, AFilter)) then
-            Exclude(functionNode^.States, vsVisible)
-          else
-            Include(functionNode^.States, vsVisible);
-        end;
+          vstFunctions.IsVisible[functionNode] := (not hasFilter) or ContainsText(nodeData^.LEDFunction.GetDisplayName, AFilter);
 
-        if vsVisible in functionNode^.States then
+        if vstFunctions.IsVisible[functionNode] then
           hasVisibleChildren := True;
 
         functionNode := vstFunctions.GetNextSibling(functionNode);
       end;
 
-      if hasVisibleChildren then
-        Include(categoryNode^.States, vsVisible)
-      else
-        Exclude(categoryNode^.States, vsVisible);
-
+      vstFunctions.IsVisible[categoryNode] := hasVisibleChildren;
       categoryNode := vstFunctions.GetNextSibling(categoryNode);
     end;
+
+    EnsureSelection;
   finally
     vstFunctions.EndUpdate;
   end;
+end;
+
+
+procedure TButtonFunctionForm.EnsureSelection;
+begin
+  if (not Assigned(vstFunctions.FocusedNode)) or
+     (not vstFunctions.IsVisible[vstFunctions.FocusedNode]) then
+  begin
+    vstFunctions.FocusedNode := vstFunctions.IterateSubtree(nil,
+      procedure(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean)
+      begin
+        Abort := (PFunctionNodeData(Sender.GetNodeData(Node))^.NodeType = ntFunction);
+      end,
+      nil,
+      [vsVisible]);
+
+    if Assigned(vstFunctions.FocusedNode) then
+      vstFunctions.Selected[vstFunctions.FocusedNode] := True;
+  end;
+
+  if Assigned(vstFunctions.FocusedNode) then
+    vstFunctions.ScrollIntoView(vstFunctions.FocusedNode, False);
 end;
 
 
@@ -427,6 +481,12 @@ begin
 end;
 
 
+procedure TButtonFunctionForm.actSearchExecute(Sender: TObject);
+begin
+  ActiveControl := edtSearch;
+end;
+
+
 procedure TButtonFunctionForm.btnOKClick(Sender: TObject);
 var
   multiStateFunction: ILEDMultiStateFunction;
@@ -557,13 +617,25 @@ begin
   if Length(Trim(edtSearch.Text)) = 0 then
   begin
     edtSearch.Tag := 1;
-    edtSearch.Text := 'Search...';
+    edtSearch.Text := 'Search (Ctrl+F)...';
     edtSearch.Font.Color := clGrayText;
   end else
     edtSearch.Tag := 0;
 end;
 
 
+procedure TButtonFunctionForm.edtSearchKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (Key in [VK_UP, VK_DOWN]) and (Shift = []) then
+    SendMessage(vstFunctions.Handle, WM_KEYDOWN, Key, 0);
+end;
+
+
+procedure TButtonFunctionForm.edtSearchKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (Key in [VK_UP, VK_DOWN]) and (Shift = []) then
+    SendMessage(vstFunctions.Handle, WM_KEYUP, Key, 0);
+end;
 
 { TStateControlInfo }
 constructor TStateControlInfo.Create(AState: ILEDState; AStateLabel: TLabel; AComboBox: TComboBox);
