@@ -275,7 +275,7 @@ const
     FSXFunctionDisplayNamePressDumpSwitch = 'Pressurization dump switch';
 
   FSXFunctionUIDEngineAntiIce = 'engineAntiIce';
-    FSXFunctionDisplayNameEngineAntiIce = 'Engine anti-ice';
+    FSXFunctionDisplayNameEngineAntiIce = 'Carb heat / engine anti-ice';
 
     FSXStateUIDEngineAntiIceNoEngines = 'noEngines';
     FSXStateUIDEngineAntiIceAll = 'all';
