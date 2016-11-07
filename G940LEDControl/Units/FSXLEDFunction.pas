@@ -303,6 +303,11 @@ type
     function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
 
+  TFSXAutoPilotAirspeedFunction = class(TCustomFSXAutoPilotFunction)
+  protected
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
+  end;
+
 
   { Radios }
   TFSXAvionicsMasterFunction = class(TCustomFSXOnOffFunction)
@@ -1001,6 +1006,13 @@ end;
 function TFSXAutoPilotNavFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXAutoPilotNavFunctionWorker;
+end;
+
+
+{ TFSXAutoPilotAirspeedFunction }
+function TFSXAutoPilotAirspeedFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
+begin
+  Result := TFSXAutoPilotAirspeedFunctionWorker;
 end;
 
 

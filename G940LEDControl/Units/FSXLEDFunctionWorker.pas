@@ -189,6 +189,7 @@ type
     AutoPilotBackcourse: Cardinal;
     AutoPilotAltitude: Cardinal;
     AutoPilotNav: Cardinal;
+    AutoPilotAirspeed: Cardinal;
   end;
 
 
@@ -233,6 +234,12 @@ type
 
 
   TFSXAutoPilotNavFunctionWorker = class(TCustomFSXAutoPilotFunctionWorker)
+  protected
+    procedure HandleAutoPilotData(AData: PAutoPilotData); override;
+  end;
+
+
+  TFSXAutoPilotAirspeedFunctionWorker = class(TCustomFSXAutoPilotFunctionWorker)
   protected
     procedure HandleAutoPilotData(AData: PAutoPilotData); override;
   end;
@@ -967,6 +974,7 @@ begin
   ADefinition.AddVariable('AUTOPILOT BACKCOURSE HOLD', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
   ADefinition.AddVariable('AUTOPILOT ALTITUDE LOCK', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
   ADefinition.AddVariable('AUTOPILOT NAV1 LOCK', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
+  ADefinition.AddVariable('AUTOPILOT AIRSPEED HOLD', FSX_UNIT_BOOL, SIMCONNECT_DATAType_INT32);
 end;
 
 
@@ -1032,6 +1040,13 @@ end;
 procedure TFSXAutoPilotNavFunctionWorker.HandleAutoPilotData(AData: PAutoPilotData);
 begin
   SetOnOffState(AData^.AutoPilotNav);
+end;
+
+
+{ TFSXAutoPilotAirspeedFunctionWorker }
+procedure TFSXAutoPilotAirspeedFunctionWorker.HandleAutoPilotData(AData: PAutoPilotData);
+begin
+  SetOnOffState(AData^.AutoPilotAirspeed);
 end;
 
 

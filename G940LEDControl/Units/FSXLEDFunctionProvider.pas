@@ -182,6 +182,7 @@ begin
   RegisterFunction(TFSXAutoPilotBackcourseFunction.Create(  Self, FSXFunctionDisplayNameAutoPilotBackcourse,    FSXFunctionUIDAutoPilotBackcourse));
   RegisterFunction(TFSXAutoPilotHeadingFunction.Create(     Self, FSXFunctionDisplayNameAutoPilotHeading,       FSXFunctionUIDAutoPilotHeading));
   RegisterFunction(TFSXAutoPilotNavFunction.Create(         Self, FSXFunctionDisplayNameAutoPilotNav,           FSXFunctionUIDAutoPilotNav));
+  RegisterFunction(TFSXAutoPilotAirspeedFunction.Create(    Self, FSXFunctionDisplayNameAutoPilotAirspeed,      FSXFunctionUIDAutoPilotAirspeed));
 
   { Radios }
   RegisterFunction(TFSXAvionicsMasterFunction.Create(       Self, FSXFunctionDisplayNameAvionicsMaster,         FSXFunctionUIDAvionicsMaster));

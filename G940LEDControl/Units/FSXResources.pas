@@ -313,6 +313,9 @@ const
   FSXFunctionUIDAutoPilotNav = 'autoPilotNav';
     FSXFunctionDisplayNameAutoPilotNav = 'Autopilot nav';
 
+  FSXFunctionUIDAutoPilotAirspeed = 'autoPilotAirspeed';
+    FSXFunctionDisplayNameAutoPilotAirspeed = 'Autopilot airspeed';
+
 
   FSXFunctionUIDFuel = 'fuelLevel';
     FSXFunctionDisplayNameFuel = 'Fuel Level';
