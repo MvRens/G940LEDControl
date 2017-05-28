@@ -38,7 +38,10 @@ uses
   FSXLEDFunctionProviderIntf in 'Units\FSXLEDFunctionProviderIntf.pas',
   SimBaseDocumentXMLBinding in 'Units\SimBaseDocumentXMLBinding.pas',
   FSXAutoLaunch in 'Units\FSXAutoLaunch.pas',
-  ControlIntf in 'Units\ControlIntf.pas';
+  ControlIntf in 'Units\ControlIntf.pas',
+  Lua.API in 'DelphiLua\Lua.API.pas',
+  Lua in 'DelphiLua\Lua.pas',
+  LuaLEDFunctionProvider in 'Units\LuaLEDFunctionProvider.pas';
 
 {$R *.res}
 
@@ -65,7 +68,6 @@ begin
   Application.ShowMainForm := not isRestarting;
   Application.Title := 'G940 LED Control';
   Application.CreateForm(TMainForm, MainForm);
-
   if isRestarting then
     MainForm.Visible := True;
 

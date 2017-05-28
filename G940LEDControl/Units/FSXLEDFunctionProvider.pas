@@ -4,79 +4,74 @@ interface
 uses
   Generics.Collections,
   System.SyncObjs,
+  System.Types,
 
   X2Log.Intf,
+  Lua,
 
   FSXLEDFunctionProviderIntf,
   FSXSimConnectIntf,
   LEDFunction,
   LEDFunctionIntf,
-  LEDStateIntf;
+  LEDStateIntf,
+  LuaLEDFunctionProvider;
 
 
 type
-  TCustomFSXFunction = class;
-  TCustomFSXFunctionList = TObjectList<TCustomFSXFunction>;
+  TFSXLEDFunctionWorker = class;
 
 
-  TFSXLEDFunctionProvider = class(TCustomLEDFunctionProvider, IFSXLEDFunctionProvider, IFSXSimConnectObserver)
+  TFSXLEDFunctionProvider = class(TCustomLuaLEDFunctionProvider, IFSXLEDFunctionProvider, IFSXSimConnectObserver)
   private
     FSimConnect: TInterfacedObject;
     FSimConnectLock: TCriticalSection;
     FProfileMenuSimConnect: IFSXSimConnectProfileMenu;
+    FScriptSimConnect: TObject;
   protected
-    procedure RegisterFunctions; override;
-
     function GetUID: string; override;
-  protected
+    function CreateLuaLEDFunction(AInfo: ILuaTable; AOnSetup: ILuaFunction): TCustomLuaLEDFunction; override;
+
+    procedure InitInterpreter; override;
+    procedure SetupWorker(AWorker: TFSXLEDFunctionWorker; AOnSetup: ILuaFunction);
+
     { IFSXSimConnectObserver }
     procedure ObserveDestroy(Sender: IFSXSimConnect);
 
     { IFSXLEDFunctionProvider }
     procedure SetProfileMenu(AEnabled: Boolean; ACascaded: Boolean);
   public
-    constructor Create;
+    constructor Create(const AScriptFolders: TStringDynArray);
     destructor Destroy; override;
 
     function GetSimConnect: IFSXSimConnect;
   end;
 
 
-  TCustomFSXFunction = class(TCustomMultiStateLEDFunction)
+  TFSXLEDFunction = class(TCustomLuaLEDFunction)
   private
     FProvider: TFSXLEDFunctionProvider;
-    FDisplayName: string;
-    FUID: string;
   protected
+    function GetDefaultCategoryName: string; override;
+
+    function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
     procedure InitializeWorker(AWorker: TCustomLEDMultiStateFunctionWorker); override;
 
     property Provider: TFSXLEDFunctionProvider read FProvider;
-  protected
-    function GetCategoryName: string; override;
-    function GetDisplayName: string; override;
-    function GetUID: string; override;
   public
-    constructor Create(AProvider: TFSXLEDFunctionProvider; const ADisplayName, AUID: string);
+    constructor Create(AProvider: TFSXLEDFunctionProvider; AInfo: ILuaTable; AOnSetup: ILuaFunction);
   end;
 
 
-  TCustomFSXFunctionClass = class of TCustomFSXFunction;
-
-
-  TCustomFSXFunctionWorker = class(TCustomLEDMultiStateFunctionWorker)
+  TFSXLEDFunctionWorker = class(TCustomLuaLEDFunctionWorker)
   private
     FDataHandler: IFSXSimConnectDataHandler;
-    FDefinitionID: Cardinal;
-    FSimConnect: IFSXSimConnect;
+    FDefinitionID: TList<Cardinal>;
   protected
-    procedure RegisterVariables(ADefinition: IFSXSimConnectDefinition); virtual; abstract;
-
-    procedure SetSimConnect(const Value: IFSXSimConnect); virtual;
-
     property DataHandler: IFSXSimConnectDataHandler read FDataHandler;
-    property DefinitionID: Cardinal read FDefinitionID;
-    property SimConnect: IFSXSimConnect read FSimConnect write SetSimConnect;
+    property DefinitionID: TList<Cardinal> read FDefinitionID;
   protected
+    procedure AddDefinition(ADefinition: IFSXSimConnectDefinition);
+
     procedure HandleData(AData: Pointer); virtual; abstract;
   public
     constructor Create(const AProviderUID, AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''); override;
@@ -86,6 +81,7 @@ type
 
 implementation
 uses
+  System.Classes,
   System.SysUtils,
 
   X2Log.Global,
@@ -100,37 +96,88 @@ uses
 type
   TCustomFSXFunctionWorkerDataHandler = class(TInterfacedObject, IFSXSimConnectDataHandler)
   private
-    FWorker: TCustomFSXFunctionWorker;
+    FWorker: TFSXLEDFunctionWorker;
   protected
     { IFSXSimConnectDataHandler }
     procedure HandleData(AData: Pointer);
 
-    property Worker: TCustomFSXFunctionWorker read FWorker;
+    property Worker: TFSXLEDFunctionWorker read FWorker;
   public
-    constructor Create(AWorker: TCustomFSXFunctionWorker);
+    constructor Create(AWorker: TFSXLEDFunctionWorker);
   end;
 
 
+  TLuaSimConnect = class(TPersistent)
+  private
+    FProvider: TFSXLEDFunctionProvider;
+  protected
+    property Provider: TFSXLEDFunctionProvider read FProvider;
+  public
+    constructor Create(AProvider: TFSXLEDFunctionProvider);
+  published
+    procedure Monitor(Context: ILuaContext);
+  end;
+
+
+type
+  TLuaSimConnectType = record
+    TypeName: string;
+    Units: string;
+    DataType: SIMCONNECT_DATAType;
+  end;
+
+const
+  LuaSimConnectTypes: array[0..4] of TLuaSimConnectType =
+                      (
+                        ( TypeName: 'Bool'; Units: FSX_UNIT_BOOL; DataType: SIMCONNECT_DATAType_INT32 ),
+                        ( TypeName: 'Percent'; Units: FSX_UNIT_PERCENT; DataType: SIMCONNECT_DATAType_FLOAT64 ),
+                        ( TypeName: 'Integer'; Units: FSX_UNIT_NUMBER; DataType: SIMCONNECT_DATAType_INT32 ),
+                        ( TypeName: 'Float'; Units: FSX_UNIT_NUMBER; DataType: SIMCONNECT_DATAType_FLOAT64 ),
+                        ( TypeName: 'Mask'; Units: FSX_UNIT_MASK; DataType: SIMCONNECT_DATATYPE_INT32 )
+                      );
+
+
+function GetUnits(const AType: string; out AUnits: string; out ADataType: SIMCONNECT_DATAType): Boolean;
+var
+  typeIndex: Integer;
+
+begin
+  for typeIndex := Low(LuaSimConnectTypes) to High(LuaSimConnectTypes) do
+    if SameText(AType, LuaSimConnectTypes[typeIndex].TypeName) then
+    begin
+      AUnits := LuaSimConnectTypes[typeIndex].Units;
+      ADataType := LuaSimConnectTypes[typeIndex].DataType;
+      Exit(True);
+    end;
+
+  Result := False;
+end;
+
 
 { TFSXLEDFunctionProvider }
-constructor TFSXLEDFunctionProvider.Create;
+constructor TFSXLEDFunctionProvider.Create(const AScriptFolders: TStringDynArray);
 begin
-  inherited Create;
-
   FSimConnectLock := TCriticalSection.Create;
+  FScriptSimConnect := TLuaSimConnect.Create(Self);
+
+  inherited Create(AScriptFolders);
 end;
 
 
 destructor TFSXLEDFunctionProvider.Destroy;
 begin
+  FreeAndNil(FScriptSimConnect);
   FreeAndNil(FSimConnectLock);
 
   inherited Destroy;
 end;
 
 
+(*
 procedure TFSXLEDFunctionProvider.RegisterFunctions;
 begin
+  inherited RegisterFunctions;
+
   { Systems }
   RegisterFunction(TFSXBatteryMasterFunction.Create(        Self, FSXFunctionDisplayNameBatteryMaster,          FSXFunctionUIDBatteryMaster));
   RegisterFunction(TFSXDeIceFunction.Create(                Self, FSXFunctionDisplayNameDeIce,                  FSXFunctionUIDDeIce));
@@ -193,6 +240,36 @@ begin
   { ATC }
   RegisterFunction(TFSXATCVisibilityFunction.Create(FSXProviderUID));
 end;
+*)
+
+function TFSXLEDFunctionProvider.CreateLuaLEDFunction(AInfo: ILuaTable; AOnSetup: ILuaFunction): TCustomLuaLEDFunction;
+begin
+  Result := TFSXLEDFunction.Create(Self, AInfo, AOnSetup);
+end;
+
+
+procedure TFSXLEDFunctionProvider.InitInterpreter;
+var
+  simConnectType: ILuaTable;
+  typeIndex: Integer;
+
+begin
+  inherited InitInterpreter;
+
+  Interpreter.RegisterFunctions(FScriptSimConnect, 'SimConnect');
+
+  simConnectType := TLuaTable.Create;
+  for typeIndex := Low(LuaSimConnectTypes) to High(LuaSimConnectTypes) do
+    simConnectType.SetValue(LuaSimConnectTypes[typeIndex].TypeName, LuaSimConnectTypes[typeIndex].TypeName);
+
+  Interpreter.SetGlobalVariable('SimConnectType', simConnectType);
+end;
+
+
+procedure TFSXLEDFunctionProvider.SetupWorker(AWorker: TFSXLEDFunctionWorker; AOnSetup: ILuaFunction);
+begin
+  AOnSetup.Call([AWorker.UID]);
+end;
 
 
 function TFSXLEDFunctionProvider.GetUID: string;
@@ -245,81 +322,80 @@ end;
 
 
 
-{ TCustomFSXFunction }
-constructor TCustomFSXFunction.Create(AProvider: TFSXLEDFunctionProvider; const ADisplayName, AUID: string);
+{ TFSXLEDFunction }
+constructor TFSXLEDFunction.Create(AProvider: TFSXLEDFunctionProvider; AInfo: ILuaTable; AOnSetup: ILuaFunction);
 begin
-  inherited Create(AProvider.GetUID);
+  inherited Create(AProvider, AInfo, AOnSetup);
 
   FProvider := AProvider;
-  FDisplayName := ADisplayName;
-  FUID := AUID;
 end;
 
 
-procedure TCustomFSXFunction.InitializeWorker(AWorker: TCustomLEDMultiStateFunctionWorker);
-begin
-  (AWorker as TCustomFSXFunctionWorker).SimConnect := Provider.GetSimConnect;
-end;
-
-
-function TCustomFSXFunction.GetCategoryName: string;
+function TFSXLEDFunction.GetDefaultCategoryName: string;
 begin
   Result := FSXCategory;
 end;
 
 
-function TCustomFSXFunction.GetDisplayName: string;
+function TFSXLEDFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
-  Result := FDisplayName;
+  Result := TFSXLEDFunctionWorker;
 end;
 
 
-function TCustomFSXFunction.GetUID: string;
+procedure TFSXLEDFunction.InitializeWorker(AWorker: TCustomLEDMultiStateFunctionWorker);
+var
+  worker: TFSXLEDFunctionWorker;
+
 begin
-  Result := FUID;
+  worker := (AWorker as TFSXLEDFunctionWorker);
+  worker.Provider := Provider;
+
+  Provider.SetupWorker(worker, Setup);
 end;
 
 
-{ TCustomFSXFunctionWorker }
-constructor TCustomFSXFunctionWorker.Create(const AProviderUID, AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string);
+{ TFSXLEDFunctionWorker }
+constructor TFSXLEDFunctionWorker.Create(const AProviderUID, AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string);
 begin
   { We can't pass ourselves as the Data Handler, as it would keep a reference to
     this worker from the SimConnect interface. That'd mean the worker never
     gets destroyed, and SimConnect never shuts down. Hence this proxy class. }
   FDataHandler := TCustomFSXFunctionWorkerDataHandler.Create(Self);
+  FDefinitionID := TList<Cardinal>.Create;
 
   inherited Create(AProviderUID, AFunctionUID, AStates, ASettings, APreviousState);
 end;
 
 
-destructor TCustomFSXFunctionWorker.Destroy;
+destructor TFSXLEDFunctionWorker.Destroy;
+var
+  simConnect: IFSXSimConnect;
+  id: Cardinal;
+
 begin
-  if DefinitionID <> 0 then
-    SimConnect.RemoveDefinition(DefinitionID, DataHandler);
+  if Assigned(Provider) and (DefinitionID.Count > 0) then
+  begin
+    simConnect := (Provider as TFSXLEDFunctionProvider).GetSimConnect;
+
+    for id in DefinitionID do
+      simConnect.RemoveDefinition(id, DataHandler);
+  end;
+
+  FreeAndNil(FDefinitionID);
 
   inherited Destroy;
 end;
 
 
-procedure TCustomFSXFunctionWorker.SetSimConnect(const Value: IFSXSimConnect);
-var
-  definition: IFSXSimConnectDefinition;
-
+procedure TFSXLEDFunctionWorker.AddDefinition(ADefinition: IFSXSimConnectDefinition);
 begin
-  FSimConnect := Value;
-
-  if Assigned(SimConnect) then
-  begin
-    definition := SimConnect.CreateDefinition;
-    RegisterVariables(definition);
-
-    FDefinitionID := SimConnect.AddDefinition(definition, DataHandler);
-  end;
+  DefinitionID.Add((Provider as TFSXLEDFunctionProvider).GetSimConnect.AddDefinition(ADefinition, DataHandler));
 end;
 
 
 { TCustomFSXFunctionWorkerDataHandler }
-constructor TCustomFSXFunctionWorkerDataHandler.Create(AWorker: TCustomFSXFunctionWorker);
+constructor TCustomFSXFunctionWorkerDataHandler.Create(AWorker: TFSXLEDFunctionWorker);
 begin
   inherited Create;
 
@@ -333,7 +409,65 @@ begin
 end;
 
 
-initialization
-  TLEDFunctionRegistry.Register(TFSXLEDFunctionProvider.Create);
+{ TLuaSimConnect }
+constructor TLuaSimConnect.Create(AProvider: TFSXLEDFunctionProvider);
+begin
+  inherited Create;
+
+  FProvider := AProvider;
+end;
+
+
+procedure TLuaSimConnect.Monitor(Context: ILuaContext);
+var
+  workerID: string;
+  variables: ILuaTable;
+  onData: ILuaFunction;
+  worker: TCustomLuaLEDFunctionWorker;
+  definition: IFSXSimConnectDefinition;
+  variable: TLuaKeyValuePair;
+  info: ILuaTable;
+  units: string;
+  dataType: SIMCONNECT_DATAType;
+
+begin
+  if Context.Parameters.Count < 3 then
+    raise ELuaScriptError.Create('Not enough parameters for SimConnect.Monitor');
+
+  if Context.Parameters[0].VariableType <> VariableString then
+    raise ELuaScriptError.Create('Context expected for SimConnect.Monitor parameter 1');
+
+  if Context.Parameters[1].VariableType <> VariableTable then
+    raise ELuaScriptError.Create('Table expected for SimConnect.Monitor parameter 2');
+
+  if Context.Parameters[2].VariableType <> VariableFunction then
+    raise ELuaScriptError.Create('Function expected for SimConnect.Monitor parameter 3');
+
+  workerID := Context.Parameters[0].AsString;
+  variables := Context.Parameters[1].AsTable;
+  onData := Context.Parameters[2].AsFunction;
+
+  worker := Provider.FindWorker(workerID);
+  if not Assigned(worker) then
+    raise ELuaScriptError.Create('Context expected for SimConnect.Monitor parameter 1');
+
+  definition := Provider.GetSimConnect.CreateDefinition;
+
+  for variable in variables do
+  begin
+    if variable.Value.VariableType = VariableTable then
+    begin
+      info := variable.Value.AsTable;
+      if info.HasValue('variable') and
+         info.HasValue('type') and
+         GetUnits(info.GetValue('type').AsString, units, dataType) then
+      begin
+        definition.AddVariable(info.GetValue('variable').AsString, units, dataType);
+      end;
+    end;
+  end;
+
+  (worker as TFSXLEDFunctionWorker).AddDefinition(definition);
+end;
 
 end.

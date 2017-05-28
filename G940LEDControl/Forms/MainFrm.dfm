@@ -375,6 +375,10 @@ object MainForm: TMainForm
     object tsConfiguration: TTabSheet
       Caption = ' Configuration '
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         442
         452)
@@ -529,6 +533,10 @@ object MainForm: TMainForm
     object tsAbout: TTabSheet
       Caption = 'About'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object lblVersionCaption: TLabel
         Left = 16
         Top = 67

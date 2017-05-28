@@ -225,6 +225,7 @@ type
 implementation
 uses
   System.SysUtils,
+  System.Types,
   System.Win.ComObj,
   Vcl.Dialogs,
   Vcl.Graphics,
@@ -241,6 +242,7 @@ uses
   ButtonFunctionFrm,
   ConfigConversion,
   FSXAutoLaunch,
+  FSXLEDFunctionProvider,
   FSXLEDFunctionProviderIntf,
   FSXResources,
   FSXSimConnectStateMonitor,
@@ -248,6 +250,7 @@ uses
   LEDColorIntf,
   LEDFunctionIntf,
   LEDFunctionRegistry,
+  StaticLEDFunction,
   StaticResources;
 
 
@@ -257,6 +260,9 @@ uses
 const
   DefaultProfileName = 'Default';
   ProfilePostfixModified = ' (modified)';
+
+  ScriptsPath = 'Scripts\';
+  FSXScriptsPath = ScriptsPath + 'FSX\';
 
   UserDataPath = 'G940LEDControl\';
   FilenameProfiles = UserDataPath + 'Profiles.xml';
@@ -302,6 +308,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 
 var
   worker: IOmniWorker;
+  scriptPaths: TStringDynArray;
 
 begin
   FLog := TX2GlobalLog.Category('UI');
@@ -315,6 +322,16 @@ begin
   AlignBevel(bvlProfileSwitching, lblProfileSwitching);
 
   SetFSXState(TextFSXDisconnected, False);
+
+
+  TLEDFunctionRegistry.Register(TStaticLEDFunctionProvider.Create);
+
+  SetLength(scriptPaths, 2);
+  scriptPaths[0] := App.Path + FSXScriptsPath;
+  scriptPaths[1] := App.UserPath + UserDataPath + FSXScriptsPath;
+
+  TLEDFunctionRegistry.Register(TFSXLEDFunctionProvider.Create(scriptPaths));
+
 
   FEventMonitor := TOmniEventMonitor.Create(Self);
 

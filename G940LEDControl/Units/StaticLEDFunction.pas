@@ -114,8 +114,4 @@ begin
   Result := FState;
 end;
 
-
-initialization
-  TLEDFunctionRegistry.Register(TStaticLEDFunctionProvider.Create);
-
 end.
