@@ -171,6 +171,7 @@ begin
 
   Interpreter.SetGlobalVariable('LEDColor', table);
 
+  // #ToDo1 -oMvR: 29-5-2017: Logging methods
   // #ToDo1 -oMvR: 28-5-2017: SetState
 end;
 

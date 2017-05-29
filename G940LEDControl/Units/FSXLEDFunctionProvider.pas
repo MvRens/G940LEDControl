@@ -61,16 +61,18 @@ type
     constructor Create(AProvider: TFSXLEDFunctionProvider; AInfo: ILuaTable; AOnSetup: ILuaFunction);
   end;
 
+  TFSXDefinition = record
+    ID: Cardinal;
+    DataHandler: IFSXSimConnectDataHandler;
+  end;
 
   TFSXLEDFunctionWorker = class(TCustomLuaLEDFunctionWorker)
   private
-    FDataHandler: IFSXSimConnectDataHandler;
-    FDefinitionID: TList<Cardinal>;
+    FDefinitions: TList<TFSXDefinition>;
   protected
-    property DataHandler: IFSXSimConnectDataHandler read FDataHandler;
-    property DefinitionID: TList<Cardinal> read FDefinitionID;
+    property Definitions: TList<TFSXDefinition> read FDefinitions;
   protected
-    procedure AddDefinition(ADefinition: IFSXSimConnectDefinition);
+    procedure AddDefinition(ADefinition: IFSXSimConnectDefinition; ADataHandler: IFSXSimConnectDataHandler);
 
     procedure HandleData(AData: Pointer); virtual; abstract;
   public
@@ -94,16 +96,39 @@ uses
 
 
 type
-  TCustomFSXFunctionWorkerDataHandler = class(TInterfacedObject, IFSXSimConnectDataHandler)
+  TLuaSimConnectDataType = (
+                             // Native types
+                             Float64, Float32, Int64, Int32, StringValue,
+
+                             // Preprocessed types (for scripting convenience)
+                             Bool,
+
+                             // Structures
+                             XYZ, LatLonAlt, Waypoint
+                           );
+
+
+  TLuaSimConnectVariable = record
+    Name: string;
+    DataType: TLuaSimConnectDataType;
+  end;
+
+
+  TFSXFunctionWorkerDataHandler = class(TInterfacedObject, IFSXSimConnectDataHandler)
   private
-    FWorker: TFSXLEDFunctionWorker;
+    FOnData: ILuaFunction;
+    FWorkerID: string;
+    FVariables: TList<TLuaSimConnectVariable>;
   protected
     { IFSXSimConnectDataHandler }
     procedure HandleData(AData: Pointer);
 
-    property Worker: TFSXLEDFunctionWorker read FWorker;
+    property OnData: ILuaFunction read FOnData;
+    property Variables: TList<TLuaSimConnectVariable> read FVariables;
+    property WorkerID: string read FWorkerID;
   public
-    constructor Create(AWorker: TFSXLEDFunctionWorker);
+    constructor Create(AVariables: TList<TLuaSimConnectVariable>; const AWorkerID: string; AOnData: ILuaFunction);
+    destructor Destroy; override;
   end;
 
 
@@ -119,34 +144,24 @@ type
   end;
 
 
-type
-  TLuaSimConnectType = record
-    TypeName: string;
-    Units: string;
-    DataType: SIMCONNECT_DATAType;
-  end;
-
 const
-  LuaSimConnectTypes: array[0..4] of TLuaSimConnectType =
-                      (
-                        ( TypeName: 'Bool'; Units: FSX_UNIT_BOOL; DataType: SIMCONNECT_DATAType_INT32 ),
-                        ( TypeName: 'Percent'; Units: FSX_UNIT_PERCENT; DataType: SIMCONNECT_DATAType_FLOAT64 ),
-                        ( TypeName: 'Integer'; Units: FSX_UNIT_NUMBER; DataType: SIMCONNECT_DATAType_INT32 ),
-                        ( TypeName: 'Float'; Units: FSX_UNIT_NUMBER; DataType: SIMCONNECT_DATAType_FLOAT64 ),
-                        ( TypeName: 'Mask'; Units: FSX_UNIT_MASK; DataType: SIMCONNECT_DATATYPE_INT32 )
-                      );
+  LuaSimConnectDataTypes: array[TLuaSimConnectDataType] of string =
+                          (
+                            'Float64', 'Float32', 'Int64', 'Int32', 'String',
+                            'Bool',
+                            'XYZ', 'LatLonAlt', 'Waypoint'
+                          );
 
 
-function GetUnits(const AType: string; out AUnits: string; out ADataType: SIMCONNECT_DATAType): Boolean;
+function GetDataType(const ATypeName: string; out ADataType: TLuaSimConnectDataType): Boolean;
 var
-  typeIndex: Integer;
+  dataType: TLuaSimConnectDataType;
 
 begin
-  for typeIndex := Low(LuaSimConnectTypes) to High(LuaSimConnectTypes) do
-    if SameText(AType, LuaSimConnectTypes[typeIndex].TypeName) then
+  for dataType := Low(TLuaSimConnectDataType) to High(TLuaSimConnectDataType) do
+    if SameText(ATypeName, LuaSimConnectDataTypes[dataType]) then
     begin
-      AUnits := LuaSimConnectTypes[typeIndex].Units;
-      ADataType := LuaSimConnectTypes[typeIndex].DataType;
+      ADataType := dataType;
       Exit(True);
     end;
 
@@ -251,7 +266,7 @@ end;
 procedure TFSXLEDFunctionProvider.InitInterpreter;
 var
   simConnectType: ILuaTable;
-  typeIndex: Integer;
+  dataType: TLuaSimConnectDataType;
 
 begin
   inherited InitInterpreter;
@@ -259,8 +274,8 @@ begin
   Interpreter.RegisterFunctions(FScriptSimConnect, 'SimConnect');
 
   simConnectType := TLuaTable.Create;
-  for typeIndex := Low(LuaSimConnectTypes) to High(LuaSimConnectTypes) do
-    simConnectType.SetValue(LuaSimConnectTypes[typeIndex].TypeName, LuaSimConnectTypes[typeIndex].TypeName);
+  for dataType := Low(TLuaSimConnectDataType) to High(TLuaSimConnectDataType) do
+    simConnectType.SetValue(LuaSimConnectDataTypes[dataType], LuaSimConnectDataTypes[dataType]);
 
   Interpreter.SetGlobalVariable('SimConnectType', simConnectType);
 end;
@@ -358,11 +373,7 @@ end;
 { TFSXLEDFunctionWorker }
 constructor TFSXLEDFunctionWorker.Create(const AProviderUID, AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string);
 begin
-  { We can't pass ourselves as the Data Handler, as it would keep a reference to
-    this worker from the SimConnect interface. That'd mean the worker never
-    gets destroyed, and SimConnect never shuts down. Hence this proxy class. }
-  FDataHandler := TCustomFSXFunctionWorkerDataHandler.Create(Self);
-  FDefinitionID := TList<Cardinal>.Create;
+  FDefinitions := TList<TFSXDefinition>.Create;
 
   inherited Create(AProviderUID, AFunctionUID, AStates, ASettings, APreviousState);
 end;
@@ -371,41 +382,174 @@ end;
 destructor TFSXLEDFunctionWorker.Destroy;
 var
   simConnect: IFSXSimConnect;
-  id: Cardinal;
+  definition: TFSXDefinition;
 
 begin
-  if Assigned(Provider) and (DefinitionID.Count > 0) then
+  if Assigned(Provider) and (Definitions.Count > 0) then
   begin
     simConnect := (Provider as TFSXLEDFunctionProvider).GetSimConnect;
 
-    for id in DefinitionID do
-      simConnect.RemoveDefinition(id, DataHandler);
+    for definition in Definitions do
+      simConnect.RemoveDefinition(definition.ID, definition.DataHandler);
   end;
 
-  FreeAndNil(FDefinitionID);
+  FreeAndNil(FDefinitions);
 
   inherited Destroy;
 end;
 
 
-procedure TFSXLEDFunctionWorker.AddDefinition(ADefinition: IFSXSimConnectDefinition);
+procedure TFSXLEDFunctionWorker.AddDefinition(ADefinition: IFSXSimConnectDefinition; ADataHandler: IFSXSimConnectDataHandler);
+var
+  definition: TFSXDefinition;
+
 begin
-  DefinitionID.Add((Provider as TFSXLEDFunctionProvider).GetSimConnect.AddDefinition(ADefinition, DataHandler));
+  definition.DataHandler := ADataHandler;
+  definition.ID := (Provider as TFSXLEDFunctionProvider).GetSimConnect.AddDefinition(ADefinition, ADataHandler);
+
+  Definitions.Add(definition);
 end;
 
 
-{ TCustomFSXFunctionWorkerDataHandler }
-constructor TCustomFSXFunctionWorkerDataHandler.Create(AWorker: TFSXLEDFunctionWorker);
+{ TFSXFunctionWorkerDataHandler }
+constructor TFSXFunctionWorkerDataHandler.Create(AVariables: TList<TLuaSimConnectVariable>; const AWorkerID: string; AOnData: ILuaFunction);
 begin
   inherited Create;
 
-  FWorker := AWorker;
+  FWorkerID := AWorkerID;
+  FOnData := AOnData;
+
+  FVariables := TList<TLuaSimConnectVariable>.Create;
+  FVariables.AddRange(AVariables);
 end;
 
 
-procedure TCustomFSXFunctionWorkerDataHandler.HandleData(AData: Pointer);
+destructor TFSXFunctionWorkerDataHandler.Destroy;
 begin
-  Worker.HandleData(AData);
+  FreeAndNil(FVariables);
+
+  inherited Destroy;
+end;
+
+
+procedure TFSXFunctionWorkerDataHandler.HandleData(AData: Pointer);
+var
+  data: ILuaTable;
+  dataPointer: PByte;
+  variableIndex: Integer;
+  variable: TLuaSimConnectVariable;
+  value: string;
+  structure: ILuaTable;
+  flags: ILuaTable;
+  xyzData: ^SIMCONNECT_DATA_XYZ;
+  latLonAltData: ^SIMCONNECT_DATA_LATLONALT;
+  waypointData: ^SIMCONNECT_DATA_WAYPOINT;
+
+begin
+  data := TLuaTable.Create;
+  dataPointer := AData;
+
+  for variableIndex := 0 to Pred(Variables.Count) do
+  begin
+    variable := Variables[variableIndex];
+
+    case variable.DataType of
+      Float64:
+        begin
+          data.SetValue(variable.Name, PDouble(dataPointer)^);
+          Inc(dataPointer, SizeOf(Double));
+        end;
+
+      Float32:
+        begin
+          data.SetValue(variable.Name, PSingle(dataPointer)^);
+          Inc(dataPointer, SizeOf(Single));
+        end;
+
+      Int64:
+        begin
+          data.SetValue(variable.Name, PInt64(dataPointer)^);
+          Inc(dataPointer, SizeOf(Int64));
+        end;
+
+      Int32:
+        begin
+          data.SetValue(variable.Name, PInteger(dataPointer)^);
+          Inc(dataPointer, SizeOf(Integer));
+        end;
+
+      StringValue:
+        begin
+          // TODO change to STRINGV
+          //SimConnect_RetrieveString()
+
+          SetString(value, PChar(dataPointer), 256);
+          data.SetValue(variable.Name, value);
+
+          Inc(dataPointer, 256);
+        end;
+
+      Bool:
+        begin
+          data.SetValue(variable.Name, (PInteger(dataPointer)^ <> 0));
+          Inc(dataPointer, SizeOf(Integer));
+        end;
+
+      XYZ:
+        begin
+          xyzData := AData;
+
+          structure := TLuaTable.Create;
+          structure.SetValue('X', xyzData^.x);
+          structure.SetValue('Y', xyzData^.y);
+          structure.SetValue('Z', xyzData^.z);
+
+          data.SetValue(variable.Name, structure);
+          Inc(dataPointer, SizeOf(SIMCONNECT_DATA_XYZ));
+        end;
+
+      LatLonAlt:
+        begin
+          latLonAltData := AData;
+
+          structure := TLuaTable.Create;
+          structure.SetValue('Latitude', latLonAltData^.Latitude);
+          structure.SetValue('Longitude', latLonAltData^.Longitude);
+          structure.SetValue('Altitude', latLonAltData^.Altitude);
+
+          data.SetValue(variable.Name, structure);
+          Inc(dataPointer, SizeOf(SIMCONNECT_DATA_LATLONALT));
+        end;
+
+      Waypoint:
+        begin
+          waypointData := AData;
+
+          structure := TLuaTable.Create;
+          structure.SetValue('Latitude', waypointData^.Latitude);
+          structure.SetValue('Longitude', waypointData^.Longitude);
+          structure.SetValue('Altitude', waypointData^.Altitude);
+          structure.SetValue('KtsSpeed', waypointData^.ktsSpeed);
+          structure.SetValue('PercentThrottle', waypointData^.percentThrottle);
+
+          flags := TLuaTable.Create;
+          flags.SetValue('SpeedRequested', (waypointData^.Flags and SIMCONNECT_WAYPOINT_SPEED_REQUESTED) <> 0);
+          flags.SetValue('ThrottleRequested', (waypointData^.Flags and SIMCONNECT_WAYPOINT_THROTTLE_REQUESTED) <> 0);
+          flags.SetValue('ComputeVerticalSpeed', (waypointData^.Flags and SIMCONNECT_WAYPOINT_COMPUTE_VERTICAL_SPEED) <> 0);
+          flags.SetValue('IsAGL', (waypointData^.Flags and SIMCONNECT_WAYPOINT_ALTITUDE_IS_AGL) <> 0);
+          flags.SetValue('OnGround', (waypointData^.Flags and SIMCONNECT_WAYPOINT_ON_GROUND) <> 0);
+          flags.SetValue('Reverse', (waypointData^.Flags and SIMCONNECT_WAYPOINT_REVERSE) <> 0);
+          flags.SetValue('WrapToFirst', (waypointData^.Flags and SIMCONNECT_WAYPOINT_WRAP_TO_FIRST) <> 0);
+
+          structure.SetValue('Flags', flags);
+
+          data.SetValue(variable.Name, structure);
+          Inc(dataPointer, SizeOf(SIMCONNECT_DATA_WAYPOINT));
+        end;
+    end;
+  end;
+
+  OnData.Call([WorkerID, data]);
 end;
 
 
@@ -427,8 +571,11 @@ var
   definition: IFSXSimConnectDefinition;
   variable: TLuaKeyValuePair;
   info: ILuaTable;
+  dataType: TLuaSimConnectDataType;
+  simConnectDataType: SIMCONNECT_DATAType;
   units: string;
-  dataType: SIMCONNECT_DATAType;
+  luaVariables: TList<TLuaSimConnectVariable>;
+  luaVariable: TLuaSimConnectVariable;
 
 begin
   if Context.Parameters.Count < 3 then
@@ -453,21 +600,62 @@ begin
 
   definition := Provider.GetSimConnect.CreateDefinition;
 
-  for variable in variables do
-  begin
-    if variable.Value.VariableType = VariableTable then
+  luaVariables := TList<TLuaSimConnectVariable>.Create;
+  try
+    for variable in variables do
     begin
-      info := variable.Value.AsTable;
-      if info.HasValue('variable') and
-         info.HasValue('type') and
-         GetUnits(info.GetValue('type').AsString, units, dataType) then
+      if variable.Value.VariableType = VariableTable then
       begin
-        definition.AddVariable(info.GetValue('variable').AsString, units, dataType);
+        info := variable.Value.AsTable;
+        if info.HasValue('variable') then
+        begin
+          luaVariable.Name := variable.Key.AsString;
+          units := '';
+          simConnectDataType := SIMCONNECT_DATAType_FLOAT64;
+
+          if info.HasValue('type') and GetDataType(info.GetValue('type').AsString, dataType) then
+          begin
+            luaVariable.DataType := dataType;
+
+            case dataType of
+              Float32: simConnectDataType := SIMCONNECT_DATAType_FLOAT32;
+              Int64: simConnectDataType := SIMCONNECT_DATAType_INT64;
+              Int32,
+              Bool:
+                begin
+                  simConnectDataType := SIMCONNECT_DATAType_INT32;
+                  units := 'bool';
+                end;
+
+              // TODO change to STRINGV
+              StringValue: simConnectDataType := SIMCONNECT_DATAType_STRING256;
+              XYZ: simConnectDataType := SIMCONNECT_DATAType_XYZ;
+              LatLonAlt: simConnectDataType := SIMCONNECT_DATAType_LATLONALT;
+              Waypoint: simConnectDataType := SIMCONNECT_DATAType_WAYPOINT;
+            end;
+
+            if info.HasValue('units') then
+              units := info.GetValue('units').AsString
+            else if not (dataType in [Bool, StringValue, XYZ, LatLonAlt, Waypoint]) then
+              raise ELuaScriptError.CreateFmt('Missing units for variable %s', [variable.Key.AsString]);
+          end else
+          begin
+            if not info.HasValue('units') then
+              raise ELuaScriptError.CreateFmt('Missing units or type for variable %s', [variable.Key.AsString]);
+
+            units := info.GetValue('units').AsString;
+          end;
+
+          luaVariables.Add(luaVariable);
+          definition.AddVariable(info.GetValue('variable').AsString, units, simConnectDataType);
+        end;
       end;
     end;
-  end;
 
-  (worker as TFSXLEDFunctionWorker).AddDefinition(definition);
+    (worker as TFSXLEDFunctionWorker).AddDefinition(definition, TFSXFunctionWorkerDataHandler.Create(luaVariables, worker.UID, onData));
+  finally
+    FreeAndNil(luaVariables);
+  end;
 end;
 
 end.
