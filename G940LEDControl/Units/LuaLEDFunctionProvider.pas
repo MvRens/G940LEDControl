@@ -46,8 +46,12 @@ type
     FInterpreter: TLua;
     FScriptFolders: TStringDynArray;
     FWorkers: TDictionary<string, TCustomLuaLEDFunctionWorker>;
+    FScriptLog: TObject;
   protected
     function CreateLuaLEDFunction(AInfo: ILuaTable; ASetup: ILuaFunction): TCustomLuaLEDFunction; virtual; abstract;
+
+    procedure ScriptRegisterFunction(Context: ILuaContext);
+    procedure ScriptSetState(Context: ILuaContext);
 
     procedure InitInterpreter; virtual;
     procedure RegisterFunctions; override;
@@ -83,10 +87,36 @@ type
 
 implementation
 uses
+  System.Classes,
   System.IOUtils,
+
+  Lua.API,
+  X2Log.Intf,
+  X2Log.Global,
 
   LEDColorIntf,
   LEDState;
+
+
+type
+  TLuaLog = class(TPersistent)
+  private
+    FInterpreter: TLua;
+  protected
+    procedure AppendVariable(ABuilder: TStringBuilder; AVariable: ILuaVariable);
+    procedure AppendTable(ABuilder: TStringBuilder; ATable: ILuaTable);
+
+    procedure Log(AContext: ILuaContext; ALevel: TX2LogLevel);
+
+    property Interpreter: TLua read FInterpreter;
+  public
+    constructor Create(AInterpreter: TLua);
+  published
+    procedure Verbose(Context: ILuaContext);
+    procedure Info(Context: ILuaContext);
+    procedure Warning(Context: ILuaContext);
+    procedure Error(Context: ILuaContext);
+  end;
 
 
 const
@@ -97,6 +127,7 @@ const
                   'FlashingAmberFast', 'FlashingAmberNormal',
                   'FlashingRedFast', 'FlashingRedNormal'
                 );
+
 
 function GetLEDColor(const AValue: string; ADefault: TLEDColor = lcOff): TLEDColor;
 var
@@ -118,6 +149,7 @@ begin
   FWorkers := TDictionary<string, TCustomLuaLEDFunctionWorker>.Create;
   FInterpreter := TLua.Create;
   FScriptFolders := AScriptFolders;
+  FScriptLog := TLuaLog.Create(FInterpreter);
 
   InitInterpreter;
 
@@ -128,6 +160,7 @@ end;
 destructor TCustomLuaLEDFunctionProvider.Destroy;
 begin
   FreeAndNil(FInterpreter);
+  FreeAndNil(FScriptLog);
   FreeAndNil(FWorkers);
 
   inherited Destroy;
@@ -140,30 +173,10 @@ var
   color: TLEDColor;
 
 begin
-  Interpreter.RegisterFunction('RegisterFunction',
-    procedure(Context: ILuaContext)
-    var
-      info: ILuaTable;
-      setup: ILuaFunction;
+  Interpreter.RegisterFunction('RegisterFunction', ScriptRegisterFunction);
+  Interpreter.RegisterFunction('SetState', ScriptSetState);
 
-    begin
-      if Context.Parameters.Count < 2 then
-        raise ELuaScriptError.Create('Not enough parameters for RegisterFunction');
-
-      if Context.Parameters[0].VariableType <> VariableTable then
-        raise ELuaScriptError.Create('Table expected for RegisterFunction parameter 1');
-
-      if Context.Parameters[1].VariableType <> VariableFunction then
-        raise ELuaScriptError.Create('Function expected for RegisterFunction parameter 2');
-
-      info := Context.Parameters[0].AsTable;
-      setup := Context.Parameters[1].AsFunction;
-
-      if not info.HasValue('uid') then
-        raise ELuaScriptError.Create('"uid" value is required for RegisterFunction parameter 1');
-
-      RegisterFunction(CreateLuaLEDFunction(info, setup));
-    end);
+  Interpreter.RegisterFunctions(FScriptLog, 'Log');
 
   table := TLuaTable.Create;
   for color := Low(TLEDColor) to High(TLEDColor) do
@@ -171,8 +184,60 @@ begin
 
   Interpreter.SetGlobalVariable('LEDColor', table);
 
-  // #ToDo1 -oMvR: 29-5-2017: Logging methods
-  // #ToDo1 -oMvR: 28-5-2017: SetState
+  // #ToDo1 -oMvR: 29-5-2017: Timer
+  // #ToDo1 -oMvR: 29-5-2017: FindWindow / FindFSXWindow
+end;
+
+
+procedure TCustomLuaLEDFunctionProvider.ScriptRegisterFunction(Context: ILuaContext);
+var
+  info: ILuaTable;
+  setup: ILuaFunction;
+
+begin
+  if Context.Parameters.Count < 2 then
+    raise ELuaScriptError.Create('Not enough parameters for RegisterFunction');
+
+  if Context.Parameters[0].VariableType <> VariableTable then
+    raise ELuaScriptError.Create('Table expected for RegisterFunction parameter 1');
+
+  if Context.Parameters[1].VariableType <> VariableFunction then
+    raise ELuaScriptError.Create('Function expected for RegisterFunction parameter 2');
+
+  info := Context.Parameters[0].AsTable;
+  setup := Context.Parameters[1].AsFunction;
+
+  if not info.HasValue('uid') then
+    raise ELuaScriptError.Create('"uid" value is required for RegisterFunction parameter 1');
+
+  RegisterFunction(CreateLuaLEDFunction(info, setup));
+end;
+
+
+procedure TCustomLuaLEDFunctionProvider.ScriptSetState(Context: ILuaContext);
+var
+  workerID: string;
+  worker: TCustomLuaLEDFunctionWorker;
+  stateUID: string;
+
+begin
+  if Context.Parameters.Count < 2 then
+    raise ELuaScriptError.Create('Not enough parameters for SetState');
+
+  if Context.Parameters[0].VariableType <> VariableString then
+    raise ELuaScriptError.Create('Context expected for SetState parameter 1');
+
+  if Context.Parameters[1].VariableType <> VariableString then
+    raise ELuaScriptError.Create('State expected for SetState parameter 2');
+
+  workerID := Context.Parameters[0].AsString;
+  stateUID := Context.Parameters[1].AsString;
+
+  worker := FindWorker(workerID);
+  if not Assigned(worker) then
+    raise ELuaScriptError.Create('Context expected for SetState parameter 1');
+
+  worker.SetCurrentState(stateUID);
 end;
 
 
@@ -328,6 +393,112 @@ begin
     if Assigned(FProvider) then
       FProvider.RegisterWorker(Self);
   end;
+end;
+
+
+{ TLuaLog }
+constructor TLuaLog.Create(AInterpreter: TLua);
+begin
+  inherited Create;
+
+  FInterpreter := AInterpreter;
+end;
+
+
+procedure TLuaLog.AppendVariable(ABuilder: TStringBuilder; AVariable: ILuaVariable);
+begin
+  case AVariable.VariableType of
+    VariableBoolean:
+      if AVariable.AsBoolean then
+        ABuilder.Append('true')
+      else
+        ABuilder.Append('false');
+
+    VariableTable:
+      AppendTable(ABuilder, AVariable.AsTable);
+  else
+    ABuilder.Append(AVariable.AsString);
+  end;
+end;
+
+
+procedure TLuaLog.AppendTable(ABuilder: TStringBuilder; ATable: ILuaTable);
+var
+  firstItem: Boolean;
+  item: TLuaKeyValuePair;
+
+begin
+  ABuilder.Append('{ ');
+  firstItem := True;
+
+  for item in ATable do
+  begin
+    if firstItem then
+      firstItem := False
+    else
+      ABuilder.Append(', ');
+
+    AppendVariable(ABuilder, item.Key);
+    ABuilder.Append(' = ');
+    AppendVariable(ABuilder, item.Value);
+  end;
+
+  ABuilder.Append(' }');
+end;
+
+
+procedure TLuaLog.Log(AContext: ILuaContext; ALevel: TX2LogLevel);
+var
+  debug: lua_Debug;
+  fileName: string;
+  msg: TStringBuilder;
+  parameter: ILuaVariable;
+
+begin
+  fileName := 'Lua';
+
+  if Interpreter.HasState and (lua_getstack(Interpreter.State, 1, debug) <> 0) then
+  begin
+    lua_getinfo(Interpreter.State, 'Sl', debug);
+    fileName := fileName + ' - ' + string(debug.source)
+  end;
+
+  msg := TStringBuilder.Create;
+  try
+    for parameter in AContext.Parameters do
+    begin
+      AppendVariable(msg, parameter);
+      msg.Append(' ');
+    end;
+
+    TX2GlobalLog.Log(ALevel, msg.ToString, fileName);
+  finally
+    FreeAndNil(msg);
+  end;
+end;
+
+
+procedure TLuaLog.Verbose(Context: ILuaContext);
+begin
+  Log(Context, TX2LogLevel.Verbose);
+end;
+
+
+procedure TLuaLog.Info(Context: ILuaContext);
+begin
+  Log(Context, TX2LogLevel.Info);
+end;
+
+
+procedure TLuaLog.Warning(Context: ILuaContext);
+begin
+  Log(Context, TX2LogLevel.Warning);
+end;
+
+
+procedure TLuaLog.Error(Context: ILuaContext);
+begin
+  Log(Context, TX2LogLevel.Error);
 end;
 
 end.

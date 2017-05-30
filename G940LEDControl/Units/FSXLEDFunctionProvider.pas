@@ -265,7 +265,7 @@ end;
 
 procedure TFSXLEDFunctionProvider.InitInterpreter;
 var
-  simConnectType: ILuaTable;
+  simConnectDataType: ILuaTable;
   dataType: TLuaSimConnectDataType;
 
 begin
@@ -273,17 +273,22 @@ begin
 
   Interpreter.RegisterFunctions(FScriptSimConnect, 'SimConnect');
 
-  simConnectType := TLuaTable.Create;
+  simConnectDataType := TLuaTable.Create;
   for dataType := Low(TLuaSimConnectDataType) to High(TLuaSimConnectDataType) do
-    simConnectType.SetValue(LuaSimConnectDataTypes[dataType], LuaSimConnectDataTypes[dataType]);
+    simConnectDataType.SetValue(LuaSimConnectDataTypes[dataType], LuaSimConnectDataTypes[dataType]);
 
-  Interpreter.SetGlobalVariable('SimConnectType', simConnectType);
+  Interpreter.SetGlobalVariable('SimConnectDataType', simConnectDataType);
 end;
 
 
 procedure TFSXLEDFunctionProvider.SetupWorker(AWorker: TFSXLEDFunctionWorker; AOnSetup: ILuaFunction);
 begin
-  AOnSetup.Call([AWorker.UID]);
+  try
+    AOnSetup.Call([AWorker.UID]);
+  except
+    on E:Exception do
+      TX2GlobalLog.Category('Lua').Exception(E);
+  end;
 end;
 
 
@@ -549,7 +554,12 @@ begin
     end;
   end;
 
-  OnData.Call([WorkerID, data]);
+  try
+    OnData.Call([WorkerID, data]);
+  except
+    on E:Exception do
+      TX2GlobalLog.Category('Lua').Exception(E);
+  end;
 end;
 
 
