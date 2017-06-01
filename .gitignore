@@ -3,3 +3,4 @@ __history
 *.dcu
 *.exe
 *.identcache
+Docs/_build/
