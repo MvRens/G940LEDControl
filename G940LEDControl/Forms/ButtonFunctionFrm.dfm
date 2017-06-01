@@ -263,13 +263,14 @@ object ButtonFunctionForm: TButtonFunctionForm
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
       TreeOptions.SelectionOptions = [toFullRowSelect]
       OnFocusChanged = vstFunctionsFocusChanged
+      OnFreeNode = vstFunctionsFreeNode
       OnGetText = vstFunctionsGetText
       OnPaintText = vstFunctionsPaintText
       OnIncrementalSearch = vstFunctionsIncrementalSearch
       Columns = <
         item
           Position = 0
-          Width = 253
+          Width = 257
           WideText = 'Available functions'
         end>
     end

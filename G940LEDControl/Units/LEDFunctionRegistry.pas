@@ -13,24 +13,16 @@ type
   TLEDFunctionRegistry = class(TObject)
   private
     FProviders: TLEDFunctionProviderList;
-  protected
-    class function Instance: TLEDFunctionRegistry;
-
-    procedure DoRegister(AProvider: ILEDFunctionProvider);
-    procedure DoUnregister(AProvider: ILEDFunctionProvider);
-    function DoFind(const AUID: string): ILEDFunctionProvider;
-
-    function GetProviders: TLEDFunctionProviderList;
   public
     constructor Create;
     destructor Destroy; override;
 
-    class procedure Register(AProvider: ILEDFunctionProvider);
-    class procedure Unregister(AProvider: ILEDFunctionProvider);
+    procedure Register(AProvider: ILEDFunctionProvider);
+    procedure Unregister(AProvider: ILEDFunctionProvider);
 
-    class function Find(const AUID: string): ILEDFunctionProvider;
+    function Find(const AUID: string): ILEDFunctionProvider;
 
-    class function Providers: TLEDFunctionProviderList;
+    function Providers: TLEDFunctionProviderList;
   end;
 
 
@@ -64,44 +56,7 @@ uses
   SysUtils;
 
 
-var
-  RegistryInstance: TLEDFunctionRegistry;
-
-
 { TLEDFunctionRegistry }
-class procedure TLEDFunctionRegistry.Register(AProvider: ILEDFunctionProvider);
-begin
-  Instance.DoRegister(AProvider);
-end;
-
-
-class procedure TLEDFunctionRegistry.Unregister(AProvider: ILEDFunctionProvider);
-begin
-  Instance.DoUnregister(AProvider);
-end;
-
-
-class function TLEDFunctionRegistry.Find(const AUID: string): ILEDFunctionProvider;
-begin
-  Result := Instance.DoFind(AUID);
-end;
-
-
-class function TLEDFunctionRegistry.Providers: TLEDFunctionProviderList;
-begin
-  Result := Instance.GetProviders;
-end;
-
-
-class function TLEDFunctionRegistry.Instance: TLEDFunctionRegistry;
-begin
-  if not Assigned(RegistryInstance) then
-    RegistryInstance := TLEDFunctionRegistry.Create;
-
-  Result := RegistryInstance;
-end;
-
-
 constructor TLEDFunctionRegistry.Create;
 begin
   inherited Create;
@@ -118,25 +73,25 @@ begin
 end;
 
 
-procedure TLEDFunctionRegistry.DoRegister(AProvider: ILEDFunctionProvider);
+procedure TLEDFunctionRegistry.Register(AProvider: ILEDFunctionProvider);
 begin
   FProviders.Add(AProvider);
 end;
 
 
-procedure TLEDFunctionRegistry.DoUnregister(AProvider: ILEDFunctionProvider);
+procedure TLEDFunctionRegistry.Unregister(AProvider: ILEDFunctionProvider);
 begin
   FProviders.Remove(AProvider);
 end;
 
 
-function TLEDFunctionRegistry.DoFind(const AUID: string): ILEDFunctionProvider;
+function TLEDFunctionRegistry.Find(const AUID: string): ILEDFunctionProvider;
 begin
   Result := FProviders.Find(AUID);
 end;
 
 
-function TLEDFunctionRegistry.GetProviders: TLEDFunctionProviderList;
+function TLEDFunctionRegistry.Providers: TLEDFunctionProviderList;
 begin
   Result := FProviders;
 end;
@@ -207,10 +162,5 @@ function TLEDFunctionProviderListEnumerator.GetCurrent: ILEDFunctionProvider;
 begin
   Result := ((inherited GetCurrent) as ILEDFunctionProvider);
 end;
-
-
-initialization
-finalization
-  FreeAndNil(RegistryInstance);
 
 end.

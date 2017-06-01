@@ -181,10 +181,10 @@ end;
 
 destructor TFSXLEDFunctionProvider.Destroy;
 begin
+  inherited Destroy;
+
   FreeAndNil(FScriptSimConnect);
   FreeAndNil(FSimConnectLock);
-
-  inherited Destroy;
 end;
 
 

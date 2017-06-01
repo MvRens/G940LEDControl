@@ -6,6 +6,8 @@ uses
   System.SysUtils,
   System.Types,
 
+  X2Log.Intf,
+
   LEDFunction,
   LEDFunctionIntf,
   LEDStateIntf,
@@ -50,6 +52,12 @@ type
   protected
     function CreateLuaLEDFunction(AInfo: ILuaTable; ASetup: ILuaFunction): TCustomLuaLEDFunction; virtual; abstract;
 
+    procedure AppendVariable(ABuilder: TStringBuilder; AVariable: ILuaVariable);
+    procedure AppendTable(ABuilder: TStringBuilder; ATable: ILuaTable);
+
+    procedure DoLog(AContext: ILuaContext; ALevel: TX2LogLevel);
+    procedure DoLogMessage(AContext: ILuaContext; ALevel: TX2LogLevel; const AMessage: string);
+
     procedure ScriptRegisterFunction(Context: ILuaContext);
     procedure ScriptSetState(Context: ILuaContext);
 
@@ -91,7 +99,6 @@ uses
   System.IOUtils,
 
   Lua.API,
-  X2Log.Intf,
   X2Log.Global,
 
   LEDColorIntf,
@@ -99,18 +106,15 @@ uses
 
 
 type
+  TLuaLogProc = reference to procedure(AContext: ILuaContext; ALevel: TX2LogLevel);
+
   TLuaLog = class(TPersistent)
   private
-    FInterpreter: TLua;
+    FOnLog: TLuaLogProc;
   protected
-    procedure AppendVariable(ABuilder: TStringBuilder; AVariable: ILuaVariable);
-    procedure AppendTable(ABuilder: TStringBuilder; ATable: ILuaTable);
-
-    procedure Log(AContext: ILuaContext; ALevel: TX2LogLevel);
-
-    property Interpreter: TLua read FInterpreter;
+    property OnLog: TLuaLogProc read FOnLog;
   public
-    constructor Create(AInterpreter: TLua);
+    constructor Create(AOnLog: TLuaLogProc);
   published
     procedure Verbose(Context: ILuaContext);
     procedure Info(Context: ILuaContext);
@@ -149,7 +153,7 @@ begin
   FWorkers := TDictionary<string, TCustomLuaLEDFunctionWorker>.Create;
   FInterpreter := TLua.Create;
   FScriptFolders := AScriptFolders;
-  FScriptLog := TLuaLog.Create(FInterpreter);
+  FScriptLog := TLuaLog.Create(DoLog);
 
   InitInterpreter;
 
@@ -159,11 +163,11 @@ end;
 
 destructor TCustomLuaLEDFunctionProvider.Destroy;
 begin
+  inherited Destroy;
+
   FreeAndNil(FInterpreter);
   FreeAndNil(FScriptLog);
   FreeAndNil(FWorkers);
-
-  inherited Destroy;
 end;
 
 
@@ -189,6 +193,87 @@ begin
 end;
 
 
+procedure TCustomLuaLEDFunctionProvider.AppendVariable(ABuilder: TStringBuilder; AVariable: ILuaVariable);
+begin
+  case AVariable.VariableType of
+    VariableBoolean:
+      if AVariable.AsBoolean then
+        ABuilder.Append('true')
+      else
+        ABuilder.Append('false');
+
+    VariableTable:
+      AppendTable(ABuilder, AVariable.AsTable);
+  else
+    ABuilder.Append(AVariable.AsString);
+  end;
+end;
+
+
+procedure TCustomLuaLEDFunctionProvider.AppendTable(ABuilder: TStringBuilder; ATable: ILuaTable);
+var
+  firstItem: Boolean;
+  item: TLuaKeyValuePair;
+
+begin
+  ABuilder.Append('{ ');
+  firstItem := True;
+
+  for item in ATable do
+  begin
+    if firstItem then
+      firstItem := False
+    else
+      ABuilder.Append(', ');
+
+    AppendVariable(ABuilder, item.Key);
+    ABuilder.Append(' = ');
+    AppendVariable(ABuilder, item.Value);
+  end;
+
+  ABuilder.Append(' }');
+end;
+
+
+procedure TCustomLuaLEDFunctionProvider.DoLog(AContext: ILuaContext; ALevel: TX2LogLevel);
+var
+  msg: TStringBuilder;
+  parameter: ILuaVariable;
+
+begin
+  msg := TStringBuilder.Create;
+  try
+    for parameter in AContext.Parameters do
+    begin
+      AppendVariable(msg, parameter);
+      msg.Append(' ');
+    end;
+
+    DoLogMessage(AContext, ALevel, msg.ToString);
+  finally
+    FreeAndNil(msg);
+  end;
+end;
+
+
+procedure TCustomLuaLEDFunctionProvider.DoLogMessage(AContext: ILuaContext; ALevel: TX2LogLevel; const AMessage: string);
+var
+  debug: lua_Debug;
+  fileName: string;
+
+begin
+  fileName := 'Lua';
+
+  if Interpreter.HasState and (lua_getstack(Interpreter.State, 1, debug) <> 0) then
+  begin
+    lua_getinfo(Interpreter.State, 'Sl', debug);
+    fileName := fileName + ' - ' + string(debug.source)
+  end;
+
+  TX2GlobalLog.Log(ALevel, AMessage, filename);
+end;
+
+
 procedure TCustomLuaLEDFunctionProvider.ScriptRegisterFunction(Context: ILuaContext);
 var
   info: ILuaTable;
@@ -210,6 +295,7 @@ begin
   if not info.HasValue('uid') then
     raise ELuaScriptError.Create('"uid" value is required for RegisterFunction parameter 1');
 
+  DoLogMessage(Context, TX2LogLevel.Info, Format('Registering function: %s', [info.GetValue('uid').AsString]));
   RegisterFunction(CreateLuaLEDFunction(info, setup));
 end;
 
@@ -237,6 +323,7 @@ begin
   if not Assigned(worker) then
     raise ELuaScriptError.Create('Context expected for SetState parameter 1');
 
+  DoLogMessage(Context, TX2LogLevel.Info, Format('Setting state for %s to: %s', [worker.GetFunctionUID, stateUID]));
   worker.SetCurrentState(stateUID);
 end;
 
@@ -397,108 +484,35 @@ end;
 
 
 { TLuaLog }
-constructor TLuaLog.Create(AInterpreter: TLua);
+constructor TLuaLog.Create(AOnLog: TLuaLogProc);
 begin
   inherited Create;
 
-  FInterpreter := AInterpreter;
-end;
-
-
-procedure TLuaLog.AppendVariable(ABuilder: TStringBuilder; AVariable: ILuaVariable);
-begin
-  case AVariable.VariableType of
-    VariableBoolean:
-      if AVariable.AsBoolean then
-        ABuilder.Append('true')
-      else
-        ABuilder.Append('false');
-
-    VariableTable:
-      AppendTable(ABuilder, AVariable.AsTable);
-  else
-    ABuilder.Append(AVariable.AsString);
-  end;
-end;
-
-
-procedure TLuaLog.AppendTable(ABuilder: TStringBuilder; ATable: ILuaTable);
-var
-  firstItem: Boolean;
-  item: TLuaKeyValuePair;
-
-begin
-  ABuilder.Append('{ ');
-  firstItem := True;
-
-  for item in ATable do
-  begin
-    if firstItem then
-      firstItem := False
-    else
-      ABuilder.Append(', ');
-
-    AppendVariable(ABuilder, item.Key);
-    ABuilder.Append(' = ');
-    AppendVariable(ABuilder, item.Value);
-  end;
-
-  ABuilder.Append(' }');
-end;
-
-
-procedure TLuaLog.Log(AContext: ILuaContext; ALevel: TX2LogLevel);
-var
-  debug: lua_Debug;
-  fileName: string;
-  msg: TStringBuilder;
-  parameter: ILuaVariable;
-
-begin
-  fileName := 'Lua';
-
-  if Interpreter.HasState and (lua_getstack(Interpreter.State, 1, debug) <> 0) then
-  begin
-    lua_getinfo(Interpreter.State, 'Sl', debug);
-    fileName := fileName + ' - ' + string(debug.source)
-  end;
-
-  msg := TStringBuilder.Create;
-  try
-    for parameter in AContext.Parameters do
-    begin
-      AppendVariable(msg, parameter);
-      msg.Append(' ');
-    end;
-
-    TX2GlobalLog.Log(ALevel, msg.ToString, fileName);
-  finally
-    FreeAndNil(msg);
-  end;
+  FOnLog := AOnLog;
 end;
 
 
 procedure TLuaLog.Verbose(Context: ILuaContext);
 begin
-  Log(Context, TX2LogLevel.Verbose);
+  OnLog(Context, TX2LogLevel.Verbose);
 end;
 
 
 procedure TLuaLog.Info(Context: ILuaContext);
 begin
-  Log(Context, TX2LogLevel.Info);
+  OnLog(Context, TX2LogLevel.Info);
 end;
 
 
 procedure TLuaLog.Warning(Context: ILuaContext);
 begin
-  Log(Context, TX2LogLevel.Warning);
+  OnLog(Context, TX2LogLevel.Warning);
 end;
 
 
 procedure TLuaLog.Error(Context: ILuaContext);
 begin
-  Log(Context, TX2LogLevel.Error);
+  OnLog(Context, TX2LogLevel.Error);
 end;
 
 end.
