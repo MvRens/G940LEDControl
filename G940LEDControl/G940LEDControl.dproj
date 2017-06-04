@@ -51,7 +51,7 @@
 		<PropertyGroup Condition="'$(Base)'!=''">
 			<VerInfo_Release>6</VerInfo_Release>
 			<VerInfo_MinorVer>1</VerInfo_MinorVer>
-			<DCC_UsePackage>rtl;dbrtl;$(DCC_UsePackage)</DCC_UsePackage>
+			<DCC_UsePackage>rtl;dbrtl;xmlrtl;$(DCC_UsePackage)</DCC_UsePackage>
 			<DCC_DcuOutput>Lib</DCC_DcuOutput>
 			<DCC_ExeOutput>Bin</DCC_ExeOutput>
 			<DCC_UnitSearchPath>..\Shared;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
@@ -63,10 +63,12 @@
 			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win64)'!=''">
+			<DCC_UsePackage>vclx;vcl;vclactnband;$(DCC_UsePackage)</DCC_UsePackage>
 			<Icon_MainIcon>G940LEDControl_Icon.ico</Icon_MainIcon>
 			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win32)'!=''">
+			<DCC_UsePackage>vclx;vcl;vclactnband;$(DCC_UsePackage)</DCC_UsePackage>
 			<DCC_PACKAGE_NO_LINK>false</DCC_PACKAGE_NO_LINK>
 			<DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
 			<DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>

@@ -4,3 +4,4 @@ __history
 *.exe
 *.identcache
 Docs/_build/
+*.sublime-workspace

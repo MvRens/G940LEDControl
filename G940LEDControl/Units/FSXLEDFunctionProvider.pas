@@ -26,12 +26,14 @@ type
     FSimConnect: TInterfacedObject;
     FSimConnectLock: TCriticalSection;
     FProfileMenuSimConnect: IFSXSimConnectProfileMenu;
-    FScriptSimConnect: TObject;
   protected
     function GetUID: string; override;
     function CreateLuaLEDFunction(AInfo: ILuaTable; AOnSetup: ILuaFunction): TCustomLuaLEDFunction; override;
 
     procedure InitInterpreter; override;
+    procedure ScriptOnSimConnect(Context: ILuaContext);
+    procedure ScriptFSXWindowVisible(Context: ILuaContext);
+
     procedure SetupWorker(AWorker: TFSXLEDFunctionWorker; AOnSetup: ILuaFunction);
 
     { IFSXSimConnectObserver }
@@ -132,18 +134,6 @@ type
   end;
 
 
-  TLuaSimConnect = class(TPersistent)
-  private
-    FProvider: TFSXLEDFunctionProvider;
-  protected
-    property Provider: TFSXLEDFunctionProvider read FProvider;
-  public
-    constructor Create(AProvider: TFSXLEDFunctionProvider);
-  published
-    procedure Monitor(Context: ILuaContext);
-  end;
-
-
 const
   LuaSimConnectDataTypes: array[TLuaSimConnectDataType] of string =
                           (
@@ -173,7 +163,6 @@ end;
 constructor TFSXLEDFunctionProvider.Create(const AScriptFolders: TStringDynArray);
 begin
   FSimConnectLock := TCriticalSection.Create;
-  FScriptSimConnect := TLuaSimConnect.Create(Self);
 
   inherited Create(AScriptFolders);
 end;
@@ -183,7 +172,6 @@ destructor TFSXLEDFunctionProvider.Destroy;
 begin
   inherited Destroy;
 
-  FreeAndNil(FScriptSimConnect);
   FreeAndNil(FSimConnectLock);
 end;
 
@@ -271,7 +259,8 @@ var
 begin
   inherited InitInterpreter;
 
-  Interpreter.RegisterFunctions(FScriptSimConnect, 'SimConnect');
+  Interpreter.RegisterFunction('OnSimConnect', ScriptOnSimConnect);
+  Interpreter.RegisterFunction('FSXWindowVisible', ScriptFSXWindowVisible);
 
   simConnectDataType := TLuaTable.Create;
   for dataType := Low(TLuaSimConnectDataType) to High(TLuaSimConnectDataType) do
@@ -281,6 +270,116 @@ begin
 end;
 
 
+procedure TFSXLEDFunctionProvider.ScriptOnSimConnect(Context: ILuaContext);
+var
+  workerID: string;
+  variables: ILuaTable;
+  onData: ILuaFunction;
+  worker: TCustomLuaLEDFunctionWorker;
+  definition: IFSXSimConnectDefinition;
+  variable: TLuaKeyValuePair;
+  info: ILuaTable;
+  dataType: TLuaSimConnectDataType;
+  simConnectDataType: SIMCONNECT_DATAType;
+  units: string;
+  luaVariables: TList<TLuaSimConnectVariable>;
+  luaVariable: TLuaSimConnectVariable;
+
+begin
+  CheckParameters('OnSimConnect', Context.Parameters, [VariableString, VariableTable, VariableFunction]);
+
+  workerID := Context.Parameters[0].AsString;
+  variables := Context.Parameters[1].AsTable;
+  onData := Context.Parameters[2].AsFunction;
+
+  worker := FindWorker(workerID);
+  if not Assigned(worker) then
+    raise ELuaScriptError.Create('OnSimConnect: invalid context');
+
+  definition := GetSimConnect.CreateDefinition;
+
+  luaVariables := TList<TLuaSimConnectVariable>.Create;
+  try
+    for variable in variables do
+    begin
+      if variable.Value.VariableType = VariableTable then
+      begin
+        info := variable.Value.AsTable;
+        if info.HasValue('variable') then
+        begin
+          luaVariable.Name := variable.Key.AsString;
+          units := '';
+          simConnectDataType := SIMCONNECT_DATAType_FLOAT64;
+
+          if info.HasValue('type') and GetDataType(info.GetValue('type').AsString, dataType) then
+          begin
+            luaVariable.DataType := dataType;
+
+            case dataType of
+              Float32: simConnectDataType := SIMCONNECT_DATAType_FLOAT32;
+              Int64: simConnectDataType := SIMCONNECT_DATAType_INT64;
+              Int32,
+              Bool:
+                begin
+                  simConnectDataType := SIMCONNECT_DATAType_INT32;
+                  units := 'bool';
+                end;
+
+              // TODO change to STRINGV
+              StringValue: simConnectDataType := SIMCONNECT_DATAType_STRING256;
+              XYZ: simConnectDataType := SIMCONNECT_DATAType_XYZ;
+              LatLonAlt: simConnectDataType := SIMCONNECT_DATAType_LATLONALT;
+              Waypoint: simConnectDataType := SIMCONNECT_DATAType_WAYPOINT;
+            end;
+
+            if info.HasValue('units') then
+              units := info.GetValue('units').AsString
+            else if not (dataType in [Bool, StringValue, XYZ, LatLonAlt, Waypoint]) then
+              raise ELuaScriptError.CreateFmt('OnSimConnect: missing units for variable %s', [variable.Key.AsString]);
+          end else
+          begin
+            if not info.HasValue('units') then
+              raise ELuaScriptError.CreateFmt('OnSimConnect: missing units or type for variable %s', [variable.Key.AsString]);
+
+            units := info.GetValue('units').AsString;
+          end;
+
+          luaVariables.Add(luaVariable);
+          definition.AddVariable(info.GetValue('variable').AsString, units, simConnectDataType);
+        end;
+      end;
+    end;
+
+    (worker as TFSXLEDFunctionWorker).AddDefinition(definition, TFSXFunctionWorkerDataHandler.Create(luaVariables, worker.UID, onData));
+  finally
+    FreeAndNil(luaVariables);
+  end;
+end;
+
+
+procedure TFSXLEDFunctionProvider.ScriptFSXWindowVisible(Context: ILuaContext);
+const
+  ClassNameMainWindow = 'FS98MAIN';
+  ClassNameChildWindow = 'FS98CHILD';
+  ClassNameFloatWindow = 'FS98FLOAT';
+
+var
+  windowTitle: string;
+
+begin
+  CheckParameters('FSXWindowVisible', Context.Parameters, [VariableString]);
+  windowTitle := Context.Parameters[0].AsString;
+
+  Context.Result.Push(
+    { Docked }
+    WindowVisible(ClassNameChildWindow, windowTitle, ClassNameMainWindow, '') or
+
+    { Undocked }
+    WindowVisible(ClassNameFloatWindow, windowTitle, '', ''));
+end;
+
+
+// #ToDo1 -oMvR: 4-6-2017: move up to LuaLEDFunctionProvider
 procedure TFSXLEDFunctionProvider.SetupWorker(AWorker: TFSXLEDFunctionWorker; AOnSetup: ILuaFunction);
 begin
   try
@@ -559,112 +658,6 @@ begin
   except
     on E:Exception do
       TX2GlobalLog.Category('Lua').Exception(E);
-  end;
-end;
-
-
-{ TLuaSimConnect }
-constructor TLuaSimConnect.Create(AProvider: TFSXLEDFunctionProvider);
-begin
-  inherited Create;
-
-  FProvider := AProvider;
-end;
-
-
-procedure TLuaSimConnect.Monitor(Context: ILuaContext);
-var
-  workerID: string;
-  variables: ILuaTable;
-  onData: ILuaFunction;
-  worker: TCustomLuaLEDFunctionWorker;
-  definition: IFSXSimConnectDefinition;
-  variable: TLuaKeyValuePair;
-  info: ILuaTable;
-  dataType: TLuaSimConnectDataType;
-  simConnectDataType: SIMCONNECT_DATAType;
-  units: string;
-  luaVariables: TList<TLuaSimConnectVariable>;
-  luaVariable: TLuaSimConnectVariable;
-
-begin
-  if Context.Parameters.Count < 3 then
-    raise ELuaScriptError.Create('Not enough parameters for SimConnect.Monitor');
-
-  if Context.Parameters[0].VariableType <> VariableString then
-    raise ELuaScriptError.Create('Context expected for SimConnect.Monitor parameter 1');
-
-  if Context.Parameters[1].VariableType <> VariableTable then
-    raise ELuaScriptError.Create('Table expected for SimConnect.Monitor parameter 2');
-
-  if Context.Parameters[2].VariableType <> VariableFunction then
-    raise ELuaScriptError.Create('Function expected for SimConnect.Monitor parameter 3');
-
-  workerID := Context.Parameters[0].AsString;
-  variables := Context.Parameters[1].AsTable;
-  onData := Context.Parameters[2].AsFunction;
-
-  worker := Provider.FindWorker(workerID);
-  if not Assigned(worker) then
-    raise ELuaScriptError.Create('Context expected for SimConnect.Monitor parameter 1');
-
-  definition := Provider.GetSimConnect.CreateDefinition;
-
-  luaVariables := TList<TLuaSimConnectVariable>.Create;
-  try
-    for variable in variables do
-    begin
-      if variable.Value.VariableType = VariableTable then
-      begin
-        info := variable.Value.AsTable;
-        if info.HasValue('variable') then
-        begin
-          luaVariable.Name := variable.Key.AsString;
-          units := '';
-          simConnectDataType := SIMCONNECT_DATAType_FLOAT64;
-
-          if info.HasValue('type') and GetDataType(info.GetValue('type').AsString, dataType) then
-          begin
-            luaVariable.DataType := dataType;
-
-            case dataType of
-              Float32: simConnectDataType := SIMCONNECT_DATAType_FLOAT32;
-              Int64: simConnectDataType := SIMCONNECT_DATAType_INT64;
-              Int32,
-              Bool:
-                begin
-                  simConnectDataType := SIMCONNECT_DATAType_INT32;
-                  units := 'bool';
-                end;
-
-              // TODO change to STRINGV
-              StringValue: simConnectDataType := SIMCONNECT_DATAType_STRING256;
-              XYZ: simConnectDataType := SIMCONNECT_DATAType_XYZ;
-              LatLonAlt: simConnectDataType := SIMCONNECT_DATAType_LATLONALT;
-              Waypoint: simConnectDataType := SIMCONNECT_DATAType_WAYPOINT;
-            end;
-
-            if info.HasValue('units') then
-              units := info.GetValue('units').AsString
-            else if not (dataType in [Bool, StringValue, XYZ, LatLonAlt, Waypoint]) then
-              raise ELuaScriptError.CreateFmt('Missing units for variable %s', [variable.Key.AsString]);
-          end else
-          begin
-            if not info.HasValue('units') then
-              raise ELuaScriptError.CreateFmt('Missing units or type for variable %s', [variable.Key.AsString]);
-
-            units := info.GetValue('units').AsString;
-          end;
-
-          luaVariables.Add(luaVariable);
-          definition.AddVariable(info.GetValue('variable').AsString, units, simConnectDataType);
-        end;
-      end;
-    end;
-
-    (worker as TFSXLEDFunctionWorker).AddDefinition(definition, TFSXFunctionWorkerDataHandler.Create(luaVariables, worker.UID, onData));
-  finally
-    FreeAndNil(luaVariables);
   end;
 end;
 

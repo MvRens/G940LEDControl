@@ -7,3 +7,4 @@ G940LEDControl documentation
 
    introduction
    scripting
+   scriptingreference

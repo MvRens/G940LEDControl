@@ -228,6 +228,7 @@ type
 
 implementation
 uses
+  System.IOUtils,
   System.SysUtils,
   System.Types,
   System.Win.ComObj,
@@ -333,6 +334,12 @@ begin
   SetLength(scriptPaths, 2);
   scriptPaths[0] := App.Path + FSXScriptsPath;
   scriptPaths[1] := App.UserPath + UserDataPath + FSXScriptsPath;
+
+  if DebugHook <> 0 then
+  begin
+    SetLength(scriptPaths, 3);
+    scriptPaths[2] := TPath.GetFullPath(App.Path + '..\' + FSXScriptsPath);
+  end;
 
   FunctionRegistry.Register(TFSXLEDFunctionProvider.Create(scriptPaths));
 

@@ -6,6 +6,8 @@ uses
   System.SysUtils,
   System.Types,
 
+  OtlTask,
+  OtlTaskControl,
   X2Log.Intf,
 
   LEDFunction,
@@ -52,6 +54,7 @@ type
   protected
     function CreateLuaLEDFunction(AInfo: ILuaTable; ASetup: ILuaFunction): TCustomLuaLEDFunction; virtual; abstract;
 
+    procedure CheckParameters(const AFunctionName: string; AParameters: ILuaReadParameters; AExpectedTypes: array of TLuaVariableType);
     procedure AppendVariable(ABuilder: TStringBuilder; AVariable: ILuaVariable);
     procedure AppendTable(ABuilder: TStringBuilder; ATable: ILuaTable);
 
@@ -60,6 +63,10 @@ type
 
     procedure ScriptRegisterFunction(Context: ILuaContext);
     procedure ScriptSetState(Context: ILuaContext);
+    procedure ScriptOnTimer(Context: ILuaContext);
+    procedure ScriptWindowVisible(Context: ILuaContext);
+
+    function WindowVisible(const AClassName, AWindowTitle, AParentClassName, AParentWindowTitle: string): Boolean;
 
     procedure InitInterpreter; virtual;
     procedure RegisterFunctions; override;
@@ -81,10 +88,14 @@ type
   private
     FProvider: TCustomLuaLEDFunctionProvider;
     FUID: string;
+    FTasks: TList<IOmniTaskControl>;
 
     procedure SetProvider(const Value: TCustomLuaLEDFunctionProvider);
   protected
+    procedure AddTask(ATask: IOmniTaskControl);
+
     property Provider: TCustomLuaLEDFunctionProvider read FProvider write SetProvider;
+    property Tasks: TList<IOmniTaskControl> read FTasks;
   public
     constructor Create(const AProviderUID, AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''); override;
     destructor Destroy; override;
@@ -97,6 +108,8 @@ implementation
 uses
   System.Classes,
   System.IOUtils,
+  System.StrUtils,
+  Winapi.Windows,
 
   Lua.API,
   X2Log.Global,
@@ -120,6 +133,18 @@ type
     procedure Info(Context: ILuaContext);
     procedure Warning(Context: ILuaContext);
     procedure Error(Context: ILuaContext);
+  end;
+
+
+  TLuaTimerTask = class(TOmniWorker)
+  private
+    FOnTimer: TProc;
+  protected
+    property OnTimer: TProc read FOnTimer;
+  public
+    constructor Create(AOnTimer: TProc);
+
+    procedure Run;
   end;
 
 
@@ -173,12 +198,33 @@ end;
 
 procedure TCustomLuaLEDFunctionProvider.InitInterpreter;
 var
+  requirePath: TStringBuilder;
+  scriptFolder: string;
   table: ILuaTable;
   color: TLEDColor;
 
 begin
+  requirePath := TStringBuilder.Create;
+  try
+    for scriptFolder in ScriptFolders do
+    begin
+      if requirePath.Length > 0 then
+        requirePath.Append(';');
+
+      requirePath.Append(IncludeTrailingPathDelimiter(scriptFolder)).Append('?;')
+                 .Append(IncludeTrailingPathDelimiter(scriptFolder)).Append('?.lua');
+    end;
+
+    Interpreter.SetRequirePath(requirePath.ToString);
+    Interpreter.GetRequirePath;
+  finally
+    FreeAndNil(requirePath);
+  end;
+
   Interpreter.RegisterFunction('RegisterFunction', ScriptRegisterFunction);
   Interpreter.RegisterFunction('SetState', ScriptSetState);
+  Interpreter.RegisterFunction('OnTimer', ScriptOnTimer);
+  Interpreter.RegisterFunction('WindowVisible', ScriptWindowVisible);
 
   Interpreter.RegisterFunctions(FScriptLog, 'Log');
 
@@ -187,9 +233,30 @@ begin
     table.SetValue(LuaLEDColors[color], LuaLEDColors[color]);
 
   Interpreter.SetGlobalVariable('LEDColor', table);
+end;
 
-  // #ToDo1 -oMvR: 29-5-2017: Timer
-  // #ToDo1 -oMvR: 29-5-2017: FindWindow / FindFSXWindow
+
+procedure TCustomLuaLEDFunctionProvider.CheckParameters(const AFunctionName: string; AParameters: ILuaReadParameters; AExpectedTypes: array of TLuaVariableType);
+const
+  VariableTypeName: array[TLuaVariableType] of string =
+                    (
+                      'None', 'Boolean', 'Integer',
+                      'Number', 'UserData', 'String',
+                      'Table', 'Function'
+                    );
+
+var
+  parameterIndex: Integer;
+
+begin
+  if AParameters.Count < Length(AExpectedTypes) then
+    raise ELuaScriptError.CreateFmt('%s: expected at least %d parameter%s', [AFunctionName, Length(AExpectedTypes), IfThen(Length(AExpectedTypes) <> 1, 's', '')]);
+
+  for parameterIndex := 0 to High(AExpectedTypes) do
+    if AParameters[parameterIndex].VariableType <> AExpectedTypes[parameterIndex] then
+      raise ELuaScriptError.CreateFmt('%s: expected %s for parameter %d, got %s',
+                                      [AFunctionName, VariableTypeName[AExpectedTypes[parameterIndex]],
+                                       Succ(parameterIndex), VariableTypeName[AParameters[parameterIndex].VariableType]]);
 end;
 
 
@@ -280,20 +347,13 @@ var
   setup: ILuaFunction;
 
 begin
-  if Context.Parameters.Count < 2 then
-    raise ELuaScriptError.Create('Not enough parameters for RegisterFunction');
-
-  if Context.Parameters[0].VariableType <> VariableTable then
-    raise ELuaScriptError.Create('Table expected for RegisterFunction parameter 1');
-
-  if Context.Parameters[1].VariableType <> VariableFunction then
-    raise ELuaScriptError.Create('Function expected for RegisterFunction parameter 2');
+  CheckParameters('RegisterFunction', Context.Parameters, [VariableTable, VariableFunction]);
 
   info := Context.Parameters[0].AsTable;
   setup := Context.Parameters[1].AsFunction;
 
   if not info.HasValue('uid') then
-    raise ELuaScriptError.Create('"uid" value is required for RegisterFunction parameter 1');
+    raise ELuaScriptError.Create('RegisterFunction: "uid" value is required');
 
   DoLogMessage(Context, TX2LogLevel.Info, Format('Registering function: %s', [info.GetValue('uid').AsString]));
   RegisterFunction(CreateLuaLEDFunction(info, setup));
@@ -307,25 +367,112 @@ var
   stateUID: string;
 
 begin
-  if Context.Parameters.Count < 2 then
-    raise ELuaScriptError.Create('Not enough parameters for SetState');
-
-  if Context.Parameters[0].VariableType <> VariableString then
-    raise ELuaScriptError.Create('Context expected for SetState parameter 1');
-
-  if Context.Parameters[1].VariableType <> VariableString then
-    raise ELuaScriptError.Create('State expected for SetState parameter 2');
+  CheckParameters('SetState', Context.Parameters, [VariableString, VariableString]);
 
   workerID := Context.Parameters[0].AsString;
   stateUID := Context.Parameters[1].AsString;
 
   worker := FindWorker(workerID);
   if not Assigned(worker) then
-    raise ELuaScriptError.Create('Context expected for SetState parameter 1');
+    raise ELuaScriptError.Create('SetState: invalid context');
 
   DoLogMessage(Context, TX2LogLevel.Info, Format('Setting state for %s to: %s', [worker.GetFunctionUID, stateUID]));
   worker.SetCurrentState(stateUID);
 end;
+
+
+procedure TCustomLuaLEDFunctionProvider.ScriptOnTimer(Context: ILuaContext);
+var
+  workerID: string;
+  interval: Integer;
+  timerCallback: ILuaFunction;
+  worker: TCustomLuaLEDFunctionWorker;
+
+begin
+  CheckParameters('OnTimer', Context.Parameters, [VariableString, VariableNumber, VariableFunction]);
+
+  workerID := Context.Parameters[0].AsString;
+  interval := Context.Parameters[1].AsInteger;
+  timerCallback := Context.Parameters[2].AsFunction;
+
+  worker := FindWorker(workerID);
+  if not Assigned(worker) then
+    raise ELuaScriptError.Create('OnTimer: invalid context');
+
+  DoLogMessage(Context, TX2LogLevel.Info, Format('Adding timer for %s, interval: %d', [worker.GetFunctionUID, interval]));
+  worker.AddTask(CreateTask(TLuaTimerTask.Create(
+    procedure
+    begin
+      try
+        timerCallback.Call([workerID]);
+      except
+        on E:Exception do
+          TX2GlobalLog.Category('Lua').Exception(E);
+      end;
+    end))
+    .SetTimer(1, MSecsPerSec, @TLuaTimerTask.Run)
+    .Run);
+end;
+
+
+procedure TCustomLuaLEDFunctionProvider.ScriptWindowVisible(Context: ILuaContext);
+var
+  className: string;
+  windowTitle: string;
+  parentClassName: string;
+  parentWindowTitle: string;
+
+begin
+  if Context.Parameters.Count = 0 then
+    raise ELuaScriptError.Create('WindowVisible: expected at least 1 parameter');
+
+  className := '';
+  windowTitle := '';
+  parentClassName := '';
+  parentWindowTitle := '';
+
+  if Context.Parameters.Count >= 1 then className := Context.Parameters[0].AsString;
+  if Context.Parameters.Count >= 2 then windowTitle := Context.Parameters[1].AsString;
+  if Context.Parameters.Count >= 3 then parentClassName := Context.Parameters[2].AsString;
+  if Context.Parameters.Count >= 4 then parentWindowTitle := Context.Parameters[3].AsString;
+
+  Context.Result.Push(WindowVisible(className, windowTitle, parentClassName, parentWindowTitle));
+end;
+
+
+function TCustomLuaLEDFunctionProvider.WindowVisible(const AClassName, AWindowTitle, AParentClassName, AParentWindowTitle: string): Boolean;
+
+  function GetNilPChar(const AValue: string): PChar;
+  begin
+    if Length(AValue) > 0 then
+      Result := PChar(AValue)
+    else
+      Result := nil;
+  end;
+
+var
+  parentWindow: THandle;
+  childWindow: THandle;
+  window: THandle;
+
+begin
+  Result := False;
+
+  if (Length(AParentClassName) > 0) or (Length(AParentWindowTitle) > 0) then
+  begin
+    parentWindow := FindWindow(GetNilPChar(AParentClassName), GetNilPChar(AParentWindowTitle));
+    if parentWindow <> 0 then
+    begin
+      childWindow := FindWindowEx(parentWindow, 0, GetNilPChar(AClassName), GetNilPChar(AWindowTitle));
+      Result := (childWindow <> 0) and IsWindowVisible(childWindow);
+    end;
+  end else
+  begin
+    window := FindWindow(GetNilPChar(AClassName), GetNilPChar(AWindowTitle));
+    Result := (window <> 0) and IsWindowVisible(window);
+  end;
+end;
+
 
 
 procedure TCustomLuaLEDFunctionProvider.RegisterFunctions;
@@ -461,10 +608,33 @@ begin
 end;
 
 destructor TCustomLuaLEDFunctionWorker.Destroy;
+var
+  task: IOmniTaskControl;
+
 begin
+  if Assigned(Tasks) then
+  begin
+    for task in Tasks do
+    begin
+      task.Stop;
+      task.WaitFor(INFINITE);
+    end;
+
+    FreeAndNil(FTasks);
+  end;
+
   SetProvider(nil);
 
   inherited Destroy;
+end;
+
+
+procedure TCustomLuaLEDFunctionWorker.AddTask(ATask: IOmniTaskControl);
+begin
+  if not Assigned(Tasks) then
+    FTasks := TList<IOmniTaskControl>.Create;
+
+  Tasks.Add(ATask);
 end;
 
 
@@ -513,6 +683,21 @@ end;
 procedure TLuaLog.Error(Context: ILuaContext);
 begin
   OnLog(Context, TX2LogLevel.Error);
+end;
+
+
+{ TLuaTimerTask }
+constructor TLuaTimerTask.Create(AOnTimer: TProc);
+begin
+  inherited Create;
+
+  FOnTimer := AOnTimer;
+end;
+
+
+procedure TLuaTimerTask.Run;
+begin
+  FOnTimer();
 end;
 
 end.
