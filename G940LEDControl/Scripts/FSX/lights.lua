@@ -1,0 +1,8 @@
+-- Beacon lights
+-- Instrument lights
+-- Landing lights
+-- Nav lights
+-- Recognition lights
+-- Strobe lights
+-- Taxi lights
+-- All lights

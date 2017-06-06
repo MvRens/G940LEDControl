@@ -53,14 +53,17 @@ var
 begin
   isRestarting := FindCmdLineSwitch('restart');
 
-  while not SingleInstance('{67D1802F-2AB8-40B9-ADD7-14C9D36903C8}', False, False) do
+  if not FindCmdLineSwitch('multiinstance') then
   begin
-    Instance.Close;
+    while not SingleInstance('{67D1802F-2AB8-40B9-ADD7-14C9D36903C8}', False, False) do
+    begin
+      Instance.Close;
 
-    if not isRestarting then
-      exit;
+      if not isRestarting then
+        exit;
 
-    Sleep(1000);
+      Sleep(1000);
+    end;
   end;
 
   Application.Initialize;

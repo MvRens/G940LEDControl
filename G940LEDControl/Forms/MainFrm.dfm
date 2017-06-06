@@ -1,7 +1,7 @@
 object MainForm: TMainForm
   Left = 0
   Top = 0
-  ActiveControl = cbTrayIcon
+  ActiveControl = cmbProfiles
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'G940 LED Control'
@@ -30,7 +30,7 @@ object MainForm: TMainForm
     Margins.Top = 8
     Margins.Right = 8
     Margins.Bottom = 8
-    ActivePage = tsConfiguration
+    ActivePage = tsButtons
     Align = alClient
     TabOrder = 0
     object tsButtons: TTabSheet
@@ -529,10 +529,6 @@ object MainForm: TMainForm
     object tsAbout: TTabSheet
       Caption = 'About'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object lblVersionCaption: TLabel
         Left = 16
         Top = 67

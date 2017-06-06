@@ -1,14 +1,16 @@
 local strings = require './lib/strings'
 
 
+
+-- ATC panel
 RegisterFunction(
   {
     uid = 'atcVisiblity',
     category = strings.Category.FSX.Panels,
-    displayName = 'ATC Visibility',
+    displayName = 'ATC panel',
     states = {
-      hidden = { displayName = 'Hidden', default = LEDColor.Green },
-      visible = { displayName = 'Visible', default =  LEDColor.FlashingAmberNormal },
+      hidden = { displayName = 'Hidden', default = LEDColor.Green, order = 1 },
+      visible = { displayName = 'Visible', default =  LEDColor.FlashingAmberNormal, order = 2 },
     }
   },
   function(context)

@@ -59,6 +59,9 @@ Registers a button function.
 |     **default**: string
 |     The default color and/or animation assigned to the state when it is first selected. See :ref:`ref-ledcolor` for a list of valid values.
 |
+|     **order**: number (optional)
+|     Specifies the order in which the state is shown in the button function selection screen. If not specified, defaults to 0. States with an equal order are sorted alphabetically.
+|
 | **setupCallback**: function
 | A Lua function which is called when the button function is configured. Please note that if a button function is linked to multiple G940 throttle buttons, setupCallback is called multiple times, so be careful with variables which are outside of the setupCallback's scope (global or script-local)!
 |
@@ -129,8 +132,11 @@ Registers a Lua function to be called when the specified SimConnect variable(s) 
 |   **variable**: string
 |   The name of the variable as described in `Simulation variables <https://msdn.microsoft.com/en-us/library/cc526981.aspx>`_.
 |
-|   **data**: string
+|   **type**: string
 |   One of the :ref:`ref-simconnectdatatype` values.
+|
+|   **units**: string
+|   If relevant to the variable, one of the `Units of Measurement <https://msdn.microsoft.com/en-us/library/cc526981.aspx#UnitsofMeasurement>`_ supported by SimConnect. For example, 'percent'. If type is SimConnectDataType.Bool, this will be automatically set to 'bool'.
 |
 | **variablesChangedCallback**: function
 | A Lua function which is called when the variable's value changes. It receives 2 parameters: 'context' and 'data'. The data parameter is a Lua table where each key corresponds to a variable defined in the 'variables' parameter and it's value is the current value of the simulation variable.

@@ -108,6 +108,8 @@ implementation
 uses
   System.Classes,
   System.IOUtils,
+  System.Generics.Defaults,
+  System.Math,
   System.StrUtils,
   Winapi.Windows,
 
@@ -557,32 +559,62 @@ end;
 
 
 procedure TCustomLuaLEDFunction.RegisterStates;
+type
+  TOrderedLEDState = record
+    Order: Integer;
+    State: ILEDState;
+  end;
+
 var
-  state: TLuaKeyValuePair;
+  states: TList<TOrderedLEDState>;
+  scriptState: TLuaKeyValuePair;
   displayName: string;
   defaultColor: TLEDColor;
   info: ILuaTable;
+  state: TOrderedLEDState;
 
 begin
   if not Assigned(ScriptStates) then
     exit;
 
-  for state in ScriptStates do
-  begin
-    displayName := state.Key.AsString;
-    defaultColor := lcOff;
-
-    if state.Value.VariableType = VariableTable then
+  states := TList<TOrderedLEDState>.Create;
+  try
+    for scriptState in ScriptStates do
     begin
-      info := state.Value.AsTable;
-      if info.HasValue('displayName') then
-        displayName := info.GetValue('displayName').AsString;
+      state.Order := 0;
 
-      if info.HasValue('default') then
-        defaultColor := GetLEDColor(info.GetValue('default').AsString);
+      displayName := scriptState.Key.AsString;
+      defaultColor := lcOff;
+
+      if scriptState.Value.VariableType = VariableTable then
+      begin
+        info := scriptState.Value.AsTable;
+        if info.HasValue('displayName') then
+          displayName := info.GetValue('displayName').AsString;
+
+        if info.HasValue('default') then
+          defaultColor := GetLEDColor(info.GetValue('default').AsString);
+
+        if info.HasValue('order') then
+          state.Order := info.GetValue('order').AsInteger;
+      end;
+
+      state.State := TLEDState.Create(scriptState.Key.AsString, displayName, defaultColor);
+      states.Add(state)
     end;
 
-    RegisterState(TLEDState.Create(state.Key.AsString, displayName, defaultColor));
+    states.Sort(TDelegatedComparer<TOrderedLEDState>.Create(
+      function(const Left, Right: TOrderedLEDState): Integer
+      begin
+        Result := CompareValue(Left.Order, Right.Order);
+        if Result = 0 then
+          Result := CompareText(Left.State.GetDisplayName, Right.State.GetDisplayName);
+      end));
+
+    for state in states do
+      RegisterState(state.State);
+  finally
+    FreeAndNil(states);
   end;
 end;
 

@@ -1,15 +1,23 @@
 local strings = require './lib/strings'
 
+-- Autopilot master
+-- Autopilot altitude
+-- Autopilot approach
+-- Autopilot backcourse
+-- Autopilot heading
+-- Autopilot nav
 
+
+-- Autopilot airspeed
 RegisterFunction(
   {
     uid = 'autoPilotAirspeed',
     category = strings.Category.FSX.AutoPilot,
     displayName = 'Autopilot airspeed',
     states = {
-      on = { displayName = 'On', default = LEDColor.Green },
-      off = { displayName = 'Off', default =  LEDColor.Red },
-      notAvailable = { displayName = 'Not available', default = LEDColor.Off }
+      notAvailable = { displayName = 'Not available', default = LEDColor.Off, order = 1 },
+      on = { displayName = 'On', default = LEDColor.Green, order = 2 },
+      off = { displayName = 'Off', default =  LEDColor.Red, order = 3 }
     }
   },
   function(context)

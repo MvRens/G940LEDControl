@@ -1,0 +1,2 @@
+-- Pitot heat (on / off only)
+-- Pitot heat (including warnings)

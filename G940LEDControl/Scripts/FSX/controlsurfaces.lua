@@ -1,0 +1,6 @@
+-- Flaps
+-- Flaps (handle position)
+-- Flaps (handle position - percentage)
+-- Spoilers
+-- Auto-spoilers armed
+-- Water rudder
