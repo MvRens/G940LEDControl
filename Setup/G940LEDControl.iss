@@ -33,6 +33,9 @@ Source: "..\G940LEDControl\Bin\LogiJoystickDLL.dll"; DestDir: "{app}"; Flags: ig
 Source: "..\G940LEDControl\Bin\FSX-SimConnect.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\G940LEDControl\Bin\FSX-SE-SimConnect.dll"; DestDir: "{app}"; Flags: ignoreversion
 
+[Dirs]
+Name: "{userappdata}\G940LEDControl\Scripts\FSX"
+
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"
 Name: "{commondesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon

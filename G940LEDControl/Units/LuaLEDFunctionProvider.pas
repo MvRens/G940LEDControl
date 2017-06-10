@@ -493,7 +493,7 @@ var
 
 begin
   for scriptFolder in ScriptFolders do
-    if TDirectory.Exists(scriptFolder) then
+    if ForceDirectories(scriptFolder) then
       for scriptFile in TDirectory.GetFiles(ScriptFolder, '*.lua') do
       try
         Interpreter.LoadFromFile(scriptFile);
