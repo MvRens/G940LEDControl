@@ -29,7 +29,7 @@ uses
   LEDStateConsumer,
   Profile,
   ProfileManager,
-  Settings;
+  Settings, Vcl.Dialogs;
 
 
 const
@@ -129,6 +129,7 @@ type
     TrayIcon: TTrayIcon;
     ApplicationEvents: TApplicationEvents;
     cbFSXSEAutoLaunch: TCheckBox;
+    ScriptErrorDialog: TTaskDialog;
 
     procedure FormCreate(Sender: TObject);
     procedure lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
@@ -232,7 +233,6 @@ uses
   System.SysUtils,
   System.Types,
   System.Win.ComObj,
-  Vcl.Dialogs,
   Vcl.Graphics,
   Winapi.ShellAPI,
 
@@ -254,6 +254,7 @@ uses
   G940LEDStateConsumer,
   LEDColorIntf,
   LEDFunctionIntf,
+  LuaLEDFunctionProvider,
   StaticLEDFunction,
   StaticResources;
 
@@ -313,6 +314,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 var
   worker: IOmniWorker;
   scriptPaths: TStringDynArray;
+  provider: ILEDFunctionProvider;
 
 begin
   FLog := TX2GlobalLog.Category('UI');
@@ -341,8 +343,29 @@ begin
     scriptPaths[2] := TPath.GetFullPath(App.Path + '..\' + FSXScriptsPath);
   end;
 
-  FunctionRegistry.Register(TFSXLEDFunctionProvider.Create(scriptPaths));
+  while True do
+  begin
+    try
+      provider := TFSXLEDFunctionProvider.Create(scriptPaths);
+      Break;
+    except
+      on E:ELuaScriptLoadError do
+      begin
+        ScriptErrorDialog.Caption := Self.Caption;
+        ScriptErrorDialog.Text := Format('One or more errors occured while trying to load "%s"', [E.Filename]);
+        ScriptErrorDialog.ExpandedText := E.Message;
+        ScriptErrorDialog.Execute;
 
+        if ScriptErrorDialog.ModalResult = mrClose then
+        begin
+          Application.Terminate;
+          Exit;
+        end;
+      end;
+    end;
+  end;
+
+  FunctionRegistry.Register(provider);
 
   FEventMonitor := TOmniEventMonitor.Create(Self);
 

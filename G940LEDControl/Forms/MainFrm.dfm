@@ -1175,4 +1175,27 @@ object MainForm: TMainForm
     Left = 300
     Top = 436
   end
+  object ScriptErrorDialog: TTaskDialog
+    Buttons = <
+      item
+        Caption = '&Try again'
+        Default = True
+        CommandLinkHint = 'Reload all scripts'
+        ModalResult = 4
+      end
+      item
+        Caption = '&Cancel'
+        CommandLinkHint = 'Exit G940LEDControl'
+        ModalResult = 8
+      end>
+    CommonButtons = []
+    ExpandedText = '<Error message>'
+    Flags = [tfAllowDialogCancellation, tfUseCommandLinks, tfExpandedByDefault]
+    MainIcon = 2
+    RadioButtons = <>
+    Text = '<File name>'
+    Title = 'Script error'
+    Left = 384
+    Top = 376
+  end
 end

@@ -18,6 +18,15 @@ uses
 type
   ELuaScriptError = class(Exception);
 
+  ELuaScriptLoadError = class(ELuaScriptError)
+  private
+    FFilename: string;
+  public
+    constructor Create(const AMessage, AFilename: string);
+
+    property Filename: string read FFilename;
+  end;
+
   TCustomLuaLEDFunctionWorker = class;
 
 
@@ -490,7 +499,7 @@ begin
         Interpreter.LoadFromFile(scriptFile);
       except
         on E:Exception do
-          Exception.RaiseOuterException(ELuaScriptError.CreateFmt('Error while loading script %s: %s', [scriptFile, E.Message]));
+          Exception.RaiseOuterException(ELuaScriptLoadError.Create(E.Message, scriptFile));
       end;
 end;
 
@@ -730,6 +739,14 @@ end;
 procedure TLuaTimerTask.Run;
 begin
   FOnTimer();
+end;
+
+{ ELuaScriptLoadError }
+constructor ELuaScriptLoadError.Create(const AMessage, AFilename: string);
+begin
+  inherited Create(AMessage);
+
+  FFilename := AFilename;
 end;
 
 end.
