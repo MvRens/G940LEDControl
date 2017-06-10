@@ -32,6 +32,7 @@ Source: "..\G940LEDControl\Bin\{#AppExeName}"; DestDir: "{app}"; Flags: ignoreve
 Source: "..\G940LEDControl\Bin\LogiJoystickDLL.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\G940LEDControl\Bin\FSX-SimConnect.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\G940LEDControl\Bin\FSX-SE-SimConnect.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\G940LEDControl\Scripts\*.lua"; DestDir: "{app}\Scripts"; Flags: ignoreversion recursesubdirs
 
 [Dirs]
 Name: "{userappdata}\G940LEDControl\Scripts\FSX"

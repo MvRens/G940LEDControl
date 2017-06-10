@@ -52,7 +52,7 @@ RegisterFunction(
           SetState(context, prefix..'50To75')
         elseif ice >= 75 and ice <= 99 then
           SetState(context, prefix..'75To100')
-        elseif ice = 100 then
+        elseif ice == 100 then
           SetState(context, prefix..'100')
         else
           SetState(context, prefix..'0')

@@ -10,7 +10,7 @@ Script locations
 ----------------
 The default scripts included with G940LEDControl can be found in the folder selected during installation, for example "C:\\Program Files (x86)\\G940 LED Control". In there you will find a Scripts\\FSX folder containing the Lua files.
 
-In addition scripts are loaded from your user data path. This folder is automatically created by G940LEDControl after you have changed any button configuration or settings. To open the folder, type or paste "%APPDATA%\\G940LEDControl" into a Windows Explorer address bar and press Enter. Inside you can create the same Scripts\\FSX folder structure. Scripts in this folder will not be overwritten when installing a new version.
+In addition scripts are loaded from your user data path. This folder is automatically created by G940LEDControl. To open the folder, type or paste "%APPDATA%\\G940LEDControl\\Scripts\\FSX" into a Windows Explorer address bar and press Enter. Scripts in this folder will not be overwritten when installing a new version.
 
 
 Anatomy of a button function
