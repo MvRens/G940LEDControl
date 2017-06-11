@@ -40,6 +40,6 @@ RegisterAutopilotFunction('autoPilotMaster', 'Autopilot master', 'AUTOPILOT MAST
 RegisterAutopilotFunction('autoPilotHeading', 'Autopilot heading', 'AUTOPILOT HEADING LOCK')
 RegisterAutopilotFunction('autoPilotApproach', 'Autopilot approach', 'AUTOPILOT APPROACH HOLD')
 RegisterAutopilotFunction('autoPilotBackcourse', 'Autopilot backcourse', 'AUTOPILOT BACKCOURSE HOLD')
-RegisterAutopilotFunction('autoPilotAltitude', 'Autopilot heading', 'AUTOPILOT ALTITUDE LOCK')
+RegisterAutopilotFunction('autoPilotAltitude', 'Autopilot altitude', 'AUTOPILOT ALTITUDE LOCK')
 RegisterAutopilotFunction('autoPilotNav', 'Autopilot nav', 'AUTOPILOT NAV1 LOCK')
 RegisterAutopilotFunction('autoPilotAirspeed', 'Autopilot airspeed', 'AUTOPILOT AIRSPEED HOLD')
