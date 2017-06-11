@@ -255,13 +255,15 @@ object ButtonFunctionForm: TButtonFunctionForm
       Header.Font.Height = -11
       Header.Font.Name = 'Tahoma'
       Header.Font.Style = []
-      Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible]
+      Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible, hoHeaderClickAutoSort]
+      Header.SortColumn = 0
       IncrementalSearch = isAll
       TabOrder = 1
       TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoSort, toAutoTristateTracking, toAutoDeleteMovedNodes]
       TreeOptions.MiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toInitOnSave, toWheelPanning, toEditOnClick]
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowTreeLines, toThemeAware, toUseBlendedImages]
       TreeOptions.SelectionOptions = [toFullRowSelect]
+      OnCompareNodes = vstFunctionsCompareNodes
       OnFocusChanged = vstFunctionsFocusChanged
       OnFreeNode = vstFunctionsFreeNode
       OnGetText = vstFunctionsGetText
@@ -270,7 +272,7 @@ object ButtonFunctionForm: TButtonFunctionForm
       Columns = <
         item
           Position = 0
-          Width = 257
+          Width = 253
           WideText = 'Available functions'
         end>
     end

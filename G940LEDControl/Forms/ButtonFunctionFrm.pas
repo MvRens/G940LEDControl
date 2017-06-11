@@ -66,6 +66,7 @@ type
     procedure vstFunctionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure vstFunctionsIncrementalSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; const SearchText: string; var Result: Integer);
     procedure vstFunctionsPaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType);
+    procedure vstFunctionsCompareNodes(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
   private
     FProfile: TProfile;
     FButtonIndex: Integer;
@@ -530,6 +531,28 @@ var
 begin
   nodeData := Sender.GetNodeData(Node);
   Finalize(nodeData^);
+end;
+
+
+procedure TButtonFunctionForm.vstFunctionsCompareNodes(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+var
+  nodeData1: PFunctionNodeData;
+  nodeData2: PFunctionNodeData;
+
+begin
+  nodeData1 := Sender.GetNodeData(Node1);
+  nodeData2 := Sender.GetNodeData(Node2);
+
+  if nodeData1^.NodeType <> nodeData2^.NodeType then
+    exit;
+
+  case nodeData1^.NodeType of
+    ntCategory:
+      Result := CompareText(nodeData1^.LEDFunction.GetCategoryName, nodeData2^.LEDFunction.GetCategoryName);
+
+    ntFunction:
+      Result := CompareText(nodeData1^.LEDFunction.GetDisplayName, nodeData2^.LEDFunction.GetDisplayName);
+  end;
 end;
 
 
