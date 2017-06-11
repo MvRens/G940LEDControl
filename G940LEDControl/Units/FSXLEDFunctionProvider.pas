@@ -71,9 +71,11 @@ type
   TFSXLEDFunctionWorker = class(TCustomLuaLEDFunctionWorker)
   private
     FDefinitions: TList<TFSXDefinition>;
+    FSimConnect: IFSXSimConnect;
   protected
     property Definitions: TList<TFSXDefinition> read FDefinitions;
   protected
+    function GetSimConnect: IFSXSimConnect;
     procedure AddDefinition(ADefinition: IFSXSimConnectDefinition; ADataHandler: IFSXSimConnectDataHandler);
 
     procedure HandleData(AData: Pointer); virtual; abstract;
@@ -434,13 +436,22 @@ begin
 end;
 
 
+function TFSXLEDFunctionWorker.GetSimConnect: IFSXSimConnect;
+begin
+  if not Assigned(FSimConnect) then
+    FSimConnect := (Provider as TFSXLEDFunctionProvider).GetSimConnect;
+
+  Result := FSimConnect;
+end;
+
+
 procedure TFSXLEDFunctionWorker.AddDefinition(ADefinition: IFSXSimConnectDefinition; ADataHandler: IFSXSimConnectDataHandler);
 var
   definition: TFSXDefinition;
 
 begin
   definition.DataHandler := ADataHandler;
-  definition.ID := (Provider as TFSXLEDFunctionProvider).GetSimConnect.AddDefinition(ADefinition, ADataHandler);
+  definition.ID := GetSimConnect.AddDefinition(ADefinition, ADataHandler);
 
   Definitions.Add(definition);
 end;

@@ -112,9 +112,9 @@ RegisterFunction(
           elseif runningCount == 0 then
             SetState(context, 'allOff')
           elseif runningCount == data.engineCount then
-            SetState(context, 'partiallyRunning')
-          else
             SetState(context, 'allRunning')
+          else
+            SetState(context, 'partiallyRunning')
           end
         else
           SetState(context, 'noEngines')
