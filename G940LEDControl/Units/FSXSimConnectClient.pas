@@ -440,6 +440,8 @@ begin
 
   TrySimConnect('FSX-SimConnect.dll');
   if SimConnectHandle = 0 then
+    TrySimConnect('FSXSP2-SimConnect.dll');
+  if SimConnectHandle = 0 then
     TrySimConnect('FSX-SE-SimConnect.dll');
 
   if SimConnectHandle = 0 then
