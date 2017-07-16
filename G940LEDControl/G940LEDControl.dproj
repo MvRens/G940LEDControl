@@ -49,8 +49,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<VerInfo_Release>6</VerInfo_Release>
-			<VerInfo_MinorVer>1</VerInfo_MinorVer>
+			<VerInfo_MinorVer>2</VerInfo_MinorVer>
 			<DCC_UsePackage>rtl;dbrtl;$(DCC_UsePackage)</DCC_UsePackage>
 			<DCC_DcuOutput>Lib</DCC_DcuOutput>
 			<DCC_ExeOutput>Bin</DCC_ExeOutput>
@@ -59,7 +58,7 @@
 			<Manifest_File>None</Manifest_File>
 			<Icon_MainIcon>G940LEDControl_Icon.ico</Icon_MainIcon>
 			<DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;$(DCC_Namespace)</DCC_Namespace>
-			<VerInfo_Keys>CompanyName=X²Software;FileDescription=G940 LED Control;FileVersion=1.1.6.0;InternalName=;LegalCopyright=© 2011 - 2016 X²Software;LegalTrademarks=;OriginalFilename=G940LEDControl.exe;ProductName=G940 LED Control;ProductVersion=1.1;Comments=</VerInfo_Keys>
+			<VerInfo_Keys>CompanyName=X²Software;FileDescription=G940 LED Control;FileVersion=1.2.0.0;InternalName=;LegalCopyright=© 2011 - 2017 X²Software;LegalTrademarks=;OriginalFilename=G940LEDControl.exe;ProductName=G940 LED Control;ProductVersion=1.2;Comments=</VerInfo_Keys>
 			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win64)'!=''">
