@@ -102,14 +102,16 @@ RegisterFunction(
     displayName = 'Flaps (handle position - percentage)',
     states = {
       ['notAvailable'] = { displayName = 'Not available', default = LEDColor.Off, order = 1 },
-      ['0To10'] = { displayName = 'Position 0 (Up)', default = LEDColor.Green, order = 2 },
-      ['1'] = { displayName = 'Position 1', default = LEDColor.Amber, order = 3 },
-      ['2'] = { displayName = 'Position 2', default = LEDColor.Amber, order = 4 },
-      ['3'] = { displayName = 'Position 3', default = LEDColor.Amber, order = 5 },
-      ['4'] = { displayName = 'Position 4', default = LEDColor.Amber, order = 6 },
-      ['5'] = { displayName = 'Position 5', default = LEDColor.Amber, order = 7 },
-      ['6'] = { displayName = 'Position 6', default = LEDColor.Amber, order = 8 },
-      ['7'] = { displayName = 'Position 7', default = LEDColor.Amber, order = 9 },
+      ['0To10'] = { displayName = '0% - 10%', default = LEDColor.Green, order = 2 },
+      ['10To20'] = { displayName = '10% - 20%', default = LEDColor.Amber, order = 3 },
+      ['20To30'] = { displayName = '20% - 30%', default = LEDColor.Amber, order = 4 },
+      ['30To40'] = { displayName = '30% - 40%', default = LEDColor.Amber, order = 5 },
+      ['40To50'] = { displayName = '40% - 50%', default = LEDColor.Amber, order = 6 },
+      ['50To60'] = { displayName = '50% - 60%', default = LEDColor.Amber, order = 7 },
+      ['60To70'] = { displayName = '60% - 70%', default = LEDColor.Amber, order = 8 },
+      ['70To80'] = { displayName = '70% - 80%', default = LEDColor.Amber, order = 9 },
+      ['80To90'] = { displayName = '80% - 90%', default = LEDColor.Amber, order = 9 },
+      ['90To100'] = { displayName = '90% - 100%', default = LEDColor.Amber, order = 9 },
     }
   },
   function(context)
@@ -118,20 +120,31 @@ RegisterFunction(
     OnSimConnect(context,
       {
         flapsAvailable = { variable = 'FLAPS AVAILABLE', type = SimConnectDataType.Bool },
-        index = { variable = 'FLAPS HANDLE INDEX', type = SimConnectDataType.Int32, units = 'number' }
+        position = { variable = 'FLAPS HANDLE PERCENT', type = SimConnectDataType.Float64, units = 'percent' }
       },
       function(context, data)
         if data.flapsAvailable then
-          local index = data.index
-          if index < 0 then
-            index = 0
+          if data.position <= 9 then
+            SetState(context, '0To10')
+          elseif data.position >= 10 and data.position <= 19 then
+            SetState(context, '10To20')
+          elseif data.position >= 20 and data.position <= 29 then
+            SetState(context, '20To30')
+          elseif data.position >= 30 and data.position <= 39 then
+            SetState(context, '30To40')
+          elseif data.position >= 40 and data.position <= 49 then
+            SetState(context, '40To50')
+          elseif data.position >= 50 and data.position <= 59 then
+            SetState(context, '50To60')
+          elseif data.position >= 60 and data.position <= 69 then
+            SetState(context, '60To70')
+          elseif data.position >= 70 and data.position <= 79 then
+            SetState(context, '70To80')
+          elseif data.position >= 80 and data.position <= 89 then
+            SetState(context, '80To90')
+          elseif data.position >= 90 then
+            SetState(context, '90To100')
           end
-
-          if index > 7 then
-            index = 7
-          end
-
-          SetState(context, tostring(index))
         else
           SetState(context, 'notAvailable')
         end
