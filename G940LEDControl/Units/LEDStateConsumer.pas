@@ -11,6 +11,7 @@ uses
 
   LEDColorIntf,
   LEDFunctionIntf,
+  LEDFunctionRegistry,
   Profile;
 
 
@@ -28,6 +29,7 @@ type
     FButtonColors: TInterfaceList;
     FHasTickTimer: Boolean;
     FLog: IX2Log;
+    FFunctionRegistry: TLEDFunctionRegistry;
   protected
     function Initialize: Boolean; override;
     procedure Cleanup; override;
@@ -45,11 +47,12 @@ type
     procedure Update; virtual; abstract;
 
     property Log: IX2Log read FLog;
+    property FunctionRegistry: TLEDFunctionRegistry read FFunctionRegistry;
   protected
     procedure TMLoadProfile(var Msg: TOmniMessage); message TM_LOADPROFILE;
     procedure TMTick(var Msg: TOmniMessage); message TM_TICK;
   public
-    constructor Create(ALog: IX2Log);
+    constructor Create(ALog: IX2Log; AFunctionRegistry: TLEDFunctionRegistry);
   end;
 
 
@@ -59,7 +62,6 @@ uses
   System.SysUtils,
   Winapi.Windows,
 
-  LEDFunctionRegistry,
   LEDStateIntf;
 
 
@@ -82,11 +84,12 @@ type
 
 
 { TLEDStateConsumer }
-constructor TLEDStateConsumer.Create(ALog: IX2Log);
+constructor TLEDStateConsumer.Create(ALog: IX2Log; AFunctionRegistry: TLEDFunctionRegistry);
 begin
   inherited Create;
 
   FLog := ALog;
+  FFunctionRegistry := AFunctionRegistry;
 end;
 
 
@@ -118,7 +121,7 @@ var
 begin
   Result := nil;
 
-  provider := TLEDFunctionRegistry.Find(AProfileButton.ProviderUID);
+  provider := FunctionRegistry.Find(AProfileButton.ProviderUID);
   if Assigned(provider) then
   begin
     ledFunction := provider.Find(AProfileButton.FunctionUID);

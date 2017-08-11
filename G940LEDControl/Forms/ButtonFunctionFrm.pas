@@ -15,6 +15,7 @@ uses
 
   LEDColorIntf,
   LEDFunctionIntf,
+  LEDFunctionRegistry,
   LEDStateIntf,
   Profile, Vcl.ActnList;
 
@@ -60,10 +61,12 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure FormShow(Sender: TObject);
+    procedure vstFunctionsFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vstFunctionsFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
     procedure vstFunctionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure vstFunctionsIncrementalSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; const SearchText: string; var Result: Integer);
     procedure vstFunctionsPaintText(Sender: TBaseVirtualTree; const TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType);
+    procedure vstFunctionsCompareNodes(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
   private
     FProfile: TProfile;
     FButtonIndex: Integer;
@@ -73,8 +76,9 @@ type
     FSelectedProvider: ILEDFunctionProvider;
     FSelectedFunction: ILEDFunction;
     FStateControls: TStateControlInfoList;
+    FFunctionRegistry: TLEDFunctionRegistry;
   protected
-    procedure Initialize(AProfile: TProfile; AButtonIndex: Integer);
+    procedure Initialize(AFunctionRegistry: TLEDFunctionRegistry; AProfile: TProfile; AButtonIndex: Integer);
 
     procedure LoadFunctions;
     procedure ApplyFilter(const AFilter: string);
@@ -91,8 +95,9 @@ type
 
     property Profile: TProfile read FProfile;
     property ButtonIndex: Integer read FButtonIndex;
+    property FunctionRegistry: TLEDFunctionRegistry read FFunctionRegistry;
   public
-    class function Execute(AProfile: TProfile; AButtonIndex: Integer): Boolean;
+    class function Execute(AFunctionRegistry: TLEDFunctionRegistry; AProfile: TProfile; AButtonIndex: Integer): Boolean;
   end;
 
 
@@ -118,7 +123,6 @@ uses
   System.SysUtils,
   Winapi.Windows,
 
-  LEDFunctionRegistry,
   LEDResources;
 
 
@@ -150,11 +154,11 @@ const
 
 
 { TButtonFunctionForm }
-class function TButtonFunctionForm.Execute(AProfile: TProfile; AButtonIndex: Integer): Boolean;
+class function TButtonFunctionForm.Execute(AFunctionRegistry: TLEDFunctionRegistry; AProfile: TProfile; AButtonIndex: Integer): Boolean;
 begin
   with Self.Create(nil) do
   try
-    Initialize(AProfile, AButtonIndex);
+    Initialize(AFunctionRegistry, AProfile, AButtonIndex);
     Result := (ShowModal = mrOk);
   finally
     Free;
@@ -247,7 +251,7 @@ begin
 
     categoryNodes := TDictionary<string, PVirtualNode>.Create;
     try
-      for provider in TLEDFunctionRegistry.Providers do
+      for provider in FunctionRegistry.Providers do
       begin
         isCurrentProvider := Assigned(CurrentProvider) and (provider.GetUID = CurrentProvider.GetUID);
 
@@ -371,8 +375,9 @@ begin
 end;
 
 
-procedure TButtonFunctionForm.Initialize(AProfile: TProfile; AButtonIndex: Integer);
+procedure TButtonFunctionForm.Initialize(AFunctionRegistry: TLEDFunctionRegistry; AProfile: TProfile; AButtonIndex: Integer);
 begin
+  FFunctionRegistry := AFunctionRegistry;
   FProfile := AProfile;
   FButtonIndex := AButtonIndex;
   FButton := nil;
@@ -384,7 +389,7 @@ begin
   if Profile.HasButton(ButtonIndex) then
   begin
     FButton := Profile.Buttons[ButtonIndex];
-    FCurrentProvider := TLEDFunctionRegistry.Find(Button.ProviderUID);
+    FCurrentProvider := FunctionRegistry.Find(Button.ProviderUID);
 
     if Assigned(CurrentProvider) then
       FCurrentFunction := CurrentProvider.Find(Button.FunctionUID);
@@ -516,6 +521,38 @@ begin
   end;
 
   ModalResult := mrOk;
+end;
+
+
+procedure TButtonFunctionForm.vstFunctionsFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+var
+  nodeData: PFunctionNodeData;
+
+begin
+  nodeData := Sender.GetNodeData(Node);
+  Finalize(nodeData^);
+end;
+
+
+procedure TButtonFunctionForm.vstFunctionsCompareNodes(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+var
+  nodeData1: PFunctionNodeData;
+  nodeData2: PFunctionNodeData;
+
+begin
+  nodeData1 := Sender.GetNodeData(Node1);
+  nodeData2 := Sender.GetNodeData(Node2);
+
+  if nodeData1^.NodeType <> nodeData2^.NodeType then
+    exit;
+
+  case nodeData1^.NodeType of
+    ntCategory:
+      Result := CompareText(nodeData1^.LEDFunction.GetCategoryName, nodeData2^.LEDFunction.GetCategoryName);
+
+    ntFunction:
+      Result := CompareText(nodeData1^.LEDFunction.GetDisplayName, nodeData2^.LEDFunction.GetDisplayName);
+  end;
 end;
 
 

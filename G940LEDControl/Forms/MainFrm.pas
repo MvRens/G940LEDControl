@@ -24,11 +24,12 @@ uses
   X2UtPersistIntf,
 
   ControlIntf,
+  LEDFunctionRegistry,
   FSXSimConnectIntf,
   LEDStateConsumer,
   Profile,
   ProfileManager,
-  Settings;
+  Settings, Vcl.Dialogs;
 
 
 const
@@ -128,6 +129,7 @@ type
     TrayIcon: TTrayIcon;
     ApplicationEvents: TApplicationEvents;
     cbFSXSEAutoLaunch: TCheckBox;
+    ScriptErrorDialog: TTaskDialog;
 
     procedure FormCreate(Sender: TObject);
     procedure lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
@@ -163,6 +165,8 @@ type
     FSettingsFileName: string;
     FSettings: TSettings;
     FLoadingSettings: Boolean;
+
+    FFunctionRegistry: TLEDFunctionRegistry;
   protected
     procedure RegisterDeviceArrival;
     procedure UnregisterDeviceArrival;
@@ -219,14 +223,16 @@ type
     property StateConsumerTask: IOmniTaskControl read FStateConsumerTask;
 
     property Log: IX2Log read FLog;
+    property FunctionRegistry: TLEDFunctionRegistry read FFunctionRegistry;
   end;
 
 
 implementation
 uses
+  System.IOUtils,
   System.SysUtils,
+  System.Types,
   System.Win.ComObj,
-  Vcl.Dialogs,
   Vcl.Graphics,
   Winapi.ShellAPI,
 
@@ -241,13 +247,15 @@ uses
   ButtonFunctionFrm,
   ConfigConversion,
   FSXAutoLaunch,
+  FSXLEDFunctionProvider,
   FSXLEDFunctionProviderIntf,
   FSXResources,
   FSXSimConnectStateMonitor,
   G940LEDStateConsumer,
   LEDColorIntf,
   LEDFunctionIntf,
-  LEDFunctionRegistry,
+  LuaLEDFunctionProvider,
+  StaticLEDFunction,
   StaticResources;
 
 
@@ -257,6 +265,9 @@ uses
 const
   DefaultProfileName = 'Default';
   ProfilePostfixModified = ' (modified)';
+
+  ScriptsPath = 'Scripts\';
+  FSXScriptsPath = ScriptsPath + 'FSX\';
 
   UserDataPath = 'G940LEDControl\';
   FilenameProfiles = UserDataPath + 'Profiles.xml';
@@ -302,6 +313,8 @@ procedure TMainForm.FormCreate(Sender: TObject);
 
 var
   worker: IOmniWorker;
+  scriptPaths: TStringDynArray;
+  provider: ILEDFunctionProvider;
 
 begin
   FLog := TX2GlobalLog.Category('UI');
@@ -316,10 +329,48 @@ begin
 
   SetFSXState(TextFSXDisconnected, False);
 
+
+  FFunctionRegistry := TLEDFunctionRegistry.Create;
+  FunctionRegistry.Register(TStaticLEDFunctionProvider.Create);
+
+  SetLength(scriptPaths, 2);
+  scriptPaths[0] := App.Path + FSXScriptsPath;
+  scriptPaths[1] := App.UserPath + UserDataPath + FSXScriptsPath;
+
+  if DebugHook <> 0 then
+  begin
+    SetLength(scriptPaths, 3);
+    scriptPaths[2] := TPath.GetFullPath(App.Path + '..\' + FSXScriptsPath);
+  end;
+
+  while True do
+  begin
+    try
+      provider := TFSXLEDFunctionProvider.Create(scriptPaths);
+      Break;
+    except
+      on E:ELuaScriptLoadError do
+      begin
+        ScriptErrorDialog.Caption := Self.Caption;
+        ScriptErrorDialog.Text := Format('One or more errors occured while trying to load "%s"', [E.Filename]);
+        ScriptErrorDialog.ExpandedText := E.Message;
+        ScriptErrorDialog.Execute;
+
+        if ScriptErrorDialog.ModalResult = mrClose then
+        begin
+          Application.Terminate;
+          Exit;
+        end;
+      end;
+    end;
+  end;
+
+  FunctionRegistry.Register(provider);
+
   FEventMonitor := TOmniEventMonitor.Create(Self);
 
   Log.Info('Starting G940 LED state consumer thread');
-  worker := TG940LEDStateConsumer.Create(TX2GlobalLog.Category('G940 LED state consumer'));
+  worker := TG940LEDStateConsumer.Create(TX2GlobalLog.Category('G940 LED state consumer'), FunctionRegistry);
   FStateConsumerTask := EventMonitor.Monitor(CreateTask(worker));
 
   EventMonitor.OnTaskMessage := EventMonitorMessage;
@@ -362,6 +413,14 @@ begin
 
   TX2LogObserverMonitorForm.CloseInstance(TX2GlobalLog.Instance);
   TX2LogObserverMonitorForm.UnlockInstance(TX2GlobalLog.Instance);
+
+  if Assigned(StateConsumerTask) then
+  begin
+    StateConsumerTask.Stop;
+    StateConsumerTask.WaitFor(INFINITE);
+  end;
+
+  FreeAndNil(FFunctionRegistry);
 end;
 
 
@@ -709,7 +768,7 @@ begin
   end;
 
   buttonFunction := nil;
-  provider := TLEDFunctionRegistry.Find(providerUID);
+  provider := FunctionRegistry.Find(providerUID);
   if Assigned(provider) then
     buttonFunction := provider.Find(functionUID);
 
@@ -908,7 +967,7 @@ begin
   end;
 
   buttonIndex := (Sender as TComponent).Tag;
-  if TButtonFunctionForm.Execute(profile, buttonIndex) then
+  if TButtonFunctionForm.Execute(FunctionRegistry, profile, buttonIndex) then
   begin
     if newProfile then
       AddProfile(profile);
@@ -1291,7 +1350,7 @@ var
   fsxProvider: IFSXLEDFunctionProvider;
 
 begin
-  if Supports(TLEDFunctionRegistry.Find(FSXProviderUID), IFSXLEDFunctionProvider, fsxProvider) then
+  if Supports(FunctionRegistry.Find(FSXProviderUID), IFSXLEDFunctionProvider, fsxProvider) then
     fsxProvider.SetProfileMenu(Settings.ProfileMenu, Settings.ProfileMenuCascaded);
 end;
 
@@ -1301,7 +1360,7 @@ var
   fsxProvider: IFSXLEDFunctionProvider;
 
 begin
-  if Supports(TLEDFunctionRegistry.Find(FSXProviderUID), IFSXLEDFunctionProvider, fsxProvider) then
+  if Supports(FunctionRegistry.Find(FSXProviderUID), IFSXLEDFunctionProvider, fsxProvider) then
     fsxProvider.SetProfileMenu(False, False);
 end;
 

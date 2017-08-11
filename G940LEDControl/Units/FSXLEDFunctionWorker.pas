@@ -1,6 +1,7 @@
 unit FSXLEDFunctionWorker;
 
 interface
+(*
 uses
   OtlTaskControl,
 
@@ -268,9 +269,10 @@ type
     constructor Create(const AProviderUID: string; const AFunctionUID: string; AStates: ILEDMultiStateFunction; ASettings: ILEDFunctionWorkerSettings; const APreviousState: string = ''); override;
     destructor Destroy; override;
   end;
-
+*)
 
 implementation
+(*
 uses
   System.Math,
   System.StrUtils,
@@ -1181,6 +1183,6 @@ begin
     FVisible := visible;
     FOnStateChanged(visible);
   end;
-end;
+end;*)
 
 end.

@@ -1,7 +1,7 @@
 object MainForm: TMainForm
   Left = 0
   Top = 0
-  ActiveControl = cmbProfiles
+  ActiveControl = cbCheckUpdates
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'G940 LED Control'
@@ -30,7 +30,7 @@ object MainForm: TMainForm
     Margins.Top = 8
     Margins.Right = 8
     Margins.Bottom = 8
-    ActivePage = tsButtons
+    ActivePage = tsAbout
     Align = alClient
     TabOrder = 0
     object tsButtons: TTabSheet
@@ -559,9 +559,9 @@ object MainForm: TMainForm
       object lblCopyright: TLabel
         Left = 16
         Top = 35
-        Width = 95
+        Width = 129
         Height = 13
-        Caption = #169' 2011 X'#178'Software'
+        Caption = #169' 2011 - 2017 X'#178'Software'
       end
       object lblWebsite: TLabel
         Left = 16
@@ -1174,5 +1174,28 @@ object MainForm: TMainForm
     OnMinimize = ApplicationEventsMinimize
     Left = 300
     Top = 436
+  end
+  object ScriptErrorDialog: TTaskDialog
+    Buttons = <
+      item
+        Caption = '&Try again'
+        Default = True
+        CommandLinkHint = 'Reload all scripts'
+        ModalResult = 4
+      end
+      item
+        Caption = '&Cancel'
+        CommandLinkHint = 'Exit G940LEDControl'
+        ModalResult = 8
+      end>
+    CommonButtons = []
+    ExpandedText = '<Error message>'
+    Flags = [tfAllowDialogCancellation, tfUseCommandLinks, tfExpandedByDefault]
+    MainIcon = 2
+    RadioButtons = <>
+    Text = '<File name>'
+    Title = 'Script error'
+    Left = 384
+    Top = 376
   end
 end
