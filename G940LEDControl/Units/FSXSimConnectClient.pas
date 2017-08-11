@@ -88,12 +88,12 @@ const
 type
   TFSXSimConnectDefinitionRef = class(TObject)
   private
-    FDefinition: IFSXSimConnectDefinitionAccess;
+    FDefinition: IFSXSimConnectDefinition;
     FDataHandlers: TInterfaceList;
   protected
     property DataHandlers: TInterfaceList read FDataHandlers;
   public
-    constructor Create(ADefinition: IFSXSimConnectDefinitionAccess);
+    constructor Create(ADefinition: IFSXSimConnectDefinition);
     destructor Destroy; override;
 
     function Attach(ADataHandler: IFSXSimConnectDataHandler): Integer;
@@ -101,7 +101,7 @@ type
 
     procedure HandleData(AData: Pointer);
 
-    property Definition: IFSXSimConnectDefinitionAccess read FDefinition;
+    property Definition: IFSXSimConnectDefinition read FDefinition;
   end;
 
 
@@ -145,11 +145,11 @@ type
     procedure TrySimConnect(const ALibraryName: string); overload;
 
     procedure RegisterDefinitions;
-    procedure RegisterDefinition(ADefinitionID: Cardinal; ADefinition: IFSXSimConnectDefinitionAccess);
+    procedure RegisterDefinition(ADefinitionID: Cardinal; ADefinition: IFSXSimConnectDefinition);
     procedure UpdateDefinition(ADefinitionID: Cardinal);
     procedure UnregisterDefinition(ADefinitionID: Cardinal);
 
-    function SameDefinition(ADefinition1, ADefinition2: IFSXSimConnectDefinitionAccess): Boolean;
+    function SameDefinition(ADefinition1, ADefinition2: IFSXSimConnectDefinition): Boolean;
 
     procedure UpdateProfileMenu;
 
@@ -187,7 +187,7 @@ type
 
   TFSXSimConnectVariableList = TObjectList<TFSXSimConnectVariable>;
 
-  TFSXSimConnectDefinition = class(TInterfacedObject, IFSXSimConnectDefinition, IFSXSimConnectDefinitionAccess)
+  TFSXSimConnectDefinition = class(TInterfacedObject, IFSXSimConnectDefinition)
   private
     FSimConnect: IFSXSimConnect;
     FVariables: TFSXSimConnectVariableList;
@@ -198,7 +198,6 @@ type
     { IFSXSimConnectDefinition }
     procedure AddVariable(AVariableName, AUnitsName: string; ADataType: SIMCONNECT_DATAType; AEpsilon: Single = 0);
 
-    { IFSXSimConnectDefinitionAccess }
     function GetVariableCount: Integer;
     function GetVariable(AIndex: Integer): IFSXSimConnectVariable;
   public
@@ -520,6 +519,7 @@ var
   simObjectData: PSimConnectRecvSimObjectData;
   eventData: PSimConnectRecvEvent;
   definitionRef: TFSXSimConnectDefinitionRef;
+  simObjectDataByType: PSimConnectRecvSimObjectDataByType;
 
 begin
   Log.Verbose('Handling messages');
@@ -537,6 +537,18 @@ begin
           begin
             definitionRef := Definitions[simObjectData^.dwDefineID];
             definitionRef.HandleData(@simObjectData^.dwData);
+          end;
+        end;
+
+      SIMCONNECT_RECV_ID_SIMOBJECT_DATA_BYTYPE:
+        begin
+          simObjectDataByType := PSimConnectRecvSimObjectDataByType(data);
+          Log.Verbose(Format('Received Sim Object Data By Type message (definition = %d)', [simObjectDataByType^.dwDefineID]));
+
+          if Definitions.ContainsKey(simObjectDataByType^.dwDefineID) then
+          begin
+            definitionRef := Definitions[simObjectDataByType^.dwDefineID];
+            definitionRef.HandleData(@simObjectDataByType^.dwData);
           end;
         end;
 
@@ -610,7 +622,7 @@ begin
 end;
 
 
-procedure TFSXSimConnectClient.RegisterDefinition(ADefinitionID: Cardinal; ADefinition: IFSXSimConnectDefinitionAccess);
+procedure TFSXSimConnectClient.RegisterDefinition(ADefinitionID: Cardinal; ADefinition: IFSXSimConnectDefinition);
 var
   variableIndex: Integer;
   variable: IFSXSimConnectVariable;
@@ -660,7 +672,7 @@ begin
 end;
 
 
-function TFSXSimConnectClient.SameDefinition(ADefinition1, ADefinition2: IFSXSimConnectDefinitionAccess): Boolean;
+function TFSXSimConnectClient.SameDefinition(ADefinition1, ADefinition2: IFSXSimConnectDefinition): Boolean;
 var
   variableIndex: Integer;
   variable1: IFSXSimConnectVariable;
@@ -767,13 +779,13 @@ var
   addDefinition: TAddDefinitionValue;
   definitionID: Cardinal;
   definitionRef: TFSXSimConnectDefinitionRef;
-  definitionAccess: IFSXSimConnectDefinitionAccess;
+  definitionAccess: IFSXSimConnectDefinition;
   hasDefinition: Boolean;
   refCount: Integer;
 
 begin
   addDefinition := Msg.MsgData;
-  definitionAccess := (addDefinition.Definition as IFSXSimConnectDefinitionAccess);
+  definitionAccess := (addDefinition.Definition as IFSXSimConnectDefinition);
   hasDefinition := False;
 
   Log.Verbose('Received request to add a definition');
@@ -889,7 +901,7 @@ end;
 
 
 { TFSXSimConnectDefinitionRef }
-constructor TFSXSimConnectDefinitionRef.Create(ADefinition: IFSXSimConnectDefinitionAccess);
+constructor TFSXSimConnectDefinitionRef.Create(ADefinition: IFSXSimConnectDefinition);
 begin
   inherited Create;
 

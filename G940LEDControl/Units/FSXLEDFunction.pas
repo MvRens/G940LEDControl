@@ -1,6 +1,7 @@
 unit FSXLEDFunction;
 
 interface
+  (*
 uses
   FSXLEDFunctionProvider,
   LEDFunction,
@@ -337,9 +338,11 @@ type
 
     function GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass; override;
   end;
+  *)
 
 
 implementation
+(*
 uses
   FSXLEDFunctionWorker,
   FSXResources,
@@ -1086,6 +1089,6 @@ end;
 function TFSXATCVisibilityFunction.GetWorkerClass: TCustomLEDMultiStateFunctionWorkerClass;
 begin
   Result := TFSXATCVisibilityFunctionWorker;
-end;
+end;*)
 
 end.

@@ -39,12 +39,6 @@ type
   end;
 
 
-  IFSXSimConnectDefinition = interface
-    ['{F1EAB3B1-0A3D-4B06-A75F-823E15C313B8}']
-    procedure AddVariable(AVariableName, AUnitsName: string; ADataType: SIMCONNECT_DATAType; AEpsilon: Single = 0);
-  end;
-
-
   IFSXSimConnectVariable = interface
     ['{A41AD003-77C0-4E34-91E3-B0BAADD08FCE}']
     function GetVariableName: string;
@@ -54,8 +48,10 @@ type
   end;
 
 
-  IFSXSimConnectDefinitionAccess = interface
-    ['{2592534C-0344-4442-8A5F-1AB34B96E1B5}']
+  IFSXSimConnectDefinition = interface
+    ['{F1EAB3B1-0A3D-4B06-A75F-823E15C313B8}']
+    procedure AddVariable(AVariableName, AUnitsName: string; ADataType: SIMCONNECT_DATAType; AEpsilon: Single = 0);
+
     function GetVariableCount: Integer;
     function GetVariable(AIndex: Integer): IFSXSimConnectVariable;
   end;
