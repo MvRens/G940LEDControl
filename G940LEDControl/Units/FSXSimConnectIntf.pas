@@ -58,10 +58,12 @@ type
 
 
   TFSXSimConnectState = (scsDisconnected, scsConnecting, scsConnected, scsFailed);
+  TFSXSimConnectSimulator = (scsFSX, scsPrepar3D);
 
   IFSXSimConnectStateObserver = interface
     ['{0508904F-8189-479D-AF70-E98B00C9D9B2}']
-    procedure ObserverStateUpdate(ANewState: TFSXSimConnectState);
+    procedure ObserveStateUpdate(ANewState: TFSXSimConnectState);
+    procedure ObserveSimulatorUpdate(ASimulator: TFSXSimConnectSimulator);
   end;
 
 

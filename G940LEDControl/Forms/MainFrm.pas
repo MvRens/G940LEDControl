@@ -40,6 +40,7 @@ const
   TM_UPDATE = 1;
   TM_NOUPDATE = 2;
   TM_FSXSTATE = 3;
+  TM_FSXSIMULATOR = 4;
 
   LED_COUNT = 8;
 
@@ -107,10 +108,9 @@ type
     btnDeleteProfile: TButton;
     bvlProfiles: TBevel;
     pnlFSX: TPanel;
-    imgFSXStateNotConnected: TImage;
-    imgFSXStateConnected: TImage;
-    lblFSX: TLabel;
-    lblFSXState: TLabel;
+    imgSimulatorState: TImage;
+    lblSimulator: TLabel;
+    lblSimulatorState: TLabel;
     pnlState: TPanel;
     tsConfiguration: TTabSheet;
     cbProfileMenu: TCheckBox;
@@ -130,6 +130,10 @@ type
     ApplicationEvents: TApplicationEvents;
     cbFSXSEAutoLaunch: TCheckBox;
     ScriptErrorDialog: TTaskDialog;
+    imgFSXStateDisconnected: TImage;
+    imgFSXStateConnected: TImage;
+    imgPrepar3DStateDisconnected: TImage;
+    imgPrepar3DStateConnected: TImage;
 
     procedure FormCreate(Sender: TObject);
     procedure lblLinkLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
@@ -167,6 +171,9 @@ type
     FLoadingSettings: Boolean;
 
     FFunctionRegistry: TLEDFunctionRegistry;
+
+    FSimulator: TFSXSimConnectSimulator;
+    FSimulatorConnected: Boolean;
   protected
     procedure RegisterDeviceArrival;
     procedure UnregisterDeviceArrival;
@@ -205,6 +212,7 @@ type
 
     procedure SetDeviceState(const AMessage: string; AFound: Boolean);
     procedure SetFSXState(const AMessage: string; AConnected: Boolean);
+    procedure UpdateSimulatorState;
 //    procedure SetFSXToggleZoomButton(const ADeviceGUID: TGUID; AButtonIndex: Integer; const ADisplayText: string);
 
     procedure CheckForUpdatesThread(const ATask: IOmniTask);
@@ -215,12 +223,16 @@ type
 
     procedure HandleDeviceStateMessage(AMessage: TOmniMessage);
     procedure HandleFSXStateMessage(AMessage: TOmniMessage);
+    procedure HandleSimulatorMessage(AMessage: TOmniMessage);
 
     procedure CMAskAutoUpdate(var Msg: TMessage); message CM_ASKAUTOUPDATE;
 
     property EventMonitor: TOmniEventMonitor read FEventMonitor;
     property Settings: TSettings read FSettings;
     property StateConsumerTask: IOmniTaskControl read FStateConsumerTask;
+
+    property Simulator: TFSXSimConnectSimulator read FSimulator write FSimulator;
+    property SimulatorConnected: Boolean read FSimulatorConnected write FSimulatorConnected;
 
     property Log: IX2Log read FLog;
     property FunctionRegistry: TLEDFunctionRegistry read FFunctionRegistry;
@@ -290,9 +302,10 @@ type
   protected
     function Initialize: Boolean; override;
     procedure Cleanup; override;
-
+  public
     { IFSXSimConnectStateObserver }
-    procedure ObserverStateUpdate(ANewState: TFSXSimConnectState);
+    procedure ObserveStateUpdate(ANewState: TFSXSimConnectState);
+    procedure ObserveSimulatorUpdate(ASimulator: TFSXSimConnectSimulator);
   end;
 
 
@@ -913,11 +926,39 @@ procedure TMainForm.SetFSXState(const AMessage: string; AConnected: Boolean);
 begin
   Log.Verbose(Format('FSX SimConnect state changed (connected = %s, status = %s)', [BoolToStr(AConnected, True), AMessage]));
 
-  lblFSXState.Caption := AMessage;
-  lblFSXState.Update;
+  lblSimulatorState.Caption := AMessage;
+  lblSimulatorState.Update;
 
-  imgFSXStateConnected.Visible := AConnected;
-  imgFSXStateNotConnected.Visible := not AConnected;
+  SimulatorConnected := AConnected;
+  UpdateSimulatorState;
+end;
+
+
+procedure TMainForm.UpdateSimulatorState;
+begin
+  case Simulator of
+    scsFSX:
+      begin
+        lblSimulator.Caption := 'Flight Simulator X';
+        lblSimulator.Update;
+
+        if SimulatorConnected then
+          imgSimulatorState.Picture.Assign(imgFSXStateConnected.Picture)
+        else
+          imgSimulatorState.Picture.Assign(imgFSXStateDisconnected.Picture);
+      end;
+
+    scsPrepar3D:
+      begin
+        lblSimulator.Caption := 'Prepar3D';
+        lblSimulator.Update;
+
+        if SimulatorConnected then
+          imgSimulatorState.Picture.Assign(imgPrepar3DStateConnected.Picture)
+        else
+          imgSimulatorState.Picture.Assign(imgPrepar3DStateDisconnected.Picture);
+      end;
+  end;
 end;
 
 
@@ -1263,6 +1304,9 @@ begin
     TM_FSXSTATE:
       HandleFSXStateMessage(msg);
 
+    TM_FSXSIMULATOR:
+      HandleSimulatorMessage(msg);
+
     TM_UPDATE:
       if MessageBox(Self.Handle, PChar('Version ' + msg.MsgData + ' is available on the G940 LED Control website.'#13#10 +
                                        'Do you want to open the website now?'), 'Update available',
@@ -1324,6 +1368,13 @@ begin
     scsFailed:
       SetFSXState(TextFSXFailed, False);
   end;
+end;
+
+
+procedure TMainForm.HandleSimulatorMessage(AMessage: TOmniMessage);
+begin
+  Simulator := TFSXSimConnectSimulator(AMessage.MsgData.AsInteger);
+  UpdateSimulatorState;
 end;
 
 
@@ -1400,9 +1451,14 @@ begin
   inherited Cleanup;
 end;
 
-procedure TFSXStateMonitorWorker.ObserverStateUpdate(ANewState: TFSXSimConnectState);
+procedure TFSXStateMonitorWorker.ObserveStateUpdate(ANewState: TFSXSimConnectState);
 begin
   Task.Comm.Send(TM_FSXSTATE, Integer(ANewState));
+end;
+
+procedure TFSXStateMonitorWorker.ObserveSimulatorUpdate(ASimulator: TFSXSimConnectSimulator);
+begin
+  Task.Comm.Send(TM_FSXSIMULATOR, Integer(ASimulator));
 end;
 
 end.

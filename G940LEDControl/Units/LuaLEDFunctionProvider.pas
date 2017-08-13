@@ -348,7 +348,7 @@ begin
     fileName := fileName + ' - ' + string(debug.source)
   end;
 
-  TX2GlobalLog.Log(ALevel, AMessage, filename);
+  TX2GlobalLog.Category('Lua').Log(ALevel, AMessage, filename);
 end;
 
 
