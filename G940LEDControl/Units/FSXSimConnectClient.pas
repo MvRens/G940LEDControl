@@ -476,6 +476,14 @@ begin
       Log.Info('Succesfully connected');
       TFSXSimConnectStateMonitor.SetCurrentState(scsConnected);
 
+      { Attempt to discover if it's FSX or Prepar3D }
+      if WaitNamedPipe('\\.\pipe\Lockheed Martin Prepar3D v2\SimConnect', 0) or
+         WaitNamedPipe('\\.\pipe\Lockheed Martin Prepar3D v3\SimConnect', 0) or
+         WaitNamedPipe('\\.\pipe\Lockheed Martin Prepar3D v4\SimConnect', 0) then
+        TFSXSimConnectStateMonitor.SetSimulator(scsPrepar3D)
+      else
+        TFSXSimConnectStateMonitor.SetSimulator(scsFSX);
+
       Task.ClearTimer(TIMER_TRYSIMCONNECT);
       RegisterDefinitions;
       UpdateProfileMenu;

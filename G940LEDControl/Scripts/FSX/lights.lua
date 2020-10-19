@@ -57,8 +57,13 @@ local LightsMaskAll = bit32.bor(
 
 
 RegisterLightsFunction('beaconLights', 'Beacon lights', LightsMaskBeacon)
+RegisterLightsFunction('instrumentLights', 'Instrument lights', LightsMaskPanel)
+RegisterLightsFunction('landingLights', 'Landing lights', LightsMaskLanding)
 RegisterLightsFunction('navLights', 'Nav lights', LightsMaskNav)
 RegisterLightsFunction('strobeLights', 'Strobe lights', LightsMaskStrobe)
 RegisterLightsFunction('taxiLights', 'Taxi lights', LightsMaskTaxi)
 RegisterLightsFunction('recognitionLights', 'Recognition lights', LightsMaskRecognition)
+RegisterLightsFunction('wingLights', 'Wing lights', LightsMaskWing)
+RegisterLightsFunction('logoLights', 'Logo lights', LightsMaskLogo)
+RegisterLightsFunction('cabinLights', 'Cabin lights', LightsMaskCabin)
 RegisterLightsFunction('allLights', 'All lights', LightsMaskAll)
