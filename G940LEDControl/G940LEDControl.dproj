@@ -1,4 +1,4 @@
-﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 		<PropertyGroup>
 			<ProjectGuid>{a2bd627c-a934-4ce8-9963-1f81ae521c4c}</ProjectGuid>
 			<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -87,6 +87,8 @@
 			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+			<VerInfo_MinorVer>1</VerInfo_MinorVer>
+			<VerInfo_Keys>CompanyName=X²Software;FileDescription=G940 LED Control;FileVersion=2.1.0.0;InternalName=;LegalCopyright=© 2011 - 2020 X²Software;LegalTrademarks=;OriginalFilename=G940LEDControl.exe;ProductName=G940 LED Control;ProductVersion=2.1;Comments=</VerInfo_Keys>
 			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
